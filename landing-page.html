@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lemon Hub Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">
+      <img src="images/studio-logo.png" alt="Lemon Hub Studio Logo">
+      <span>LEMON HUB STUDIO</span>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="landing-page.html">Home</a></li>
+        <li><a href="services.html">About Us & Our Services</a></li>
+        <li><a href="#" id="contactLink">Contact</a></li>
+        <li><a href="feedback.html">Feedbacks</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay" id="mainOverlay">
+      <div class="hero-content">
+        <h1>BOOK YOUR STUDIO SESSION TODAY!</h1>
+        <p>Bringing your music to life, one session at a time.</p>
+        <a href="services.html#our-services" class="book-btn">Book Now!</a>
+      </div>
+
+      <!-- Booking Calendar -->
+      <div class="calendar-container">
+        <div id="calendar-header">
+          <button id="prevMonth">&#9664;</button>
+          <span id="monthYear">April 2025</span>
+          <button id="nextMonth">&#9654;</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="time-slots" id="timeSlots"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Popup -->
+  <div id="contactPopup" class="contact-popup">
+  <div class="contact-card">
+    <button class="close-contact" id="closeContact">&times;</button>
+    <h2>Contact Us</h2>
+    <p>Feel free to drop us a message</p>
+
+    <div class="contact-row">
+      <img src="images/facebook-icon.png" alt="Facebook" class="icon" />
+      <div>
+        <strong>Facebook</strong><br />
+        <span class="yellow">Lemon Hub Studio</span><br />
+        <a href="https://www.facebook.com/lemonhubstudio" target="_blank">https://www.facebook.com/lemonhubstudio</a>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="contact-row">
+      <img src="images/tiktok-icon.png" alt="Tiktok" class="icon" />
+      <div>
+        <strong>Tiktok</strong><br />
+        <span class="yellow">Lemon Hub Studio</span><br />
+        <a href="https://www.tiktok.com/@lemon.hub.studio" target="_blank">https://www.tiktok.com/@lemon.hub.studio</a>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="contact-row">
+      <img src="images/email-icon.png" alt="Email" class="icon" />
+      <div>
+        <strong>Gmail</strong><br />
+        <span class="yellow">Lemon Hub Studio</span><br />
+        <a href="mailto:magamponr@gmail.com" class="email-link">magamponr@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Footer -->
+  <footer class="footer-logo">
+    <img src="images/studio-logo.png" alt="Studio Logo" />
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
