@@ -1,4 +1,4 @@
-// Calendar (only runs on index.html)
+
 const calendarGrid = document.getElementById("calendarGrid");
 const timeSlots = document.getElementById("timeSlots");
 const monthYear = document.getElementById("monthYear");
@@ -114,10 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// Star Rating
-// Contact popup logic can stay here if already present
 
-// Feedback rating stars
 document.addEventListener("DOMContentLoaded", () => {
   const stars = document.querySelectorAll(".rating-stars span");
   let selectedRating = 0;
@@ -135,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle feedback form submission
+
   const feedbackForm = document.getElementById("feedbackForm");
   const feedbackEntries = document.getElementById("feedbackEntries");
 

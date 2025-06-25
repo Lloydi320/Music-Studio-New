@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "July", "August", "September", "October", "November", "December"
   ];
 
-  // Populate dropdown with current and future months
+ 
   for (let m = currentMonth; m < 12; m++) {
     const option = document.createElement("option");
     option.value = m;
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
     monthDropdown.appendChild(option);
   }
 
-  // Render calendar
+
   function renderCalendar(monthIndex) {
     calendar.innerHTML = "";
     const firstDayOfMonth = new Date(currentYear, monthIndex, 1).getDay();
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
       calendar.appendChild(empty);
     }
 
-    // Actual days
+
     for (let day = 1; day <= daysInMonth; day++) {
       const cell = document.createElement("div");
       cell.classList.add("calendar-cell");
@@ -62,10 +62,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Initial render
+ 
   renderCalendar(currentMonth);
 
-  // On month change
+
   monthDropdown.addEventListener("change", function () {
     const selectedMonth = parseInt(this.value);
     renderCalendar(selectedMonth);

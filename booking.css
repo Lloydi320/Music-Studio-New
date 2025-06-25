@@ -57,8 +57,8 @@ body {
 }
 
 .cancel-btn {
-  margin-top: 150px; /* Increase space between image and button */
-  margin-bottom: 0px; /* Optional: space below button */
+  margin-top: 150px; 
+  margin-bottom: 0px; 
   background: none;
   border: none;
   color: #3f3f3f;

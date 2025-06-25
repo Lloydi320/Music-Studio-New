@@ -1,4 +1,4 @@
-/* Reset & Base */
+
 
 * {
   margin: 0;
@@ -10,7 +10,7 @@ body, html {
   height: 100%;
 }
 
-/* Navbar */
+
 .navbar {
   position: fixed;
   width: 100%;
@@ -103,7 +103,7 @@ body, html {
   background-color: #e6c200;
 }
 
-/* Footer Logo (Bottom Right) */
+
 .footer-logo {
   position: fixed;
   bottom: 20px;
@@ -114,7 +114,7 @@ body, html {
   height: 60px;
 }
 
-/* === About Us Section === */
+
 .about-section {
   display: flex;
   min-height: 400px;
@@ -155,7 +155,7 @@ body, html {
 }
 
 
-/* Service Cards (improved layout) */
+
 .services-section {
   position: relative;
   padding: 80px 40px;
@@ -174,11 +174,11 @@ body, html {
   left: 0;
   height: 100%;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.6); /* adjust darkness here */
+  background-color: rgba(0, 0, 0, 0.6); 
   z-index: -1;
 }
 
-/* Keep cards on top of background and overlay */
+
 .service-cards {
   position: relative;
   display: flex;
@@ -247,12 +247,12 @@ body, html {
   background-color: #e6c200;
 }
 
-/* === Calendar Styling === */
+
 .calendar-container {
   position: absolute;
   right: 80px;
-  top: 45%; /* was 130px or similar, increase to move down */
-  transform: translateY(-50%); /* keeps it centered from its own height */
+  top: 45%; 
+  transform: translateY(-50%); 
   width: 450px;
   background-color: #f4cb38;
   padding: 20px;
@@ -314,7 +314,7 @@ body, html {
   color: white;
 }
 
-/* Time slots panel */
+
 .time-slots {
   margin-top: 20px;
   background: white;
@@ -379,7 +379,7 @@ body, html {
   object-fit: cover;
 }
 
-/* Services Showcase */
+
 .services-showcase {
   background: #111;
   color: white;
@@ -420,8 +420,8 @@ body, html {
 
 .service-box:hover {
   transform: scale(1.03);
-  border: 2px solid #ffd900; /* Champagne Chic Yellow */
-  background: white; /* Keeps background unchanged */
+  border: 2px solid #ffd900; 
+  background: white;
   box-shadow: 0 8px 20px rgba(155, 114, 77, 0.15);
 }
 
@@ -504,14 +504,14 @@ body, html {
   height: 100%;
 }
 
-/* Animate yellow shades */
+
 @keyframes yellowPulse {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* Contact Popup */
+
 .contact-popup {
   position: fixed;
   inset: 0;
