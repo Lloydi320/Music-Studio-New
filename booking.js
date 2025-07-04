@@ -3,17 +3,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const selectedDateLabel = document.getElementById("selectedDateLabel");
   const timeSlots = document.getElementById("timeSlots");
   const monthDropdown = document.getElementById("monthDropdown");
+  const slotsContainer = document.querySelector(".slots");
+  const durationSelect = document.getElementById("durationSelect");
 
   const today = new Date();
   const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth(); // 0 = Jan
+  const currentMonth = today.getMonth();
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
 
- 
   for (let m = currentMonth; m < 12; m++) {
     const option = document.createElement("option");
     option.value = m;
@@ -21,20 +22,17 @@ document.addEventListener("DOMContentLoaded", function () {
     monthDropdown.appendChild(option);
   }
 
-
   function renderCalendar(monthIndex) {
     calendar.innerHTML = "";
     const firstDayOfMonth = new Date(currentYear, monthIndex, 1).getDay();
     const daysInMonth = new Date(currentYear, monthIndex + 1, 0).getDate();
     const offset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
-    // Blank cells
     for (let i = 0; i < offset; i++) {
       const empty = document.createElement("div");
       empty.classList.add("calendar-cell", "empty");
       calendar.appendChild(empty);
     }
-
 
     for (let day = 1; day <= daysInMonth; day++) {
       const cell = document.createElement("div");
@@ -43,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const date = new Date(currentYear, monthIndex, day);
 
-      if (date < today.setHours(0, 0, 0, 0)) {
+      if (date < new Date().setHours(0, 0, 0, 0)) {
         cell.classList.add("disabled");
       } else {
         cell.addEventListener("click", function () {
@@ -55,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           selectedDateLabel.textContent = `${weekday}, ${dateStr}`;
           timeSlots.classList.remove("hidden");
+          generateTimeSlots(); // generate when calendar is selected
         });
       }
 
@@ -62,12 +61,38 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
- 
-  renderCalendar(currentMonth);
+  function generateTimeSlots() {
+    const duration = parseInt(durationSelect.value);
+    const slots = [];
+    const openHour = 8;
+    const closeHour = 20;
 
+    const endLimit = closeHour - duration;
+
+    slotsContainer.innerHTML = "";
+
+    for (let hour = openHour; hour <= endLimit; hour++) {
+      const start = new Date();
+      start.setHours(hour, 0);
+
+      const end = new Date(start);
+      end.setHours(start.getHours() + duration);
+
+      const startStr = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const endStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const btn = document.createElement("button");
+      btn.textContent = `${startStr} - ${endStr}`;
+      slotsContainer.appendChild(btn);
+    }
+  }
+
+  renderCalendar(currentMonth);
 
   monthDropdown.addEventListener("change", function () {
     const selectedMonth = parseInt(this.value);
     renderCalendar(selectedMonth);
   });
+
+  durationSelect.addEventListener("change", generateTimeSlots);
 });
