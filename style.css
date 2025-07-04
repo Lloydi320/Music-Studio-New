@@ -899,3 +899,18 @@ html {
   overflow-y: scroll;
 }
 
+
+.calendar-heading {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-top: 10px;
+  color: #222;
+  font-weight: bold;
+}
+
+.calendar-subtext {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
+}
