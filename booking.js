@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const date = new Date(currentYear, monthIndex, day);
 
-      if (date < new Date().setHours(0, 0, 0, 0)) {
+      if (date < today.setHours(0, 0, 0, 0)) {
         cell.classList.add("disabled");
       } else {
         cell.addEventListener("click", function () {
@@ -53,7 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
           selectedDateLabel.textContent = `${weekday}, ${dateStr}`;
           timeSlots.classList.remove("hidden");
-          generateTimeSlots(); // generate when calendar is selected
+
+          generateTimeSlots(parseInt(durationSelect.value));
         });
       }
 
@@ -61,31 +62,46 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function generateTimeSlots() {
-    const duration = parseInt(durationSelect.value);
-    const slots = [];
-    const openHour = 8;
-    const closeHour = 20;
+  function formatTime(date) {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
 
-    const endLimit = closeHour - duration;
-
+  function generateTimeSlots(durationHours) {
     slotsContainer.innerHTML = "";
 
-    for (let hour = openHour; hour <= endLimit; hour++) {
-      const start = new Date();
-      start.setHours(hour, 0);
+    const openingHour = 8;
+    const closingHour = 20; // 8 PM
+    const durationMinutes = durationHours * 60;
 
-      const end = new Date(start);
-      end.setHours(start.getHours() + duration);
+    let start = new Date();
+    start.setHours(openingHour, 0, 0, 0);
 
-      const startStr = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const endStr = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const latestStart = new Date();
+    latestStart.setHours(closingHour, 0, 0, 0);
+    latestStart.setMinutes(latestStart.getMinutes() - durationMinutes);
+
+    while (start <= latestStart) {
+      const end = new Date(start.getTime() + durationMinutes * 60000);
 
       const btn = document.createElement("button");
-      btn.textContent = `${startStr} - ${endStr}`;
+      btn.textContent = `${formatTime(start)} - ${formatTime(end)}`;
       slotsContainer.appendChild(btn);
+
+      // increment by 30 mins
+      start.setMinutes(start.getMinutes() + 30);
     }
   }
+
+  durationSelect.addEventListener("change", () => {
+    const selected = document.querySelector(".calendar-cell.selected");
+    if (selected) {
+      generateTimeSlots(parseInt(durationSelect.value));
+    }
+  });
 
   renderCalendar(currentMonth);
 
@@ -93,6 +109,4 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectedMonth = parseInt(this.value);
     renderCalendar(selectedMonth);
   });
-
-  durationSelect.addEventListener("change", generateTimeSlots);
 });
