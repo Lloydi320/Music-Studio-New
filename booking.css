@@ -208,11 +208,9 @@ body {
   border-radius: 10px;
 }
 
-/* Duration Dropdown Styling */
-#durationDropdown {
+#durationSelect {
   font-size: 15px;
   padding: 8px 12px;
-  margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 6px;
   background-color: #fff;
@@ -222,7 +220,8 @@ body {
   transition: border 0.2s ease-in-out;
 }
 
-#durationDropdown:focus {
-  border-color: #d4aa00;
+#durationSelect:focus {
+  border-color: #d4aa00; /* match your yellow */
   outline: none;
 }
+
