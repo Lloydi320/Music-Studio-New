@@ -195,4 +195,33 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  const stars = document.querySelectorAll('.rating-stars span');
+  let selectedRating = 0;
+
+  stars.forEach((star, index) => {
+    star.addEventListener('click', () => {
+      selectedRating = index + 1;
+      updateStars(selectedRating);
+    });
+
+    star.addEventListener('mouseover', () => {
+      updateStars(index + 1);
+    });
+
+    star.addEventListener('mouseout', () => {
+      updateStars(selectedRating);
+    });
+  });
+
+  function updateStars(rating) {
+    stars.forEach((star, idx) => {
+      if (idx < rating) {
+        star.style.color = '#f7c400'; // filled color
+      } else {
+        star.style.color = '#ccc'; // unfilled
+      }
+    });
+  }
+});
 

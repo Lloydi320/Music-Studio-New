@@ -655,196 +655,103 @@ body, html {
 .contact-row a:hover {
   text-decoration: underline;
 }
-
-.feedback-section {
-  padding: 100px 40px 40px;
-  max-width: 800px;
-  margin: auto;
-}
-
-.feedback-section h1 {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-#feedbackForm {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-#feedbackForm input[type="text"],
-#feedbackForm textarea,
-#feedbackForm input[type="file"] {
-  padding: 10px;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.star-rating span {
-  font-size: 2rem;
-  color: #ccc;
-  cursor: pointer;
-}
-
-.star-rating span.selected {
-  color: #FFD700;
-}
-
-#feedbackForm button {
-  padding: 12px;  
-  font-size: 1rem;
-  background-color: #FFD700;  
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-#feedbackPreview {
-  margin-top: 40px;
-  border-top: 2px solid #eee;
-  padding-top: 20px;
-}
-.feedback-card {
-  border: 1px solid #ccc;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-.feedback-card img {
-  max-width: 100px;
-  border-radius: 6px;
-  margin-top: 10px;
+.feedback-page {
+  background-color: #e0bc3a;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
 .feedback-container {
   display: flex;
-  padding: 120px 40px 60px;
+  justify-content: center;
   gap: 40px;
+  padding: 100px 80px 40px;
+  flex-wrap: wrap;
+  align-items: flex-start;
 }
 
-.feedback-recent {
+/* Make cards longer */
+.feedback-list,
+.feedback-form {
   flex: 1;
-  background: #f9f9f9;
+  background-color: #ffffff;
   padding: 30px;
-  border-radius: 10px;
-  max-width: 500px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  height: 800px; /* increased height */
+  min-width: 420px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.feedback-recent h2 {
-  margin-bottom: 20px;
+.feedback-list {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Optional scrollbar */
+.feedback-list::-webkit-scrollbar {
+  width: 8px;
+}
+.feedback-list::-webkit-scrollbar-thumb {
+  background: #d1b000;
+  border-radius: 10px;
+}
+.feedback-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.feedback-list h2,
+.feedback-form h2 {
+  font-size: 1.5rem;
   color: #222;
+  margin-bottom: 20px;
+  font-weight: 800;
+  border-left: 6px solid #f4c200;
+  padding-left: 12px;
 }
 
 .feedback-entry {
   margin-bottom: 20px;
   padding: 15px;
-  border-left: 4px solid #d4a700;
   background: #fff;
+  border-radius: 10px;
+  border-left: 4px solid #d4a700;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.feedback-form {
-  flex: 1;
-  padding: 30px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-}
-
-.feedback-form h2 {
-  margin-bottom: 20px;
-  font-size: 1.6rem;
-}
-
-.feedback-form label {
-  display: block;
-  margin: 10px 0 5px;
-  font-weight: 600;
-}
-
-.feedback-form input[type="text"],
-.feedback-form textarea,
-.feedback-form input[type="file"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  margin-bottom: 10px;
-}
-
-.feedback-form .stars span {
-  font-size: 24px;
-  cursor: pointer;
-  color: #ccc;
-}
-
-.feedback-form .stars span:hover,
-.feedback-form .stars span:hover ~ span {
-  color: #d4a700;
-}
-
-.feedback-form button {
-  width: 100%;
-  padding: 12px;
-  background-color: #ffd700;
-  color: black;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.feedback-card img {
+  max-width: 100px;
+  border-radius: 8px;
   margin-top: 10px;
-}
-
-.feedback-form button:hover {
-  background-color: #e6c200;
-}
-
-.feedback-page {
-  display: flex;
-  justify-content: center;
-  padding: 120px 40px 60px;
-  background-color: #fff9e5;
-  min-height: 100vh;
-}
-
-.feedback-container {
-  margin-top: 100px;
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  padding: 40px 80px;
-  background: #fff8e5;
-}
-
-.feedback-list, .feedback-form {
-  background-color: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  flex: 1;
-  max-width: 500px;
-}
-
-.feedback-list h2, .feedback-form h2 {
-  margin-bottom: 20px;
-  font-weight: 800;
+  border: 1px solid #eee;
+  background-color: #fafafa;
 }
 
 .placeholder {
   color: #999;
   font-style: italic;
+  background-color: #fff5cc;
+  border: 1px dashed #e6b800;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 10px;
 }
 
+/* Form */
 .feedback-form label {
   display: block;
   margin-top: 15px;
   margin-bottom: 6px;
   font-weight: 600;
 }
-
 .feedback-form input[type="text"],
 .feedback-form textarea,
 .feedback-form input[type="file"] {
@@ -852,26 +759,30 @@ body, html {
   padding: 10px;
   border: 1px solid #bbb;
   border-radius: 6px;
+  background-color: #fefefe;
+  transition: border-color 0.3s ease;
 }
-
 .feedback-form textarea {
   resize: vertical;
 }
-
-.rating-stars {
-  display: flex;
-  gap: 5px;
-  font-size: 24px;
-  cursor: pointer;
-  color: #ccc;
+.feedback-form input[type="text"]:focus,
+.feedback-form textarea:focus {
+  border-color: #f4c200;
+  outline: none;
 }
 
-.rating-stars .active {
-  color: #f4c200;
+/* File input */
+.feedback-form input[type="file"] {
+  border: 2px dashed #ccc;
+  margin-bottom: 16px; /* add space below file input */
+}
+.feedback-form input[type="file"]:hover {
+  border-color: #f4c200;
 }
 
+/* Submit */
 .submit-btn {
-  margin-top: 20px;
+  margin-top: auto;
   background: #f4c200;
   color: black;
   font-weight: bold;
@@ -882,41 +793,41 @@ body, html {
   width: 100%;
   transition: background 0.3s ease;
 }
-
 .submit-btn:hover {
   background: #e6b800;
 }
 
-html {
-  scroll-behavior: smooth;
+/* Rating Stars */
+.rating-stars {
+  display: flex;
+  gap: 6px;
+  font-size: 24px;
 }
-
-a {
-  text-decoration: none;
-}
-
-html {
-  overflow-y: scroll;
-}
-
-
-.calendar-heading {
-  text-align: center;
-  font-size: 1.5rem;
-  margin-top: 10px;
-  color: #222;
-  font-weight: bold;
-}
-
-.calendar-subtext {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.disabled {
+.rating-stars span {
   color: #ccc;
-  pointer-events: none;
-  opacity: 0.6;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.rating-stars span.selected {
+  color: #f7c400;
+}
+.rating-stars span:hover,
+.rating-stars span:hover ~ span {
+  color: #f7c400;
+}
+.rating-stars span:hover ~ span {
+  color: #ccc;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .feedback-container {
+    flex-direction: column;
+    padding: 60px 20px;
+  }
+
+  .feedback-list,
+  .feedback-form {
+    height: auto;
+  }
 }
