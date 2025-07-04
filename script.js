@@ -4,8 +4,13 @@ const timeSlots = document.getElementById("timeSlots");
 const monthYear = document.getElementById("monthYear");
 
 const now = new Date();
-let currentMonth = 3;
-let currentYear = 2025;
+let currentMonth = now.getMonth();
+let currentYear = now.getFullYear();
+
+
+const realMonth = now.getMonth();
+const realYear = now.getFullYear();
+const realDay = now.getDate();
 
 const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -34,11 +39,20 @@ if (calendarGrid && timeSlots && monthYear) {
       const dateKey = `${year}-${monthString}-${d.toString().padStart(2, "0")}`;
       dateDiv.textContent = d;
 
-      dateDiv.addEventListener("click", () => {
-        document.querySelectorAll(".calendar-grid div").forEach(el => el.classList.remove("selected"));
-        dateDiv.classList.add("selected");
-        showTimeSlots(dateKey);
-      });
+      const isPastDate =
+        year < realYear ||
+        (year === realYear && month < realMonth) ||
+        (year === realYear && month === realMonth && d < realDay);
+
+      if (isPastDate) {
+        dateDiv.classList.add("disabled");
+      } else {
+        dateDiv.addEventListener("click", () => {
+          document.querySelectorAll(".calendar-grid div").forEach(el => el.classList.remove("selected"));
+          dateDiv.classList.add("selected");
+          showTimeSlots(dateKey);
+        });
+      }
 
       calendarGrid.appendChild(dateDiv);
     }
@@ -57,13 +71,18 @@ if (calendarGrid && timeSlots && monthYear) {
   }
 
   document.getElementById("prevMonth").addEventListener("click", () => {
-    if (currentMonth === 0) {
-      currentMonth = 11;
-      currentYear--;
-    } else {
-      currentMonth--;
+    if (
+      currentYear > realYear ||
+      (currentYear === realYear && currentMonth > realMonth)
+    ) {
+      if (currentMonth === 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else {
+        currentMonth--;
+      }
+      generateCalendar(currentYear, currentMonth);
     }
-    generateCalendar(currentYear, currentMonth);
   });
 
   document.getElementById("nextMonth").addEventListener("click", () => {

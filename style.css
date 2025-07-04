@@ -914,3 +914,9 @@ html {
   color: #666;
   margin-bottom: 10px;
 }
+
+.disabled {
+  color: #ccc;
+  pointer-events: none;
+  opacity: 0.6;
+}
