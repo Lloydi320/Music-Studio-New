@@ -186,3 +186,24 @@ body {
   font-weight: bold;
   color: #000;
 }
+
+/* Scrollable time slot container */
+.scrollable-time-slots {
+  max-height: 280px;  /* Adjust as needed */
+  overflow-y: auto;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  padding-right: 5px; /* for scrollbar space */
+}
+
+/* Optional: custom scrollbar for aesthetics */
+.scrollable-time-slots::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollable-time-slots::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.scrollable-time-slots::-webkit-scrollbar-thumb {
+  background-color: #d4aa00;
+  border-radius: 10px;
+}
