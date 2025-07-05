@@ -124,7 +124,6 @@ const reapplyCalendarStyles = () => {
   }
 };
 
-// Reapply style on load and after every month change
 document.addEventListener('DOMContentLoaded', reapplyCalendarStyles);
 document.addEventListener('change', function(e) {
   if (e.target.matches('.calendar select')) {
