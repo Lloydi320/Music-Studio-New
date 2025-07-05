@@ -110,3 +110,24 @@ document.addEventListener("DOMContentLoaded", function () {
     renderCalendar(selectedMonth);
   });
 });
+
+const reapplyCalendarStyles = () => {
+  const dropdown = document.querySelector('.calendar select');
+  if (dropdown) {
+    dropdown.style.backgroundColor = '#f4c200';
+    dropdown.style.border = '2px solid #cba700';
+    dropdown.style.borderRadius = '6px';
+    dropdown.style.padding = '8px 12px';
+    dropdown.style.fontWeight = 'bold';
+    dropdown.style.fontSize = '16px';
+    dropdown.style.color = '#111';
+  }
+};
+
+// Reapply style on load and after every month change
+document.addEventListener('DOMContentLoaded', reapplyCalendarStyles);
+document.addEventListener('change', function(e) {
+  if (e.target.matches('.calendar select')) {
+    reapplyCalendarStyles();
+  }
+});

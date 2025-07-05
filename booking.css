@@ -177,15 +177,24 @@ body {
   background-color: #f5f5f5;
 }
 
-.calendar-header select {
+.calendar-header select,
+.calendar-header select:focus,
+.calendar-header select:active {
   font-size: 16px;
-  padding: 10px;
-  background-color: #ddb812;
-  border: none;
-  border-radius: 5px;
+  padding: 10px 16px;
+  background-color: #dbb411 !important;
+  border: 2px solid #0a0a0a !important;
+  border-radius: 6px !important;
   font-weight: bold;
   color: #000;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
+
 
 /* Scrollable time slot container */
 .scrollable-time-slots {
@@ -223,5 +232,12 @@ body {
 #durationSelect:focus {
   border-color: #d4aa00; /* match your yellow */
   outline: none;
+}
+
+.calendar-header select {
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23000" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
 }
 
