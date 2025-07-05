@@ -836,4 +836,13 @@ a {
   text-decoration: none;
 }
 
+.calendar-subtext {
+  color: #616060;
+  font-size: 0.90rem;
+  margin-top: 4px;
+  text-align: center;
+}
 
+html {
+  scroll-behavior: smooth;
+}
