@@ -1,3 +1,4 @@
+
 const calendarGrid = document.getElementById("calendarGrid");
 const timeSlots = document.getElementById("timeSlots");
 const monthYear = document.getElementById("monthYear");
@@ -37,18 +38,6 @@ if (calendarGrid && timeSlots && monthYear) {
         document.querySelectorAll(".calendar-grid div").forEach(el => el.classList.remove("selected"));
         dateDiv.classList.add("selected");
         showTimeSlots(dateKey);
-      });
-
-      // Double-click to unselect
-      dateDiv.addEventListener("dblclick", () => {
-        if (dateDiv.classList.contains("selected")) {
-          dateDiv.classList.remove("selected");
-          dateDiv.classList.add("fade-out");
-          setTimeout(() => {
-            dateDiv.classList.remove("fade-out");
-          }, 400);
-          timeSlots.innerHTML = "";
-        }
       });
 
       calendarGrid.appendChild(dateDiv);

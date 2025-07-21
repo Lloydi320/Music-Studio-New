@@ -8,23 +8,7 @@ body, html {
   height: 100%;
 }
 
-body::before {
-  content: '';
-  display: block;
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 40px;
-  z-index: 9998;
-  background: transparent;
-}
-body:hover::before {
-  background: transparent;
-}
-body:hover .navbar,
-body:focus-within .navbar {
-  opacity: 1;
-  pointer-events: auto;
-}
+
 .navbar {
   position: fixed;
   width: 100%;
@@ -34,39 +18,33 @@ body:focus-within .navbar {
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   z-index: 10;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.navbar:hover, .navbar:focus-within {
-  opacity: 1;
-  pointer-events: auto;
 }
 .logo {
   display: flex;
   align-items: center;
-  gap: 16px;
-  justify-content: center;
+  gap: 10px;
 }
+
 .logo img {
-  height: 60px;
-  width: 60px;
+  height: 40px;
+  width: auto;
   object-fit: contain;
 }
+
 .logo span {
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: bold;
-  letter-spacing: 2px;
 }
+
+
 .nav-links {
   list-style: none;
   display: flex;
-  gap: 30px;
-  margin-left: 40px;
+  gap: 25px;
 }
 .nav-links a {
   color: white;
@@ -77,33 +55,27 @@ body:focus-within .navbar {
   text-decoration: underline;
 }
 
+
 .hero {
   background: url('/images/studio-bg.jpg') no-repeat center center/cover;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 100px;
 }
+
 .hero-overlay {
   background-color: rgba(0, 0, 0, 0.65);
-  width: 90vw;
-  max-width: 1300px;
-  min-height: 70vh;
-  margin: auto;
-  border-radius: 20px;
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  padding: 40px 60px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  padding-left: 8%;
 }
 .hero-content {
   max-width: 500px;
   color: white;
-  flex: 1;
-  text-align: left;
 }
 .hero-content h1 {
   font-size: 2.8rem;
@@ -129,18 +101,17 @@ body:focus-within .navbar {
   background-color: #e6c200;
 }
 
+
 .footer-logo {
-  position: static;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 40px 0 20px 0;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
 }
 .footer-logo img {
-  width: 90px;
-  height: 90px;
+  width: 60px;
+  height: 60px;
 }
+
 
 .about-section {
   display: flex;
@@ -181,6 +152,8 @@ body:focus-within .navbar {
   object-fit: cover;
 }
 
+
+
 .services-section {
   position: relative;
   padding: 80px 40px;
@@ -202,6 +175,7 @@ body:focus-within .navbar {
   background-color: rgba(0, 0, 0, 0.6); 
   z-index: -1;
 }
+
 
 .service-cards {
   position: relative;
@@ -227,6 +201,7 @@ body:focus-within .navbar {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   color: black;
 }
+
 
 .card:hover {
   transform: translateY(-5px);
@@ -270,19 +245,21 @@ body:focus-within .navbar {
   background-color: #e6c200;
 }
 
+
 .calendar-container {
-  position: static;
-  right: unset;
-  top: unset;
-  transform: none;
-  width: 420px;
+  position: absolute;
+  right: 80px;
+  top: 45%; 
+  transform: translateY(-50%); 
+  width: 450px;
   background-color: #f4cb38;
-  padding: 24px 20px 20px 20px;
-  border-radius: 16px;
+  padding: 20px;
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   z-index: 2;
-  margin-left: 40px;
 }
+
+
 
 #calendar-header {
   display: flex;
@@ -335,6 +312,7 @@ body:focus-within .navbar {
   color: white;
 }
 
+
 .time-slots {
   margin-top: 20px;
   background: white;
@@ -386,6 +364,7 @@ body:focus-within .navbar {
   margin-bottom: 16px;    
 }
 
+
 .about-img {
   flex: 1 1 400px;
   padding: 20px;
@@ -397,6 +376,7 @@ body:focus-within .navbar {
   border-radius: 8px;
   object-fit: cover;
 }
+
 
 .services-showcase {
   background: #111;
@@ -472,6 +452,8 @@ body:focus-within .navbar {
   text-align: center;
 }
 
+
+
 .services-link {
   color: white;
   text-decoration: none;
@@ -520,11 +502,13 @@ body:focus-within .navbar {
   height: 100%;
 }
 
+
 @keyframes yellowPulse {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
 
 .contact-popup {
   position: fixed;
@@ -578,6 +562,7 @@ body:focus-within .navbar {
   color: #d4a700;
   font-weight: 500;
 }
+
 
 .contact-popup {
   display: none;
@@ -910,40 +895,5 @@ a {
 
 html {
   overflow-y: scroll;
-}
-
-@media (max-width: 900px) {
-  .hero-overlay {
-    flex-direction: column;
-    align-items: center;
-    padding: 30px 10px;
-  }
-  .calendar-container {
-    margin-left: 0;
-    margin-top: 30px;
-    width: 100%;
-    max-width: 400px;
-  }
-}
-@media (max-width: 600px) {
-  .navbar {
-    flex-direction: column;
-    padding: 10px 10px;
-  }
-  .logo img {
-    height: 40px;
-    width: 40px;
-  }
-  .logo span {
-    font-size: 1.1rem;
-  }
-  .hero-overlay {
-    padding: 10px 2vw;
-    min-height: 60vh;
-  }
-  .footer-logo img {
-    width: 60px;
-    height: 60px;
-  }
 }
 

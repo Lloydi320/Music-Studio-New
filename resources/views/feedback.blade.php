@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Feedback | Lemon Hub Studio</title>
- <link rel="stylesheet" href="style.css" />
- <link rel="stylesheet" href="style.css" />
+ <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+ <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
+
 
 </head>
 <body>
@@ -13,15 +14,15 @@
   
   <header class="navbar">
     <div class="logo">
-      <img src="images/studio-logo.png" alt="Logo" />
+      <img src="{{ asset('images/studio-logo.png') }}" alt="Logo" />
       <span>LEMON HUB STUDIO</span>
     </div>
     <nav>
       <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="services.html">About Us & Our Services</a></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="/services">About Us & Our Services</a></li>
        <li><a href="#" id="contactLink">Contact</a></li>
-        <li><a href="feedback.html">Feedbacks</a></li>
+        <li><a href="/feedback">Feedbacks</a></li>
       </ul>
     </nav>
   </header>
@@ -63,7 +64,7 @@
     </div>
   </main>
 
-  <script src="script.js"></script>
+  <script src="{{ asset('js/script.js') }}"></script>
 </body>
 </html>
 
@@ -74,7 +75,7 @@
     <p>Feel free to drop us a message</p>
 
     <div class="contact-row">
-      <img src="images/facebook-icon.png" alt="Facebook" class="icon" />
+      <img src="{{ asset('images/facebook-icon.png') }}" alt="Facebook" class="icon" />
       <div>
         <strong>Facebook</strong><br />
         <span class="yellow">Lemon Hub Studio</span><br />
@@ -85,7 +86,7 @@
     <hr />
 
     <div class="contact-row">
-      <img src="images/tiktok-icon.png" alt="Tiktok" class="icon" />
+      <img src="{{ asset('images/tiktok-icon.png') }}" alt="Tiktok" class="icon" />
       <div>
         <strong>Tiktok</strong><br />
         <span class="yellow">Lemon Hub Studio</span><br />
@@ -96,7 +97,7 @@
     <hr />
 
     <div class="contact-row">
-      <img src="images/email-icon.png" alt="Email" class="icon" />
+      <img src="{{ asset('images/email-icon.png') }}" alt="Email" class="icon" />
       <div>
         <strong>Gmail</strong><br />
         <span class="yellow">Lemon Hub Studio</span><br />

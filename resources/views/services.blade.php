@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title> Lemon Hub Studio</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
+  <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
 </head>
 
 <body>
@@ -12,15 +13,15 @@
  
   <header class="navbar">
     <div class="logo">
-      <img src="images/studio-logo.png" alt="Logo" />
+      <img src="{{ asset('images/studio-logo.png') }}" alt="Logo" />
       <span>LEMON HUB STUDIO</span>
     </div>
     <nav>
       <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="services.html">About Us & Our Services</a></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
-        <li><a href="feedback.html">Feedbacks</a></li>
+        <li><a href="/feedback">Feedbacks</a></li>
       </ul>
     </nav>
   </header>
@@ -38,7 +39,7 @@
     </div>
 
     <div class="about-img">
-      <img src="images/studio.jpg" alt="Studio" class="static-about-img" />
+      <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="static-about-img" />
     </div>
   </section>
 
@@ -48,22 +49,22 @@
     <h2>Our Services</h2>
 
     <div class="service-grid">
-     <a href="studio-music-booking.html" class="service-box">
-        <img src="images/studio.jpg" alt="Studio Rental" />
+     <a href="/booking" class="service-box">
+        <img src="{{ asset('images/studio.jpg') }}" alt="Studio Rental" />
         <h3>Studio Rental</h3>
         <p>Book our acoustically treated studios for jamming, rehearsals, or recording. Fully equipped and flexible.</p>
         <small class="service-hint">Click to Book</small>
       </a>
 
-  <a href="studio-music-booking.html" class="service-box">
-        <img src="images/lessons.jpg" alt="Music Lessons" />
+  <a href="/booking" class="service-box">
+        <img src="{{ asset('images/lessons.jpg') }}" alt="Music Lessons" />
         <h3>Music Lessons</h3>
         <p>Private or group lessons in vocals, guitar, keyboard, and drums. Ideal for all ages and skill levels.</p>
         <small class="service-hint">Click to Book</small>
       </a>
 
-      <a href="booking.html" class="service-box">
-        <img src="images/instruments.png" alt="Instruments Rental" />
+      <a href="/booking" class="service-box">
+        <img src="{{ asset('images/instruments.png') }}" alt="Instruments Rental" />
         <h3>Instruments Rental</h3>
         <p>Need a guitar, amp, or mic? Rent affordable gear for your session without the hassle.</p>
         <small class="service-hint">Click to Rent</small>
@@ -79,7 +80,7 @@
     <p>Feel free to drop us a message</p>
 
     <div class="contact-row">
-      <img src="images/facebook-icon.png" alt="Facebook" class="icon" />
+      <img src="{{ asset('images/facebook-icon.png') }}" alt="Facebook" class="icon" />
       <div>
         <strong>Facebook</strong><br />
         <span class="yellow">Lemon Hub Studio</span><br />
@@ -90,7 +91,7 @@
     <hr />
 
     <div class="contact-row">
-      <img src="images/tiktok-icon.png" alt="Tiktok" class="icon" />
+      <img src="{{ asset('images/tiktok-icon.png') }}" alt="Tiktok" class="icon" />
       <div>
         <strong>Tiktok</strong><br />
         <span class="yellow">Lemon Hub Studio</span><br />
@@ -101,7 +102,7 @@
     <hr />
 
     <div class="contact-row">
-      <img src="images/email-icon.png" alt="Email" class="icon" />
+      <img src="{{ asset('images/email-icon.png') }}" alt="Email" class="icon" />
       <div>
         <strong>Gmail</strong><br />
         <span class="yellow">Lemon Hub Studio</span><br />
@@ -113,6 +114,6 @@
 
 
  
-  <script src="script.js"></script>
+  <script src="{{ asset('js/script.js') }}"></script>
 </body>
 </html>
