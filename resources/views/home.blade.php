@@ -129,3 +129,11 @@
 </script>
 </body>
 </html>
+
+@auth
+    <p>Welcome, {{ Auth::user()->name }}!</p>
+@endauth
+
+@guest
+    <a href="{{ url('/login/google') }}">Login with Google</a>
+@endguest

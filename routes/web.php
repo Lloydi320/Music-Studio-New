@@ -33,3 +33,16 @@ Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('g
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+
+Route::get('/debug-google', function () {
+    return config('services.google.client_id');
+});
+
+Route::get('/debug-google', function () {
+    return [
+        'client_id' => config('services.google.client_id'),
+        'secret' => config('services.google.client_secret'),
+        'redirect' => config('services.google.redirect'),
+    ];
+});
+
