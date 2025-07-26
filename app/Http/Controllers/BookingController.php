@@ -13,9 +13,10 @@ class BookingController extends Controller
         $request->validate([
             'date' => 'required|date',
             'time_slot' => 'required|string',
+            'duration' => 'required|integer|min:1|max:8',
         ]);
 
-        // Prevent double booking
+        // Prevent double booking - check for exact time slot match
         $exists = Booking::where('date', $request->date)
             ->where('time_slot', $request->time_slot)
             ->exists();
@@ -23,10 +24,15 @@ class BookingController extends Controller
             return back()->with('error', 'This time slot is already booked.');
         }
 
+        // Additional check for overlapping bookings (optional enhancement)
+        // This would require parsing time slots to check for overlaps
+        // For now, we'll use the simple exact match approach
+
         $booking = Booking::create([
             'user_id' => Auth::id(),
             'date' => $request->date,
             'time_slot' => $request->time_slot,
+            'duration' => $request->duration,
         ]);
 
         return redirect('/booking')->with('success', 'Your booking has been confirmed!');

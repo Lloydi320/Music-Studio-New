@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    // Redirect to Google for OAuth
+    
     public function redirectToGoogle()
     {
         return Socialite::driver('google')
@@ -18,24 +18,24 @@ class AuthController extends Controller
             ->redirect();
     }
 
-    // Handle Google OAuth callback
+   
     public function handleGoogleCallback()
     {
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
             
-            // Find or create user
+          
             $user = User::updateOrCreate([
                 'email' => $googleUser->email,
             ], [
                 'name' => $googleUser->name,
                 'google_id' => $googleUser->id,
-                'password' => bcrypt(uniqid()), // Random password for Google users
+                'password' => bcrypt(uniqid()),
             ]);
 
             Auth::login($user);
-            // Save Google avatar in session
+          
             session(['google_user_avatar' => $googleUser->avatar]);
             
             return redirect('/')->with('success', 'Successfully logged in with Google!');
@@ -45,21 +45,21 @@ class AuthController extends Controller
         }
     }
 
-    // Logout
+   
     public function logout(Request $request)
     {
-        // Clear all session data
+        
         $request->session()->flush();
         
-        // Logout the user
+        
         Auth::logout();
         
-        // Clear any Google OAuth tokens from session
+        
         if (session()->has('google_user_avatar')) {
             session()->forget('google_user_avatar');
         }
         
-        // Clear any other Google-related session data
+     
         $request->session()->forget('_token');
         $request->session()->regenerate();
         

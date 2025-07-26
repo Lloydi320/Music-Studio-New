@@ -99,29 +99,17 @@ body {
 }
 
 .calendar-grid div {
-  padding: 0; /* Reset padding to center span properly */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 15px;
   text-align: center;
   border-radius: 5px;
   font-size: 14px;
   cursor: pointer;
   transition: 0.2s;
   background-color: #f5f5f5;
-  height: 60px;
-  position: relative;
-  z-index: 1;
-}
-
-.calendar-grid div span {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
 }
 
 .calendar-grid div:hover {
-  background-color: #ffe761;
+  background-color: #dbb411;
 }
 
 .calendar-grid .selected {
@@ -130,13 +118,11 @@ body {
   font-weight: bold;
 }
 
-.time-slots {
+.selected-date {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000;
   margin-top: 20px;
-  transition: all 0.3s ease-in-out;
-}
-
-.hidden {
-  display: none;
 }
 
 .selected-date {
@@ -191,10 +177,100 @@ body {
 
 .calendar-header select {
   font-size: 16px;
-  padding: 10px;
-  background-color: #ddb812;
-  border: none;
-  border-radius: 5px;
+  padding: 10px 40px 10px 16px; 
+  background-color: #dbb411 !important;
+  border: 2px solid #0a0a0a !important;
+  border-radius: 6px !important;
   font-weight: bold;
   color: #000;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23000' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.scrollable-time-slots {
+  max-height: 280px; 
+  overflow-y: auto;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  padding-right: 5px; 
+}
+
+.scrollable-time-slots::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollable-time-slots::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.scrollable-time-slots::-webkit-scrollbar-thumb {
+  background-color: #d4aa00;
+  border-radius: 10px;
+}
+
+#durationSelect {
+  font-size: 15px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  width: 150px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: border 0.2s ease-in-out;
+}
+
+#durationSelect:focus {
+  border-color: #d4aa00; 
+  outline: none;
+}
+
+/* Booking form styling */
+#bookingForm {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  margin-top: 20px;
+}
+
+.book-btn {
+  background-color: #dbb411;
+  color: black;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.book-btn:hover {
+  background-color: #caa600;
+}
+
+.alert {
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
 }

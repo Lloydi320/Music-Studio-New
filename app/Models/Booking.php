@@ -13,5 +13,6 @@ class Booking extends Model
         'user_id',
         'date',
         'time_slot',
+        'duration',
     ];
 } 
