@@ -11,14 +11,15 @@ body {
   justify-content: center;
   align-items: stretch;
   padding: 40px;
-  background: rgba(255, 255, 255, 0.92);
+  background: #ffffff; 
   width: 95%;
   max-width: 1200px;
   margin: 60px auto 40px auto;
   border-radius: 18px;
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
+ 
 }
+
 
 .info-section {
   flex: 1;
@@ -273,8 +274,11 @@ body {
 }
 
 .hero-overlay {
-  background-color: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  padding: 60px 20px;
 }
+
 
 .clear-selection-btn {
   background: #ffd700;

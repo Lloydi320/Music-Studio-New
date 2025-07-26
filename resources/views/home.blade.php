@@ -54,7 +54,11 @@
       <div class="hero-content">
         <h1>BOOK YOUR STUDIO SESSION TODAY!</h1>
         <p>Bringing your music to life, one session at a time.</p>
-        <a href="{{ Auth::check() ? '/booking' : '/auth/google' }}" class="book-btn" id="openBookingModal">Book Now!</a>
+        @if(Auth::check())
+          <a href="/services#bottom-of-services" class="book-btn">Book Now!</a>
+        @else
+          <a href="/auth/google" class="book-btn">Login to Book Now!</a>
+        @endif
       </div>
       <div class="calendar-container">
         <div id="calendar-header">
@@ -114,19 +118,7 @@
   </footer>
 
   <script src="{{ asset('js/script.js') }}"></script>
-<script>
-  // Modal open/close logic
-  document.getElementById('openBookingModal').onclick = function() {
-    document.getElementById('bookingModal').style.display = 'flex';
-  };
-  document.getElementById('closeBookingModal').onclick = function() {
-    document.getElementById('bookingModal').style.display = 'none';
-  };
-  // Optional: close modal when clicking outside content
-  document.getElementById('bookingModal').onclick = function(e) {
-    if (e.target === this) this.style.display = 'none';
-  };
-</script>
+
 </body>
 </html>
 

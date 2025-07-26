@@ -13,6 +13,8 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
+
+
 Route::get('/booking', function () {
     if (!Auth::check()) {
         return redirect('/')->with('error', 'Please log in to book a session.');

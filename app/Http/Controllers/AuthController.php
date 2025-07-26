@@ -13,7 +13,9 @@ class AuthController extends Controller
     // Redirect to Google for OAuth
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
     }
 
     // Handle Google OAuth callback
@@ -44,9 +46,28 @@ class AuthController extends Controller
     }
 
     // Logout
-    public function logout()
+    public function logout(Request $request)
     {
+        // Clear all session data
+        $request->session()->flush();
+        
+        // Logout the user
         Auth::logout();
+        
+        // Clear any Google OAuth tokens from session
+        if (session()->has('google_user_avatar')) {
+            session()->forget('google_user_avatar');
+        }
+        
+        // Clear any other Google-related session data
+        $request->session()->forget('_token');
+        $request->session()->regenerate();
+        
+        // Clear any Socialite session data
+        if (session()->has('socialite.state')) {
+            session()->forget('socialite.state');
+        }
+        
         return redirect('/')->with('success', 'Successfully logged out!');
     }
 }

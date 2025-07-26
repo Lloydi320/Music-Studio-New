@@ -72,6 +72,7 @@
     </div>
   </section>
 
+  <div id="bottom-of-services"></div>
   
 <div id="contactPopup" class="contact-popup">
   <div class="contact-card">
@@ -115,5 +116,28 @@
 
  
   <script src="{{ asset('js/script.js') }}"></script>
+  <script>
+  // Check for hash on page load and scroll to it
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash === '#bottom-of-services') {
+      // Check if user is authenticated
+      @if(!Auth::check())
+        // Redirect to login if not authenticated
+        window.location.href = '/auth/google';
+        return;
+      @endif
+      
+      setTimeout(function() {
+        const element = document.getElementById('bottom-of-services');
+        if (element) {
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 500);
+    }
+  });
+  </script>
 </body>
 </html>
