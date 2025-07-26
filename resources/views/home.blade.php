@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Lemon Hub Studio</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
 
 </head>
 
 <body>
 
 
-  <header class="navbar" style="display: flex; justify-content: space-between; align-items: center;">
+  <header class="navbar">
     <div class="logo">
       <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
       <span>LEMON HUB STUDIO</span>
@@ -26,20 +25,20 @@
       </ul>
     </nav>
     @if(Auth::check())
-      <div class="user-profile" style="display: flex; align-items: center; gap: 10px; margin-left: 30px;">
+      <div class="user-profile">
         @php
           $user = Auth::user();
           $avatar = session('google_user_avatar') ?? null;
         @endphp
         @if($avatar)
-          <img src="{{ $avatar }}" alt="Avatar" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+          <img src="{{ $avatar }}" alt="Avatar">
         @endif
         <div style="display: flex; flex-direction: column; align-items: flex-end;">
-          <span style="font-weight: bold;">{{ $user->name }}</span>
+          <span>{{ $user->name }}</span>
           <span style="font-size: 0.9em; color: #888;">{{ $user->email }}</span>
           <form action="/logout" method="POST" style="margin:0;">
             @csrf
-            <button type="submit" style="background:none; border:none; color:#e67e22; cursor:pointer; padding:0; font-size:0.95em;">Logout</button>
+            <button type="submit">Logout</button>
           </form>
         </div>
       </div>
@@ -121,11 +120,3 @@
 
 </body>
 </html>
-
-@auth
-    <p>Welcome, {{ Auth::user()->name }}!</p>
-@endauth
-
-@guest
-    <a href="{{ url('/login/google') }}">Login with Google</a>
-@endguest

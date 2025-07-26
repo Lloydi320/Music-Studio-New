@@ -7,26 +7,26 @@
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
 </head>
-<body>
+<body class="booking-page">
 
-<div class="booking-container">
+    <div class="booking-container">
   
-  <div class="info-section">
-    <p class="studio-name">Lemon Hub Studio</p>
-    <h2><span id="serviceType">STUDIO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
+      <div class="info-section">
+        <p class="studio-name">Lemon Hub Studio</p>
+        <h2><span id="serviceType">STUDIO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
     <p class="duration">🕒 <span id="selectedDurationLabel">3 hrs</span></p>
-    <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
-    <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
-    <button class="cancel-btn" onclick="window.location.href='/services'">Cancel</button>
-  </div>
+        <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
+        <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
+        <button class="cancel-btn" onclick="window.location.href='/services'">Cancel</button>
+      </div>
 
-  <div class="calendar-section">
-    <div class="calendar-header">
-      <select id="monthDropdown"></select>
-    </div>
-    <div id="calendar" class="calendar-grid"></div>
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <select id="monthDropdown"></select>
+        </div>
+        <div id="calendar" class="calendar-grid"></div>
 
-    <p class="selected-date" id="selectedDateLabel"></p>
+          <p class="selected-date" id="selectedDateLabel"></p>
 
     <!-- Duration dropdown -->
     <label for="durationSelect" style="display:block; margin: 10px 0 5px;">Choose Duration:</label>

@@ -80,6 +80,7 @@ if (calendarGrid && timeSlots && monthYear) {
 }
 
 
+
 document.addEventListener("DOMContentLoaded", () => {
   const contactLink = document.getElementById("contactLink");
   const contactPopup = document.getElementById("contactPopup");

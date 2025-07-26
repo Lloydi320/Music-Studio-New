@@ -5,16 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title> Lemon Hub Studio</title>
   <link rel="stylesheet" href="{{ asset('css/style.css') }}" />
-  <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
 </head>
 
 <body>
 
  
-  <header class="navbar">
+    <header class="navbar">
     <div class="logo">
-      <img src="{{ asset('images/studio-logo.png') }}" alt="Logo" />
-      <span>LEMON HUB STUDIO</span>
+      <a href="/" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+        <img src="{{ asset('images/studio-logo.png') }}" alt="Logo" />
+        <span>LEMON HUB STUDIO</span>
+      </a>
     </div>
     <nav>
       <ul class="nav-links">
@@ -24,6 +25,27 @@
         <li><a href="/feedback">Feedbacks</a></li>
       </ul>
     </nav>
+    @if(Auth::check())
+      <div class="user-profile">
+        @php
+          $user = Auth::user();
+          $avatar = session('google_user_avatar') ?? null;
+        @endphp
+        @if($avatar)
+          <img src="{{ $avatar }}" alt="Avatar">
+        @endif
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+          <span>{{ $user->name }}</span>
+          <span style="font-size: 0.9em; color: #888;">{{ $user->email }}</span>
+          <form action="/logout" method="POST" style="margin:0;">
+            @csrf
+            <button type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+    @else
+      <a href="/auth/google" class="book-btn" style="margin-left: 30px;">Login with Google</a>
+    @endif
   </header>
 
  
@@ -127,17 +149,17 @@
         return;
       @endif
       
-      setTimeout(function() {
+    setTimeout(function() {
         const element = document.getElementById('bottom-of-services');
         if (element) {
           element.scrollIntoView({ 
             behavior: 'smooth', 
             block: 'start' 
           });
-        }
+      }
       }, 500);
-    }
+  }
   });
-  </script>
+</script>
 </body>
 </html>
