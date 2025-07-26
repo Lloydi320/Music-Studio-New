@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\FeedbackController;
 
 Route::get('/', function () {
     return view('home');
@@ -32,6 +33,12 @@ Route::get('/api/bookings', [BookingController::class, 'getByDate']);
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Feedback routes (must be logged in)
+Route::middleware('auth')->group(function () {
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('/my-feedback', [FeedbackController::class, 'myFeedback'])->name('feedback.my');
+});
 
 
 Route::get('/debug-google', function () {

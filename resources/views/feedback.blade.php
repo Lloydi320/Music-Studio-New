@@ -83,6 +83,19 @@
 
         <button type="submit" class="submit-btn">Submit Feedback</button>
       </form>
+      @php
+        $feedbacks = \App\Models\Feedback::latest()->get();
+      @endphp
+      @foreach($feedbacks as $feedback)
+        <div class="feedback-entry">
+          <strong>{{ $feedback->user->name ?? 'Anonymous' }}</strong>
+          <p>{{ $feedback->content }}</p>
+          @if($feedback->photo)
+            <img src="{{ asset('storage/' . $feedback->photo) }}" alt="Feedback Photo" style="max-width: 200px; max-height: 200px;" />
+          @endif
+          <small>{{ $feedback->created_at->format('Y-m-d H:i') }}</small>
+        </div>
+      @endforeach
     </div>
   </main>
 
