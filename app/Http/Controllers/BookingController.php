@@ -71,7 +71,9 @@ class BookingController extends Controller
         $request->validate([
             'date' => 'required|date',
         ]);
-        $bookings = Booking::where('date', $request->date)->get(['time_slot', 'user_id']);
+        $bookings = Booking::where('date', $request->date)
+            ->where('status', '!=', 'cancelled')
+            ->get(['time_slot', 'user_id', 'duration']);
         return response()->json($bookings);
     }
 
