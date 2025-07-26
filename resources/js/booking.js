@@ -123,9 +123,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Month navigation buttons
   const calendarHeader = document.getElementById("calendar-header");
+  const nextBtn = document.querySelector('.next-btn'); // Move declaration here, only once
   if (calendarHeader) {
     const prevBtn = document.getElementById("prevMonth");
-    const nextBtn = document.getElementById("nextMonth");
+    const nextMonthBtn = document.getElementById("nextMonth");
     prevBtn.addEventListener("click", function () {
       if (selectedMonth === 0) {
         selectedMonth = 11;
@@ -136,73 +137,45 @@ document.addEventListener("DOMContentLoaded", function () {
       renderMonthDropdown(selectedYear, selectedMonth);
       renderCalendar(selectedYear, selectedMonth);
     });
-    // Replace the Next button logic to submit booking via AJAX
-    const nextBtn = document.querySelector('.next-btn');
-    if (nextBtn) {
-      nextBtn.addEventListener('click', function() {
-        // Get selected date and time slot
-        const selectedDate = document.getElementById('selectedDateLabel').textContent;
-        const selectedSlotBtn = document.querySelector('.slots button.selected, .slots button[style*="background: #FFD700"]');
-        let selectedTimeSlot = '';
-        if (selectedSlotBtn) {
-          selectedTimeSlot = selectedSlotBtn.textContent;
-        } else {
-          // fallback: get first enabled slot
-          const enabledBtn = document.querySelector('.slots button:not([disabled])');
-          if (enabledBtn) selectedTimeSlot = enabledBtn.textContent;
-        }
-        if (!selectedDate || !selectedTimeSlot) {
-          alert('Please select a date and time slot.');
-          return;
-        }
-        // Parse date to YYYY-MM-DD
-        const dateParts = selectedDate.match(/\w+, (\w+) (\d+), (\d+)/);
-        if (!dateParts) return alert('Invalid date format.');
-        const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-        const month = (months.indexOf(dateParts[1]) + 1).toString().padStart(2, '0');
-        const day = dateParts[2].padStart(2, '0');
-        const year = dateParts[3];
-        const dateISO = `${year}-${month}-${day}`;
-        // Submit booking via AJAX
-        fetch('/booking', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-          },
-          body: JSON.stringify({ date: dateISO, time_slot: selectedTimeSlot })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success || data.message === 'Your booking has been confirmed!') {
-            alert('Booking successful!');
-            window.location = '/';
-            return;
-          }
-          // Refresh bookings for this date
-          // (reuse the fetch logic for bookings)
-          fetch(`/api/bookings?date=${dateISO}`)
-            .then(res => res.json())
-            .then(bookings => {
-              // Disable booked slots
-              const slotButtons = document.querySelectorAll('.slots button');
-              slotButtons.forEach(btn => {
-                btn.disabled = bookings.some(b => b.time_slot === btn.textContent);
-                btn.style.opacity = btn.disabled ? 0.5 : 1;
-              });
-              // Update booking info box
-              let info = '';
-              if (bookings.length === 0) {
-                info = 'No bookings for this date.';
-              } else {
-                info = 'Booked slots:<br>' + bookings.map(b => b.time_slot).join('<br>');
-              }
-              const bookingInfoBox = document.querySelector('.booking-info-box');
-              if (bookingInfoBox) bookingInfoBox.innerHTML = `<strong>Booking Info</strong><br>${info}`;
-            });
-        });
-      });
-    }
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function() {
+      // Get selected date, time slot, and duration
+      const selectedDate = document.getElementById('selectedDateLabel').textContent;
+      const selectedSlotBtn = document.querySelector('.slots button.selected, .slots button[style*="background: #FFD700"]');
+      const durationSelect = document.getElementById('durationSelect');
+      let selectedTimeSlot = '';
+      if (selectedSlotBtn) {
+        selectedTimeSlot = selectedSlotBtn.textContent;
+      } else {
+        // fallback: get first enabled slot
+        const enabledBtn = document.querySelector('.slots button:not([disabled])');
+        if (enabledBtn) selectedTimeSlot = enabledBtn.textContent;
+      }
+      if (!selectedDate || !selectedTimeSlot) {
+        alert('Please select a date and time slot.');
+        return;
+      }
+      // Parse date to YYYY-MM-DD
+      const dateParts = selectedDate.match(/\w+, (\w+) (\d+), (\d+)/);
+      if (!dateParts) return alert('Invalid date format.');
+      const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      const month = (months.indexOf(dateParts[1]) + 1).toString().padStart(2, '0');
+      const day = dateParts[2].padStart(2, '0');
+      const year = dateParts[3];
+      const dateISO = `${year}-${month}-${day}`;
+      // Hide calendar and show summary form in modal
+      document.querySelector('.calendar-section').style.display = 'none';
+      const form = document.getElementById('bookingForm');
+      form.style.display = 'flex';
+      // Set form values
+      document.getElementById('bookingDate').value = dateISO;
+      document.getElementById('bookingTimeSlot').value = selectedTimeSlot;
+      document.getElementById('bookingDuration').value = durationSelect.value;
+      document.getElementById('confirmDate').textContent = selectedDate;
+      document.getElementById('confirmTimeSlot').textContent = selectedTimeSlot;
+      document.getElementById('confirmDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;
+    });
   }
 
   monthDropdown.addEventListener("change", function () {
