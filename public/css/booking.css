@@ -66,16 +66,22 @@ html, body {
 .cancel-booking-btn:hover {
   color: #dbb411;
 }
+/* Remove all custom navbar overrides - let the default navbar work */
 .booking-main {
   display: flex;
-  flex-direction: row;
-  max-width: 1100px;
+  flex-direction: column;
+  max-width: 1600px; /* Extended from 1100px */
   width: 100%;
-  margin: 24px auto;
+  margin: 100px auto 24px auto;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 0 24px rgba(0,0,0,0.07);
   overflow: hidden;
+}
+.booking-content {
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
 }
 /* Remove .cancel-wrapper styles if present */
 .cancel-wrapper { display: none !important; }
@@ -141,7 +147,7 @@ body.booking-page::before {
   color: #333;
 }
 
-.info-section .studio-image {
+.info-section .studio-image {   
   width: 100%;
   max-width: 500px;
   max-height: 340px;
@@ -154,7 +160,7 @@ body.booking-page::before {
 .cancel-btn {
   margin-top: 150px; 
   margin-bottom: 0px; 
-  background: none;
+  background: none; 
   border: none;
   color: #3f3f3f;
   font-size: 14px;
@@ -393,4 +399,130 @@ body.booking-page::before {
   flex-direction: column;
   justify-content: flex-start;
   margin: 10px 0;
+}
+
+.calendar-time-layout {
+  display: flex;
+  gap: 40px; /* Increased from 15px for more space */
+  align-items: flex-start;
+  margin-top: 10px;
+  width: 100%;
+}
+.calendar-side {
+  flex: 0 0 60%; /* Reduced from 65% to give more space to time slots */
+  min-width: 0;
+  width: 100%;
+}
+.time-side {
+  flex: 0 0 35%; /* Increased from 30% for more space */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  background: white;
+  border-radius: 0;
+  padding: 15px 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.calendar-grid div {
+  text-align: center;
+  padding: 12px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.calendar-grid .day-name {
+  font-weight: bold;
+  background: #f8f8f8;
+  padding: 10px 4px;
+  border-radius: 6px;
+  color: #333;
+  font-size: 14px;
+}
+.calendar-grid .selected {
+  background-color: #dbb411;
+  color: white;
+}
+.scrollable-time-slots {
+  max-height: 180px;
+  overflow-y: auto;
+  margin: 10px 0;
+  width: 100%;
+}
+.scrollable-time-slots button {
+  width: 100%;
+  padding: 8px 12px;
+  margin: 2px 0;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.scrollable-time-slots button:hover {
+  background: #f5f5f5;
+}
+.scrollable-time-slots button.selected {
+  background: #dbb411;
+  color: white;
+  border-color: #dbb411;
+}
+.next-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #dbb411;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+}
+.book-btn {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #dbb411;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+}
+
+.booking-summary {
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 15px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  display: none; /* Hidden by default */
+}
+.booking-summary.show {
+  display: block !important;
+}
+.booking-summary div {
+  margin-bottom: 8px;
+}
+.booking-summary strong {
+  color: #333;
+}
+
+/* Ensure the summary appears properly within the form */
+#bookingForm .booking-summary {
+  margin-bottom: 15px;
+  background: #fff3cd;
+  border-color: #ffeaa7;
 }

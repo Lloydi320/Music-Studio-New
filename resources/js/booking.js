@@ -164,10 +164,17 @@ document.addEventListener("DOMContentLoaded", function () {
       const day = dateParts[2].padStart(2, '0');
       const year = dateParts[3];
       const dateISO = `${year}-${month}-${day}`;
-      // Hide calendar and show summary form in modal
-      document.querySelector('.calendar-section').style.display = 'none';
-      const form = document.getElementById('bookingForm');
-      form.style.display = 'flex';
+      
+      // Show booking summary in the booking form (right column)
+      const bookingSummary = document.getElementById('bookingSummary');
+      if (bookingSummary) {
+        bookingSummary.style.display = 'block';
+        bookingSummary.classList.add('show');
+        console.log('Booking summary should now be visible in the form');
+      } else {
+        console.error('Booking summary element not found');
+      }
+      
       // Set form values
       document.getElementById('bookingDate').value = dateISO;
       document.getElementById('bookingTimeSlot').value = selectedTimeSlot;
@@ -175,6 +182,13 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('confirmDate').textContent = selectedDate;
       document.getElementById('confirmTimeSlot').textContent = selectedTimeSlot;
       document.getElementById('confirmDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;
+      
+      // Hide Next button and show Confirm Booking button
+      nextBtn.style.display = 'none';
+      const bookingForm = document.getElementById('bookingForm');
+      if (bookingForm) {
+        bookingForm.style.display = 'block';
+      }
     });
   }
 

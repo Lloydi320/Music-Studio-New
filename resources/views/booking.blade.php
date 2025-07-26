@@ -48,48 +48,56 @@
   </header>
 
   <div class="booking-main">
-    <div class="info-section fixed-info-section">
-      <p class="studio-name">Lemon Hub Studio</p>
-      <h2><span id="serviceType">STUDIO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
-      <p class="duration">🕒 <span id="selectedDurationLabel">3 hrs</span></p>
-      <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
-      <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
-      <div class="summary-wrapper">
-        <form id="bookingForm" action="{{ route('booking.store') }}" method="POST" style="display:none;">
-          @csrf
-          <input type="hidden" name="date" id="bookingDate">
-          <input type="hidden" name="time_slot" id="bookingTimeSlot">
-          <input type="hidden" name="duration" id="bookingDuration">
-          <div>
-            <strong>Date:</strong> <span id="confirmDate"></span><br>
-            <strong>Time Slot:</strong> <span id="confirmTimeSlot"></span><br>
-            <strong>Duration:</strong> <span id="confirmDuration"></span>
-          </div>
-          <button type="submit" class="book-btn">Confirm Booking</button>
-        </form>
+    <div class="booking-content">
+      <div class="info-section fixed-info-section">
+        <p class="studio-name">Lemon Hub Studio</p>
+        <h2><span id="serviceType">STUDIO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
+        <p class="duration">🕒 <span id="selectedDurationLabel">3 hrs</span></p>
+        <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
+        <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
       </div>
-    </div>
-    <div class="booking-right">
-      <div class="calendar-section">
-        <div class="calendar-header">
-          <select id="monthDropdown"></select>
+      <div class="booking-right">
+        <div class="calendar-section">
+          <div class="calendar-header">
+            <select id="monthDropdown"></select>
+          </div>
+          <div class="calendar-time-layout">
+            <div class="calendar-side">
+              <div id="calendar" class="calendar-grid"></div>
+              <p class="selected-date" id="selectedDateLabel"></p>
+            </div>
+            <div class="time-side">
+              <!-- Duration dropdown -->
+              <label for="durationSelect" style="display:block; margin: 10px 0 5px;">Choose Duration:</label>
+              <select id="durationSelect">
+                <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="3" selected>3 hours</option>
+                <option value="4">4 hours</option>
+                <option value="5">5 hours</option>
+                <option value="6">6 hours</option>
+                <option value="7">7 hours</option>
+                <option value="8">8 hours</option>
+              </select>
+              <div class="slots scrollable-time-slots"></div>
+              <button class="next-btn" id="nextBtn">Next</button>
+              <form id="bookingForm" action="{{ route('booking.store') }}" method="POST" style="display:none;">
+                @csrf
+                <input type="hidden" name="date" id="bookingDate">
+                <input type="hidden" name="time_slot" id="bookingTimeSlot">
+                <input type="hidden" name="duration" id="bookingDuration">
+                <div class="booking-summary" id="bookingSummary" style="display:none;">
+                  <div>
+                    <strong>Date:</strong> <span id="confirmDate"></span><br>
+                    <strong>Time Slot:</strong> <span id="confirmTimeSlot"></span><br>
+                    <strong>Duration:</strong> <span id="confirmDuration"></span>
+                  </div>
+                </div>
+                <button type="submit" class="book-btn">Confirm Booking</button>
+              </form>
+            </div>
+          </div>
         </div>
-        <div id="calendar" class="calendar-grid"></div>
-        <p class="selected-date" id="selectedDateLabel"></p>
-        <!-- Duration dropdown -->
-        <label for="durationSelect" style="display:block; margin: 10px 0 5px;">Choose Duration:</label>
-        <select id="durationSelect">
-          <option value="1">1 hour</option>
-          <option value="2">2 hours</option>
-          <option value="3" selected>3 hours</option>
-          <option value="4">4 hours</option>
-          <option value="5">5 hours</option>
-          <option value="6">6 hours</option>
-          <option value="7">7 hours</option>
-          <option value="8">8 hours</option>
-        </select>
-        <div class="slots scrollable-time-slots"></div>
-        <button class="next-btn" id="nextBtn">Next</button>
       </div>
     </div>
   </div>
