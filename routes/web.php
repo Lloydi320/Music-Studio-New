@@ -27,7 +27,7 @@ Route::post('/booking', [BookingController::class, 'store'])->name('booking.stor
 
 
 
-Route::get('/api/bookings', [BookingController::class, 'getByDate']);
+// Removed this route as it conflicts with API routes
 
 // Google OAuth routes
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
@@ -40,8 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-feedback', [FeedbackController::class, 'myFeedback'])->name('feedback.my');
 });
 
-// Public API to get all feedback
-Route::get('/api/feedback', [FeedbackController::class, 'index']);
+// Removed this route as it conflicts with API routes
 
 
 Route::get('/debug-google', function () {

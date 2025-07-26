@@ -33,9 +33,10 @@ class BookingController extends Controller
             'date' => $request->date,
             'time_slot' => $request->time_slot,
             'duration' => $request->duration,
+            'status' => 'pending',
         ]);
 
-        return redirect('/booking')->with('success', 'Your booking has been confirmed!');
+        return redirect('/booking')->with('success', 'Your booking has been confirmed! Reference: ' . $booking->reference);
     }
 
     public function getByDate(Request $request)
@@ -45,5 +46,91 @@ class BookingController extends Controller
         ]);
         $bookings = Booking::where('date', $request->date)->get(['time_slot', 'user_id']);
         return response()->json($bookings);
+    }
+
+    // New API methods to match your PHP scripts
+
+    public function checkAvailability(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+            'time_slot' => 'required|string',
+        ]);
+        
+        $exists = Booking::where('date', $request->date)
+            ->where('time_slot', $request->time_slot)
+            ->where('status', '!=', 'cancelled')
+            ->exists();
+        
+        return response()->json(['available' => !$exists]);
+    }
+
+    public function getByReference($reference)
+    {
+        $booking = Booking::with('user')->where('reference', $reference)->first();
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Booking not found'], 404);
+        }
+        
+        return response()->json($booking);
+    }
+
+    public function getUserBookings()
+    {
+        $bookings = Booking::where('user_id', Auth::id())
+            ->orderBy('date', 'desc')
+            ->get();
+        
+        return response()->json($bookings);
+    }
+
+    public function cancelByReference($reference)
+    {
+        $booking = Booking::where('reference', $reference)
+            ->where('user_id', Auth::id())
+            ->first();
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Booking not found or unauthorized'], 404);
+        }
+        
+        $booking->update(['status' => 'cancelled']);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking cancelled successfully'
+        ]);
+    }
+
+    public function updateStatus(Request $request, $reference)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,cancelled',
+        ]);
+        
+        $booking = Booking::where('reference', $reference)->first();
+        
+        if (!$booking) {
+            return response()->json(['error' => 'Booking not found'], 404);
+        }
+        
+        $booking->update(['status' => $request->status]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking status updated successfully'
+        ]);
+    }
+
+    public function checkStatus($reference)
+    {
+        $booking = Booking::where('reference', $reference)->first();
+        
+        if (!$booking) {
+            return response()->json(['status' => 'not_found'], 404);
+        }
+        
+        return response()->json(['status' => $booking->status]);
     }
 } 

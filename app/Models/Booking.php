@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
@@ -14,5 +15,18 @@ class Booking extends Model
         'date',
         'time_slot',
         'duration',
+        'reference',
+        'status',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($booking) {
+            if (empty($booking->reference)) {
+                $booking->reference = 'BK' . strtoupper(Str::random(8));
+            }
+        });
+    }
 } 
