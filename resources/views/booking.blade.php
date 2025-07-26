@@ -86,15 +86,16 @@
                 <input type="hidden" name="date" id="bookingDate">
                 <input type="hidden" name="time_slot" id="bookingTimeSlot">
                 <input type="hidden" name="duration" id="bookingDuration">
-                <div class="booking-summary" id="bookingSummary" style="display:none;">
-                  <div>
-                    <strong>Date:</strong> <span id="confirmDate"></span><br>
-                    <strong>Time Slot:</strong> <span id="confirmTimeSlot"></span><br>
-                    <strong>Duration:</strong> <span id="confirmDuration"></span>
-                  </div>
-                </div>
                 <button type="submit" class="book-btn">Confirm Booking</button>
               </form>
+            </div>
+          </div>
+          <div class="booking-summary" id="bookingSummary">
+            <div id="bookingSummaryContent">
+              <!-- Content will be populated by JavaScript -->
+            </div>
+            <div id="bookingConfirmationMessage" style="display:none;">
+              <strong>Your booking has been confirmed!</strong>
             </div>
           </div>
         </div>
@@ -102,12 +103,7 @@
     </div>
   </div>
 
-@if(session('success'))
-  <div class="alert alert-success" style="color: green; text-align: center; margin-bottom: 10px;">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-  <div class="alert alert-danger" style="color: red; text-align: center; margin-bottom: 10px;">{{ session('error') }}</div>
-@endif
+<!-- Success and error messages will be handled in the booking summary container -->
 
 <!-- Removed the form from the bottom. It will only show in the modal after clicking Next. -->
 
