@@ -6,6 +6,7 @@
 body, html {
   font-family: 'Segoe UI', sans-serif;
   height: 100%;
+  overflow: hidden;
 }
 
 
@@ -834,12 +835,22 @@ body, html {
   background-color: #e6c200;
 }
 
+body.feedback-page {
+  display: flex;
+  justify-content: center;
+  padding: 120px 40px 40px;
+  background-color: #fff9e5;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .feedback-page {
   display: flex;
   justify-content: center;
   padding: 120px 40px 40px;
   background-color: #fff9e5;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .feedback-container {
@@ -849,6 +860,8 @@ body, html {
   gap: 40px;
   padding: 20px 40px;
   background: transparent;
+  height: calc(100vh - 200px);
+  overflow: hidden;
 }
 
 .feedback-list, .feedback-form {
@@ -858,6 +871,8 @@ body, html {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   flex: 1;
   max-width: 500px;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .feedback-list h2, .feedback-form h2 {
@@ -928,7 +943,7 @@ a {
 }
 
 html {
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 

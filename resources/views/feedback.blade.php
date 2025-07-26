@@ -8,7 +8,7 @@
 
 
 </head>
-<body>
+<body class="feedback-page">
 
   
     <header class="navbar">
