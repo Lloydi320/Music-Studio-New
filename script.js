@@ -1,3 +1,4 @@
+console.log('script.js loaded');
 
 const calendarGrid = document.getElementById("calendarGrid");
 const timeSlots = document.getElementById("timeSlots");
@@ -135,64 +136,89 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-  const stars = document.querySelectorAll(".rating-stars span");
+  // Fetch and display feedback on page load
+  fetchFeedback();
+
+  const feedbackForm = document.getElementById("feedbackForm");
+  const feedbackEntries = document.getElementById("feedbackEntries");
   let selectedRating = 0;
 
+  // Rating stars logic
+  const stars = document.querySelectorAll(".rating-stars span");
   stars.forEach(star => {
     star.addEventListener("click", () => {
       selectedRating = parseInt(star.dataset.value);
       updateStars();
     });
   });
-
   function updateStars() {
     stars.forEach(star => {
       star.classList.toggle("active", parseInt(star.dataset.value) <= selectedRating);
     });
   }
 
-
-  const feedbackForm = document.getElementById("feedbackForm");
-  const feedbackEntries = document.getElementById("feedbackEntries");
-
-  feedbackForm.addEventListener("submit", (e) => {
+  feedbackForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const name = document.getElementById("name").value;
     const comment = document.getElementById("comment").value;
     const photo = document.getElementById("photo").files[0];
 
-    const feedbackCard = document.createElement("div");
-    feedbackCard.style.border = "1px solid #ddd";
-    feedbackCard.style.borderRadius = "8px";
-    feedbackCard.style.padding = "15px";
-    feedbackCard.style.marginBottom = "15px";
-    feedbackCard.style.background = "#fff";
-
-    feedbackCard.innerHTML = `
-      <h4>${name}</h4>
-      <p>Rating: ${'★'.repeat(selectedRating)}${'☆'.repeat(5 - selectedRating)}</p>
-      <p>${comment}</p>
-    `;
-
-    if (photo) {
-      const img = document.createElement("img");
-      img.src = URL.createObjectURL(photo);
-      img.style.width = "100%";
-      img.style.marginTop = "10px";
-      img.style.borderRadius = "6px";
-      feedbackCard.appendChild(img);
+    if (!selectedRating) {
+      alert("Please select a rating.");
+      return;
     }
 
-    // Remove placeholder
-    const placeholder = feedbackEntries.querySelector(".placeholder");
-    if (placeholder) placeholder.remove();
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("rating", selectedRating);
+    formData.append("comment", comment);
+    if (photo) formData.append("photo", photo);
 
-    feedbackEntries.appendChild(feedbackCard);
-    feedbackForm.reset();
-    selectedRating = 0;
-    updateStars();
+    try {
+      await fetch("/feedback", {
+        method: "POST",
+        body: formData
+      });
+      feedbackForm.reset();
+      selectedRating = 0;
+      updateStars();
+      fetchFeedback();
+    } catch (err) {
+      alert("Failed to submit feedback.");
+    }
   });
+
+  async function fetchFeedback() {
+    try {
+      const res = await fetch("/api/feedback");
+      const data = await res.json();
+      console.log('Fetched feedback data:', data); // Debug output
+      renderFeedback(data.feedbacks);
+    } catch (err) {
+      console.error('Error fetching feedback:', err); // Debug output
+      feedbackEntries.innerHTML = '<p class="placeholder">Failed to load feedback.</p>';
+    }
+  }
+
+  function renderFeedback(feedbacks) {
+    feedbackEntries.innerHTML = "";
+    if (!feedbacks.length) {
+      feedbackEntries.innerHTML = '<p class="placeholder">No feedback shared yet.</p>';
+      return;
+    }
+    feedbacks.forEach(fb => {
+      const card = document.createElement("div");
+      card.className = "feedback-card";
+      card.innerHTML = `
+        <h4>${fb.name || "Anonymous"}</h4>
+        <p>Rating: ${'★'.repeat(fb.rating || 0)}${'☆'.repeat(5 - (fb.rating || 0))}</p>
+        <p>${fb.comment}</p>
+        ${fb.photo ? `<img src="/storage/${fb.photo}" style="max-width:200px;max-height:200px;margin-top:10px;border-radius:6px;" />` : ""}
+        <small>${fb.created_at ? new Date(fb.created_at).toLocaleString() : ""}</small>
+      `;
+      feedbackEntries.appendChild(card);
+    });
+  }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -224,4 +250,108 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+// Place this in your frontend JS file or <script> tag
+fetch('/api/my-feedback', {
+  headers: {
+    'Authorization': 'Bearer ' + localStorage.getItem('token') // if using token auth
+  }
+})
+  .then(res => res.json())
+  .then(data => {
+    // Render feedbacks in your UI
+    renderFeedbacks(data.feedbacks);
+  });
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Fetch and render feedbacks on page load
+  fetchFeedbacks();
+
+  // Handle feedback form submission
+  document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('name').value;
+    const comment = document.getElementById('comment').value;
+    const rating = document.querySelector('.rating-stars .selected')?.getAttribute('data-value') || 0;
+    const photoInput = document.getElementById('photo');
+    const formData = new FormData();
+
+    formData.append('name', name);
+    formData.append('comment', comment);
+    formData.append('rating', rating);
+    formData.append('content', comment); // Assuming 'content' is the main feedback text
+    if (photoInput.files[0]) {
+      formData.append('photo', photoInput.files[0]);
+    }
+
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token'), // if using token auth
+        'Accept': 'application/json'
+      },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      fetchFeedbacks(); // Refresh feedback list
+      document.getElementById('feedbackForm').reset();
+    });
+  });
+
+  // Handle star rating selection
+  document.querySelectorAll('.rating-stars span').forEach(star => {
+    star.addEventListener('click', function() {
+      document.querySelectorAll('.rating-stars span').forEach(s => s.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+});
+
+function fetchFeedbacks() {
+  fetch('/api/my-feedback', {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('token'), // if using token auth
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    renderFeedbacks(data.feedbacks);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Fetching feedbacks...');
+  fetch('/api/feedbacks', {
+    headers: { 'Accept': 'application/json' }
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('Feedbacks:', data);
+  })
+  .catch(err => {
+    console.error('Error fetching feedbacks:', err);
+  });
+});
+
+function renderFeedbacks(feedbacks) {
+  const container = document.getElementById('feedbackEntries');
+  container.innerHTML = '';
+  if (!feedbacks || !feedbacks.length) {
+    container.innerHTML = '<p class="placeholder">No feedback shared yet.</p>';
+    return;
+  }
+  feedbacks.forEach(feedback => {
+    const entry = document.createElement('div');
+    entry.className = 'feedback-entry';
+    entry.innerHTML = `
+      <strong>${feedback.name || 'Anonymous'}</strong>
+      <p>${feedback.comment || feedback.content}</p>
+      <small>${new Date(feedback.created_at).toLocaleString()}</small>
+    `;
+    container.appendChild(entry);
+  });
+}
 

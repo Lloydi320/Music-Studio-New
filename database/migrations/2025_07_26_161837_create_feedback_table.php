@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('feedback', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->nullable()->after('id');
+            $table->integer('rating')->nullable()->after('name');
+            $table->text('comment')->nullable()->after('rating');
             $table->unsignedBigInteger('user_id');
             $table->text('content');
             $table->timestamps();

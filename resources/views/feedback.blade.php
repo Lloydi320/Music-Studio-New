@@ -83,23 +83,39 @@
 
         <button type="submit" class="submit-btn">Submit Feedback</button>
       </form>
-      @php
-        $feedbacks = \App\Models\Feedback::latest()->get();
-      @endphp
-      @foreach($feedbacks as $feedback)
-        <div class="feedback-entry">
-          <strong>{{ $feedback->user->name ?? 'Anonymous' }}</strong>
-          <p>{{ $feedback->content }}</p>
-          @if($feedback->photo)
-            <img src="{{ asset('storage/' . $feedback->photo) }}" alt="Feedback Photo" style="max-width: 200px; max-height: 200px;" />
-          @endif
-          <small>{{ $feedback->created_at->format('Y-m-d H:i') }}</small>
-        </div>
-      @endforeach
     </div>
   </main>
 
-  <script src="{{ asset('js/script.js') }}"></script>
+  <script src="{{ asset('script.js') }}"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('/api/my-feedback', {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('token'),
+      'Accept': 'application/json'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    const container = document.getElementById('feedbackEntries');
+    container.innerHTML = '';
+    if (!data.feedbacks || !data.feedbacks.length) {
+      container.innerHTML = '<p class="placeholder">No feedback shared yet.</p>';
+      return;
+    }
+    data.feedbacks.forEach(feedback => {
+      const entry = document.createElement('div');
+      entry.className = 'feedback-entry';
+      entry.innerHTML = `
+        <strong>${feedback.name || 'Anonymous'}</strong>
+        <p>${feedback.content || feedback.comment}</p>
+        <small>${new Date(feedback.created_at).toLocaleString()}</small>
+      `;
+      container.appendChild(entry);
+    });
+  });
+});
+</script>
 </body>
 </html>
 

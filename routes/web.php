@@ -40,6 +40,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/my-feedback', [FeedbackController::class, 'myFeedback'])->name('feedback.my');
 });
 
+// Public API to get all feedback
+Route::get('/api/feedback', [FeedbackController::class, 'index']);
+
 
 Route::get('/debug-google', function () {
     return config('services.google.client_id');

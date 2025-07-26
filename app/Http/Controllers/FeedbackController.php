@@ -12,30 +12,32 @@ class FeedbackController extends Controller
     // Store feedback from authenticated user
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'content' => 'required|string',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|string',
+            'name' => 'required|string',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
         ]);
 
-        $photoPath = null;
-        if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('feedback_photos', 'public');
-        }
+        $validated['user_id'] = Auth::id(); // Assign current user
 
-        $feedback = Feedback::create([
-            'user_id' => Auth::id(),
-            'content' => $request->input('content'),
-            'photo' => $photoPath,
-        ]);
+        $feedback = Feedback::create($validated);
 
-        // For non-AJAX, redirect back
-        return redirect()->back()->with('success', 'Feedback submitted!');
+        return response()->json($feedback, 201);
     }
 
     // Get feedback for authenticated user
     public function myFeedback()
     {
         $feedbacks = Feedback::where('user_id', Auth::id())->latest()->get();
+        return response()->json(['feedbacks' => $feedbacks]);
+    }
+
+    // Get all feedback for display
+    public function index()
+    {
+        $feedbacks = Feedback::latest()->get(['name', 'rating', 'comment', 'photo', 'created_at']);
         return response()->json(['feedbacks' => $feedbacks]);
     }
 }
