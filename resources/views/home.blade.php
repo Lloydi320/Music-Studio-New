@@ -21,7 +21,7 @@
         <li><a href="/">Home</a></li>
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
-        <li><a href="/feedback">Feedbacks</a></li>
+        <li><a href="#" id="feedbackLink">Feedbacks</a></li>
       </ul>
     </nav>
     @if(Auth::check())
@@ -106,6 +106,46 @@
         <strong>Gmail</strong><br />
         <span class="yellow">Lemon Hub Studio</span><br />
         <a href="mailto:magamponr@gmail.com" class="email-link">magamponr@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedbackPopup" class="feedback-popup">
+  <div class="feedback-modal-card">
+    <div class="feedback-modal-header">
+      <h2>Feedback</h2>
+      <button class="close-feedback" id="closeFeedback">&times;</button>
+    </div>
+    <div class="feedback-modal-content">
+      <div class="feedback-list">
+        <div id="feedbackEntries">
+          <p class="placeholder">No feedback shared yet.</p>
+        </div>
+      </div>
+      <div class="feedback-form">
+        <form id="feedbackForm">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" required />
+
+          <label for="rating">Rating</label>
+          <div class="rating-stars">
+            <span data-value="1">★</span>
+            <span data-value="2">★</span>
+            <span data-value="3">★</span>
+            <span data-value="4">★</span>
+            <span data-value="5">★</span>
+          </div>
+
+          <label for="comment">Comment</label>
+          <textarea id="comment" rows="5" required></textarea>
+
+          <label for="photo">Upload a Photo (optional)</label>
+          <input type="file" id="photo" accept="image/*" />
+
+          <button type="submit" class="submit-btn">Submit Feedback</button>
+        </form>
       </div>
     </div>
   </div>

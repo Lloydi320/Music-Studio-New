@@ -24,9 +24,7 @@ Route::get('/booking', function () {
 
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 
-Route::get('/feedback', function () {
-    return view('feedback');
-})->name('feedback');
+
 
 Route::get('/api/bookings', [BookingController::class, 'getByDate']);
 
