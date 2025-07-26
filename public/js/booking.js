@@ -226,15 +226,40 @@ document.addEventListener("DOMContentLoaded", function () {
         
         generateTimeSlots(selectedDuration);
         
-        // Restore the selection if the same time slot exists
-        if (currentSelectedText) {
-          const newSlotButtons = document.querySelectorAll('.slots button');
-          newSlotButtons.forEach(btn => {
-            if (btn.textContent === currentSelectedText) {
-              btn.classList.add('selected');
-              selectedTimeSlot = currentSelectedText;
-            }
-          });
+        // Get the selected date to check bookings
+        const selectedDateText = document.getElementById('selectedDateLabel').textContent;
+        if (selectedDateText) {
+          // Parse selected date to YYYY-MM-DD
+          const dateParts = selectedDateText.match(/\w+, (\w+) (\d+), (\d+)/);
+          if (dateParts) {
+            const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            const month = (months.indexOf(dateParts[1]) + 1).toString().padStart(2, '0');
+            const day = dateParts[2].padStart(2, '0');
+            const year = dateParts[3];
+            const dateStrISO = `${year}-${month}-${day}`;
+            
+            // Check bookings for this date and disable booked slots
+            fetch(`/api/bookings?date=${dateStrISO}`)
+              .then(res => res.json())
+              .then(bookings => {
+                const slotButtons = document.querySelectorAll('.slots button');
+                slotButtons.forEach(btn => {
+                  btn.disabled = bookings.some(b => b.time_slot === btn.textContent);
+                  btn.style.opacity = btn.disabled ? 0.5 : 1;
+                });
+                
+                // Restore the selection if the same time slot exists and is not disabled
+                if (currentSelectedText) {
+                  const newSlotButtons = document.querySelectorAll('.slots button');
+                  newSlotButtons.forEach(btn => {
+                    if (btn.textContent === currentSelectedText && !btn.disabled) {
+                      btn.classList.add('selected');
+                      selectedTimeSlot = currentSelectedText;
+                    }
+                  });
+                }
+              });
+          }
         }
         
         // Update booking summary if it exists and user has made selections
@@ -242,8 +267,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const confirmDuration = document.getElementById('confirmDuration');
         
         if (bookingSummary && confirmDuration && selectedDateLabel.textContent && selectedTimeSlot) {
-          bookingSummary.style.display = 'block';
-          confirmDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
+          bookingSummary.classList.remove('empty');
+          const bookingSummaryContent = document.getElementById('bookingSummaryContent');
+          if (bookingSummaryContent) {
+            bookingSummaryContent.innerHTML = `
+              <strong>Date:</strong> <span id="confirmDate">${selectedDateLabel.textContent}</span><br>
+              <strong>Time Slot:</strong> <span id="confirmTimeSlot">${selectedTimeSlot}</span><br>
+              <strong>Duration:</strong> <span id="confirmDuration">${durationSelect.options[durationSelect.selectedIndex].text}</span>
+            `;
+          }
         }
         
         // If booking form is visible (user clicked Next), revert back to Next button
