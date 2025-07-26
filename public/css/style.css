@@ -839,8 +839,7 @@ body, html {
   justify-content: center;
   padding: 120px 40px 40px;
   background-color: #fff9e5;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 .feedback-container {
@@ -850,8 +849,6 @@ body, html {
   gap: 40px;
   padding: 20px 40px;
   background: transparent;
-  height: calc(100vh - 130px);
-  overflow: hidden;
 }
 
 .feedback-list, .feedback-form {
@@ -932,11 +929,6 @@ a {
 
 html {
   overflow-y: auto;
-}
-
-html, body {
-  overflow: hidden;
-  height: 100%;
 }
 
 
