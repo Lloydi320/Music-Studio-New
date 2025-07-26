@@ -140,6 +140,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
+      console.log('Next button clicked!');
+      
       // Get selected date, time slot, and duration
       const selectedDate = document.getElementById('selectedDateLabel').textContent;
       const selectedSlotBtn = document.querySelector('.slots button.selected, .slots button[style*="background: #FFD700"]');
@@ -152,6 +154,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const enabledBtn = document.querySelector('.slots button:not([disabled])');
         if (enabledBtn) selectedTimeSlot = enabledBtn.textContent;
       }
+      
+      console.log('Selected date:', selectedDate);
+      console.log('Selected time slot:', selectedTimeSlot);
+      console.log('Duration select element:', durationSelect);
+      
       if (!selectedDate || !selectedTimeSlot) {
         alert('Please select a date and time slot.');
         return;
@@ -165,12 +172,18 @@ document.addEventListener("DOMContentLoaded", function () {
       const year = dateParts[3];
       const dateISO = `${year}-${month}-${day}`;
       
+      console.log('Date ISO:', dateISO);
+      
       // Show booking summary in the booking form (right column)
       const bookingSummary = document.getElementById('bookingSummary');
+      console.log('Booking summary element:', bookingSummary);
+      console.log('Current display style:', bookingSummary ? bookingSummary.style.display : 'element not found');
+      
       if (bookingSummary) {
         bookingSummary.style.display = 'block';
         bookingSummary.classList.add('show');
         console.log('Booking summary should now be visible in the form');
+        console.log('New display style:', bookingSummary.style.display);
       } else {
         console.error('Booking summary element not found');
       }
@@ -186,8 +199,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // Hide Next button and show Confirm Booking button
       nextBtn.style.display = 'none';
       const bookingForm = document.getElementById('bookingForm');
+      console.log('Booking form element:', bookingForm);
       if (bookingForm) {
         bookingForm.style.display = 'block';
+        console.log('Booking form display set to:', bookingForm.style.display);
       }
     });
   }
