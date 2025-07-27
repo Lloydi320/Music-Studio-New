@@ -20,7 +20,7 @@ class AuthController extends Controller
                 ->redirect();
         } catch (\Exception $e) {
             \Log::error('Google OAuth redirect error: ' . $e->getMessage());
-            return redirect('/')->with('error', 'Google OAuth is not properly configured. Please contact administrator.');
+            return redirect('/')->with('error', 'Google OAuth is not configured properly.');
         }
     }
 

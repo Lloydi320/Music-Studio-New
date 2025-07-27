@@ -13,13 +13,15 @@ class FeedbackController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'content' => 'required|string',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Allow image uploads up to 2MB
             'name' => 'required|string',
             'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string',
+            'comment' => 'required|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Allow image uploads up to 2MB
         ]);
 
+        // Map comment to content for database storage
+        $validated['content'] = $validated['comment'];
+        
         // Set user_id to null if user is not authenticated
         $validated['user_id'] = Auth::check() ? Auth::id() : null;
 
