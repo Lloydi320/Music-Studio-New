@@ -108,11 +108,11 @@ document.addEventListener("DOMContentLoaded", function () {
   function renderMonthDropdown(year, month) {
     monthDropdown.innerHTML = "";
     for (let m = 0; m < 12; m++) {
-    const option = document.createElement("option");
-    option.value = m;
+      const option = document.createElement("option");
+      option.value = m;
       option.textContent = `${monthNames[m]} ${year}`;
       if (m === month) option.selected = true;
-    monthDropdown.appendChild(option);
+      monthDropdown.appendChild(option);
     }
   }
 
@@ -124,191 +124,63 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Simple function to check if two time slots overlap
-  function timeSlotsOverlap(slot1, slot2) {
-    const parseTime = (timeStr) => {
-      const [time, period] = timeStr.split(' ');
-      let [hours, minutes] = time.split(':').map(Number);
-      if (period === 'PM' && hours !== 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
-      return hours * 60 + minutes;
-    };
-    
-    const [start1, end1] = slot1.split(' - ');
-    const [start2, end2] = slot2.split(' - ');
-    
-    const start1Minutes = parseTime(start1);
-    const end1Minutes = parseTime(end1);
-    const start2Minutes = parseTime(start2);
-    const end2Minutes = parseTime(end2);
-    
-    return start1Minutes < end2Minutes && end1Minutes > start2Minutes;
-  }
-
-  // Generate time slots based on selected duration
-  function generateTimeSlots(duration) {
-    const slotsContainer = document.querySelector('.slots');
+  function generateTimeSlots(durationHours) {
     if (!slotsContainer) return;
     
-    slotsContainer.innerHTML = '';
-    
-    const startTime = 8; // 8 AM
-    const endTime = 22; // 10 PM
-    const slotDuration = duration;
-    
-    for (let hour = startTime; hour <= endTime - slotDuration; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const startHour = hour + Math.floor(minute / 60);
-        const startMinute = minute % 60;
-        
-        const endHour = startHour + slotDuration;
-        const endMinute = startMinute;
-        
-        if (endHour <= endTime) {
-          const startTimeStr = formatTime(startHour, startMinute);
-          const endTimeStr = formatTime(endHour, endMinute);
-          const timeSlot = `${startTimeStr} - ${endTimeStr}`;
-          
-          const button = document.createElement('button');
-          button.textContent = timeSlot;
-          button.type = 'button';
-          
-          button.addEventListener('click', function() {
-            // Remove selected class from all buttons
-            document.querySelectorAll('.slots button').forEach(btn => {
-              btn.classList.remove('selected');
-            });
-            
-            // Add selected class to clicked button
-            this.classList.add('selected');
-            selectedTimeSlot = this.textContent;
-            
-            // Update booking summary content
-            if (selectedDate && selectedTimeSlot) {
-              const dateParts = selectedDate.split(' ');
-              const day = dateParts[0];
-              const month = dateParts[1];
-              const year = dateParts[3];
-              const dateISO = `${year}-${month}-${day}`;
-              
-              const bookingSummaryContent = document.getElementById('bookingSummaryContent');
-              if (bookingSummaryContent) {
-                bookingSummaryContent.innerHTML = `
-                  <div><strong>Date:</strong> ${selectedDate}</div>
-                  <div><strong>Time:</strong> ${selectedTimeSlot}</div>
-                  <div><strong>Duration:</strong> ${durationSelect.value}</div>
-                `;
-              }
-              
-              const bookingSummary = document.getElementById('bookingSummary');
-              if (bookingSummary) {
-                bookingSummary.style.display = 'block';
-              }
-            }
-            
-            // Revert to "Next" button if booking form was visible
-            const bookingForm = document.getElementById('bookingForm');
-            if (bookingForm && bookingForm.style.display === 'block') {
-              bookingForm.style.display = 'none';
-              const nextBtn = document.querySelector('.next-btn');
-              if (nextBtn) {
-                nextBtn.style.display = 'block';
-              }
-            }
-          });
-          
-          slotsContainer.appendChild(button);
-        }
-      }
-    }
-  }
+    slotsContainer.innerHTML = "";
+    const openingHour = 8;
+    const closingHour = 20; // 8 PM
+    const durationMinutes = durationHours * 60;
 
-  // Format time to 12-hour format
-  function formatTime(hour, minute) {
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${period}`;
-  }
+    let start = new Date();
+    start.setHours(openingHour, 0, 0, 0);
 
-  // Initialize time slots on page load
-  if (durationSelect) {
-    generateTimeSlots(parseInt(durationSelect.value));
-  }
+    const latestStart = new Date();
+    latestStart.setHours(closingHour, 0, 0, 0);
+    latestStart.setMinutes(latestStart.getMinutes() - durationMinutes);
 
-  // Handle duration change
-  if (durationSelect) {
-    durationSelect.addEventListener('change', () => {
-      const currentSelectedText = selectedTimeSlot;
-      generateTimeSlots(parseInt(durationSelect.value));
+    while (start <= latestStart) {
+      const end = new Date(start.getTime() + durationMinutes * 60000);
+
+      const btn = document.createElement("button");
+      btn.textContent = `${formatTime(start)} - ${formatTime(end)}`;
       
-              // Check bookings for this date and disable booked slots
-        if (selectedDate) {
-          const dateParts = selectedDate.split(' ');
-          const day = dateParts[0];
-          const month = dateParts[1];
-          const year = dateParts[3];
-          const dateStrISO = `${year}-${month}-${day}`;
+      // Add click event for time slot selection (will be disabled for overlapping slots)
+      btn.addEventListener("click", function() {
+        // Only allow click if button is not disabled
+        if (!this.disabled) {
+          document.querySelectorAll(".slots button").forEach(b => b.classList.remove("selected"));
+          this.classList.add("selected");
+          selectedTimeSlot = this.textContent;
           
-          fetch(`/api/bookings?date=${dateStrISO}`)
-          .then(res => res.json())
-          .then(bookings => {
-            const slotButtons = document.querySelectorAll('.slots button');
-            slotButtons.forEach(btn => {
-              const btnTimeSlot = btn.textContent;
-              
-              // Check if this time slot overlaps with any existing booking
-              const isOverlapping = bookings.some(booking => timeSlotsOverlap(btnTimeSlot, booking.time_slot));
-              
-              btn.disabled = isOverlapping;
-              btn.style.opacity = btn.disabled ? 0.5 : 1;
-            });
-            
-            // Restore the selection if the same time slot exists and is not disabled
-            if (currentSelectedText) {
-              const newSlotButtons = document.querySelectorAll('.slots button');
-              newSlotButtons.forEach(btn => {
-                if (btn.textContent === currentSelectedText && !btn.disabled) {
-                  btn.classList.add('selected');
-                  selectedTimeSlot = currentSelectedText;
-                }
-              });
-            }
-          });
+          // Update booking summary if it exists and user has made selections
+          const bookingSummary = document.getElementById('bookingSummary');
+          const confirmTimeSlot = document.getElementById('confirmTimeSlot');
+          const confirmDuration = document.getElementById('confirmDuration');
+          
+          if (bookingSummary && confirmTimeSlot && selectedDateLabel.textContent) {
+            bookingSummary.style.display = 'block';
+            confirmTimeSlot.textContent = selectedTimeSlot;
+            confirmDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
           }
+          
+          // If booking form is visible (user clicked Next), revert back to Next button
+          const bookingForm = document.getElementById('bookingForm');
+          const nextBtn = document.querySelector('.next-btn');
+          if (bookingForm && bookingForm.style.display !== 'none') {
+            bookingForm.style.display = 'none';
+            if (nextBtn) {
+              nextBtn.style.display = 'block';
+            }
+          }
+        }
+      });
       
-      // Revert to "Next" button if booking form was visible
-      const bookingForm = document.getElementById('bookingForm');
-      if (bookingForm && bookingForm.style.display === 'block') {
-        bookingForm.style.display = 'none';
-        const nextBtn = document.querySelector('.next-btn');
-        if (nextBtn) {
-          nextBtn.style.display = 'block';
-        }
-      }
-      
-      // Update booking summary content
-      if (selectedDate && selectedTimeSlot) {
-        const dateParts = selectedDate.split(' ');
-        const day = dateParts[0];
-        const month = dateParts[1];
-        const year = dateParts[3];
-        const dateISO = `${year}-${month}-${day}`;
-        
-        const bookingSummaryContent = document.getElementById('bookingSummaryContent');
-        if (bookingSummaryContent) {
-          bookingSummaryContent.innerHTML = `
-            <div><strong>Date:</strong> ${selectedDate}</div>
-            <div><strong>Time:</strong> ${selectedTimeSlot}</div>
-            <div><strong>Duration:</strong> ${durationSelect.value}</div>
-          `;
-        }
-        
-        const bookingSummary = document.getElementById('bookingSummary');
-        if (bookingSummary) {
-          bookingSummary.style.display = 'block';
-        }
-      }
-    });
+      slotsContainer.appendChild(btn);
+
+      // increment by 1 hour (remove 30-minute intervals)
+      start.setHours(start.getHours() + 1);
+    }
   }
 
   function renderCalendar(year, month) {
@@ -425,19 +297,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Duration change handler
   if (durationSelect) {
-  durationSelect.addEventListener("change", () => {
-    selectedDuration = parseInt(durationSelect.value);
+    durationSelect.addEventListener("change", () => {
+      selectedDuration = parseInt(durationSelect.value);
       if (selectedDurationLabel) {
-    selectedDurationLabel.textContent = `${selectedDuration} hr${selectedDuration > 1 ? 's' : ''}`;
+        selectedDurationLabel.textContent = `${selectedDuration} hr${selectedDuration > 1 ? 's' : ''}`;
       }
-    
-    const selected = document.querySelector(".calendar-cell.selected");
-    if (selected) {
+      
+      const selected = document.querySelector(".calendar-cell.selected");
+      if (selected) {
         // Store the currently selected time slot
         const currentSelectedSlot = document.querySelector('.slots button.selected');
         const currentSelectedText = currentSelectedSlot ? currentSelectedSlot.textContent : '';
         
-      generateTimeSlots(selectedDuration);
+        generateTimeSlots(selectedDuration);
         
         // Get the selected date to check bookings
         const selectedDateText = document.getElementById('selectedDateLabel').textContent;
@@ -469,8 +341,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   });
                 }
               });
-            }
-          });
+          }
         }
         
         // Update booking summary if it exists and user has made selections
@@ -521,6 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
+      console.log('Next button clicked!');    
       
       // Get selected date, time slot, and duration
       const selectedDate = document.getElementById('selectedDateLabel').textContent;
@@ -533,6 +405,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const enabledBtn = document.querySelector('.slots button:not([disabled])');
         if (enabledBtn) selectedTimeSlot = enabledBtn.textContent;
       }
+      
+      console.log('Selected date:', selectedDate);
+      console.log('Selected time slot:', selectedTimeSlot);
+      console.log('Duration select element:', durationSelect);
       
       if (!selectedDate || !selectedTimeSlot) {
         alert('Please select a date and time slot.');
@@ -547,8 +423,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const year = dateParts[3];
       const dateISO = `${year}-${month}-${day}`;
       
+      console.log('Date ISO:', dateISO);
+      
       // Show booking summary in the booking form (right column)
+      const bookingSummary = document.getElementById('bookingSummary');
       const bookingSummaryContent = document.getElementById('bookingSummaryContent');
+      console.log('Booking summary element:', bookingSummary);
       
       if (bookingSummary && bookingSummaryContent) {
         // Populate the booking summary content
@@ -562,6 +442,7 @@ document.addEventListener("DOMContentLoaded", function () {
         bookingSummary.classList.remove('empty');
         bookingSummary.classList.remove('confirmed');
         
+        console.log('Booking summary should now be visible in the form');
       } else {
         console.error('Booking summary element not found');
       }
@@ -585,30 +466,40 @@ document.addEventListener("DOMContentLoaded", function () {
       // BUT keep the date highlight and selected date text visible
       nextBtn.style.display = 'none';
       const bookingForm = document.getElementById('bookingForm');
+      console.log('Booking form element:', bookingForm);
       if (bookingForm) {
         bookingForm.style.display = 'block';
+        console.log('Booking form display set to:', bookingForm.style.display);
       }
       
       // Ensure the selected date stays highlighted and text remains visible
       // The date highlight and text should NOT be affected by clicking Next
       const selectedCell = document.querySelector('.calendar-cell.selected');
+      console.log('Selected cell after Next click:', selectedCell);
+      console.log('Selected cell classes:', selectedCell ? selectedCell.className : 'no cell found');
+      console.log('Selected date label text:', document.getElementById('selectedDateLabel').textContent);
       
       // Force the date to stay highlighted if it exists
       if (selectedCell && !selectedCell.classList.contains('selected')) {
         selectedCell.classList.add('selected');
+        console.log('Re-added selected class to date cell');
       }
       
       // Ensure the selected date text stays visible
       const selectedDateLabel = document.getElementById('selectedDateLabel');
       if (selectedDateLabel && selectedDateLabel.textContent) {
+        console.log('Selected date label is visible with text:', selectedDateLabel.textContent);
+        console.log('Selected date label display style:', selectedDateLabel.style.display);
+        console.log('Selected date label visibility:', selectedDateLabel.style.visibility);
         
         // Force the text to stay visible
         selectedDateLabel.style.display = 'block';
         selectedDateLabel.style.visibility = 'visible';
-    } else {
+        console.log('Forced selected date label to stay visible');
+      } else {
         console.log('Selected date label is missing or empty');
-    }
-  });
+      }
+    });
   }
 
   monthDropdown.addEventListener("change", function () {
@@ -682,18 +573,7 @@ document.addEventListener("DOMContentLoaded", function () {
           
           // Refresh the booking data immediately
           if (selectedDate) {
-            // Refresh booking data for selected date
-            const dateParts = selectedDate.split(' ');
-            const day = dateParts[0];
-            const month = dateParts[1];
-            const year = dateParts[3];
-            const dateStrISO = `${year}-${month}-${day}`;
-            
-            fetch(`/api/bookings?date=${dateStrISO}`)
-              .then(res => res.json())
-              .then(bookings => {
-                blockBookedSlots(bookings);
-              });
+            fetchBookings(selectedDate);
           }
           
           // Show success message
@@ -754,18 +634,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Only refresh if a date is selected
       if (selectedDate) {
-        // Refresh booking data for selected date
-        const dateParts = selectedDate.split(' ');
-        const day = dateParts[0];
-        const month = dateParts[1];
-        const year = dateParts[3];
-        const dateStrISO = `${year}-${month}-${day}`;
-        
-        fetch(`/api/bookings?date=${dateStrISO}`)
-          .then(res => res.json())
-          .then(bookings => {
-            blockBookedSlots(bookings);
-          });
+        fetchBookings(selectedDate);
       }
     }, 10000); // 10 seconds
   }
@@ -789,5 +658,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
   
-
+  // Also refresh immediately after a successful booking submission
+  const originalFetchBookings = fetchBookings;
+  fetchBookings = function(date) {
+    originalFetchBookings.call(this, date);
+    
+    // After fetching, restart the auto-refresh timer
+    setTimeout(() => {
+      if (!autoRefreshInterval) {
+        startAutoRefresh();
+      }
+    }, 1000);
+  };
 });
