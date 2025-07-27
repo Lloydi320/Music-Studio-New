@@ -71,10 +71,32 @@ class BookingController extends Controller
         $request->validate([
             'date' => 'required|date',
         ]);
+        
         $bookings = Booking::where('date', $request->date)
             ->where('status', '!=', 'cancelled')
             ->get(['time_slot', 'user_id', 'duration']);
-        return response()->json($bookings);
+        
+        // Calculate the actual occupied time ranges for each booking
+        $occupiedRanges = [];
+        foreach ($bookings as $booking) {
+            // Extract start time from the stored time slot
+            $startTime = trim(explode('-', $booking->time_slot)[0]);
+            
+            // Calculate the actual end time based on duration
+            $startDateTime = Carbon::createFromFormat('h:i A', $startTime);
+            $endDateTime = $startDateTime->copy()->addHours($booking->duration);
+            
+            // Format the actual occupied time range
+            $actualTimeSlot = $startDateTime->format('h:i A') . ' - ' . $endDateTime->format('h:i A');
+            
+            $occupiedRanges[] = [
+                'time_slot' => $actualTimeSlot,
+                'user_id' => $booking->user_id,
+                'duration' => $booking->duration
+            ];
+        }
+        
+        return response()->json($occupiedRanges);
     }
 
     // New API methods to match your PHP scripts
