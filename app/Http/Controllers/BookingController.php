@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class BookingController extends Controller
@@ -19,34 +20,27 @@ class BookingController extends Controller
 
         // Parse the time slot to get start and end times
         $timeSlot = $request->time_slot;
-        $duration = $request->duration;
+        $duration = (int) $request->duration; // Ensure duration is an integer
         
-        // Extract start time from time slot (e.g., "10:00 AM - 02:00 PM" -> "10:00 AM")
+        // Extract start time from the time slot (e.g., "09:00 AM - 01:00 PM" -> "09:00 AM")
         $startTime = trim(explode('-', $timeSlot)[0]);
         
-        // Calculate end time based on duration
-        $startDateTime = Carbon::createFromFormat('h:i A', $startTime);
-        $endDateTime = $startDateTime->copy()->addHours($duration);
+        // Calculate the new booking's start and end times
+        $newStartTime = Carbon::createFromFormat('h:i A', $startTime);
+        $newEndTime = $newStartTime->copy()->addHours($duration);
         
-        // Format times for comparison
-        $newStartTime = $startDateTime->format('H:i');
-        $newEndTime = $endDateTime->format('H:i');
-
         // Check for overlapping bookings on the same date
         $overlappingBookings = Booking::where('date', $request->date)
             ->where('status', '!=', 'cancelled')
             ->get();
-
+        
         foreach ($overlappingBookings as $existingBooking) {
-            $existingTimeSlot = $existingBooking->time_slot;
-            $existingStartTime = trim(explode('-', $existingTimeSlot)[0]);
-            $existingStartDateTime = Carbon::createFromFormat('h:i A', $existingStartTime);
-            $existingEndDateTime = $existingStartDateTime->copy()->addHours($existingBooking->duration);
+            // Parse existing booking's time slot
+            $existingStartTime = trim(explode('-', $existingBooking->time_slot)[0]);
+            $existingStart = Carbon::createFromFormat('h:i A', $existingStartTime);
+            $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
             
-            $existingStart = $existingStartDateTime->format('H:i');
-            $existingEnd = $existingEndDateTime->format('H:i');
-
-            // Check if the new booking overlaps with existing booking
+            // Check for overlap
             if (
                 ($newStartTime < $existingEnd && $newEndTime > $existingStart) ||
                 ($existingStart < $newEndTime && $existingEnd > $newStartTime)
@@ -59,8 +53,18 @@ class BookingController extends Controller
             'user_id' => Auth::id(),
             'date' => $request->date,
             'time_slot' => $request->time_slot,
-            'duration' => $request->duration,
-            'status' => 'pending',
+            'duration' => $duration, // Use the already cast integer
+            'status' => 'confirmed',
+        ]);
+
+        // Log the booking creation for debugging
+        Log::info('Booking created successfully', [
+            'id' => $booking->id,
+            'reference' => $booking->reference,
+            'date' => $booking->date,
+            'time_slot' => $booking->time_slot,
+            'duration' => $booking->duration,
+            'user_id' => $booking->user_id
         ]);
 
         return redirect('/booking')->with('success', 'Your booking has been confirmed! Reference: ' . $booking->reference);
@@ -111,39 +115,32 @@ class BookingController extends Controller
         
         // Parse the time slot to get start and end times
         $timeSlot = $request->time_slot;
-        $duration = $request->duration;
+        $duration = (int) $request->duration; // Ensure duration is an integer
         
-        // Extract start time from time slot
+        // Extract start time from the time slot (e.g., "09:00 AM - 01:00 PM" -> "09:00 AM")
         $startTime = trim(explode('-', $timeSlot)[0]);
         
-        // Calculate end time based on duration
-        $startDateTime = Carbon::createFromFormat('h:i A', $startTime);
-        $endDateTime = $startDateTime->copy()->addHours($duration);
+        // Calculate the new booking's start and end times
+        $newStartTime = Carbon::createFromFormat('h:i A', $startTime);
+        $newEndTime = $newStartTime->copy()->addHours($duration);
         
-        // Format times for comparison
-        $newStartTime = $startDateTime->format('H:i');
-        $newEndTime = $endDateTime->format('H:i');
-
         // Check for overlapping bookings on the same date
         $overlappingBookings = Booking::where('date', $request->date)
             ->where('status', '!=', 'cancelled')
             ->get();
-
+        
         foreach ($overlappingBookings as $existingBooking) {
-            $existingTimeSlot = $existingBooking->time_slot;
-            $existingStartTime = trim(explode('-', $existingTimeSlot)[0]);
-            $existingStartDateTime = Carbon::createFromFormat('h:i A', $existingStartTime);
-            $existingEndDateTime = $existingStartDateTime->copy()->addHours($existingBooking->duration);
+            // Parse existing booking's time slot
+            $existingStartTime = trim(explode('-', $existingBooking->time_slot)[0]);
+            $existingStart = Carbon::createFromFormat('h:i A', $existingStartTime);
+            $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
             
-            $existingStart = $existingStartDateTime->format('H:i');
-            $existingEnd = $existingEndDateTime->format('H:i');
-
-            // Check if the new booking overlaps with existing booking
+            // Check for overlap
             if (
                 ($newStartTime < $existingEnd && $newEndTime > $existingStart) ||
                 ($existingStart < $newEndTime && $existingEnd > $newStartTime)
             ) {
-                return response()->json(['available' => false, 'reason' => 'Time slot overlaps with existing booking']);
+                return response()->json(['available' => false, 'reason' => 'This time slot overlaps with an existing booking']);
             }
         }
         

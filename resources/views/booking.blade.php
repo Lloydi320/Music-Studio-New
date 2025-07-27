@@ -98,6 +98,19 @@
               <strong>Your booking has been confirmed!</strong>
             </div>
           </div>
+          
+          <!-- Success and Error Messages -->
+          @if(session('success'))
+            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb;">
+              {{ session('success') }}
+            </div>
+          @endif
+          
+          @if(session('error'))
+            <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #f5c6cb;">
+              {{ session('error') }}
+            </div>
+          @endif
         </div>
       </div>
     </div>
@@ -107,6 +120,6 @@
 
 <!-- Removed the form from the bottom. It will only show in the modal after clicking Next. -->
 
-<script src="{{ asset('js/booking.js') }}"></script>
+<script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
 </body>
 </html>

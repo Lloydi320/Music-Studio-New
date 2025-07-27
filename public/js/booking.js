@@ -19,6 +19,91 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
   const weekdayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  function convertTo24H(timeStr) {
+    const [time, modifier] = timeStr.trim().split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    if (modifier === 'PM' && hours !== 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+  }
+
+  function blockBookedSlots(bookings) {
+    console.log('=== blockBookedSlots called ===');
+    console.log('Bookings from database:', bookings);
+    console.log('Number of bookings:', bookings.length);
+    
+    const slotButtons = document.querySelectorAll('.slots button');
+    console.log('Found slot buttons:', slotButtons.length);
+    console.log('Slot button texts:', Array.from(slotButtons).map(btn => btn.textContent));
+    
+    // First, make ALL slots available by default
+    slotButtons.forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = 1;
+      btn.style.backgroundColor = '';
+      btn.style.color = '';
+      btn.style.cursor = '';
+      btn.title = '';
+    });
+    
+    // Then, only block the specific slots that are actually booked
+    slotButtons.forEach(btn => {
+      // Extract start and end times from button (e.g., "10:00 AM - 01:00 PM")
+      const [btnStartStr, btnEndStr] = btn.textContent.split(" - ");
+      const btnStart = new Date(`1970-01-01T${convertTo24H(btnStartStr)}`);
+      const btnEnd = new Date(`1970-01-01T${convertTo24H(btnEndStr)}`);
+      
+      // Check if this time slot overlaps with any booking in the database
+      const overlaps = bookings.some(b => {
+        // Extract start time from booking (e.g., "10:00 AM - 01:00 PM" -> "10:00 AM")
+        const [bookedStartStr, bookedEndStr] = b.time_slot.split(" - ");
+        const bookedStart = new Date(`1970-01-01T${convertTo24H(bookedStartStr)}`);
+        
+        // Calculate the actual end time based on duration from database
+        const bookedEnd = new Date(bookedStart.getTime() + (b.duration * 60 * 60 * 1000));
+        
+        console.log(`Checking overlap: Button ${btn.textContent} (${btnStart.toTimeString()} - ${btnEnd.toTimeString()}) vs Booking ${b.time_slot} (${bookedStart.toTimeString()} - ${bookedEnd.toTimeString()}) [${b.duration}hrs]`);
+        
+        // Block time slots that would overlap with existing bookings
+        // Check if the button's time range would overlap with the booked time range
+        const hasOverlap = (btnStart < bookedEnd && btnEnd > bookedStart);
+        
+        // Calculate overlap duration for logging
+        const overlapStart = Math.max(btnStart.getTime(), bookedStart.getTime());
+        const overlapEnd = Math.min(btnEnd.getTime(), bookedEnd.getTime());
+        const overlapDuration = overlapEnd - overlapStart;
+        
+        // Block if there's any overlap (even 1 minute)
+        const shouldBlock = hasOverlap;
+        
+        if (shouldBlock) {
+          console.log(`OVERLAP FOUND: ${btn.textContent} overlaps with ${b.time_slot} (${b.duration}hrs) - Overlap: ${Math.round(overlapDuration / (60 * 1000))} minutes`);
+        }
+        
+        return shouldBlock;
+      });
+
+      // Only block if this specific slot overlaps with an existing booking
+      const shouldBlock = overlaps;
+      
+      if (shouldBlock) {
+        console.log(`❌ BLOCKING slot: ${btn.textContent} - overlaps with booking`);
+        btn.disabled = true;
+        btn.style.opacity = 0.5;
+        btn.style.backgroundColor = '#f5f5f5';
+        btn.style.color = '#999';
+        btn.style.cursor = 'not-allowed';
+        btn.title = 'This time slot overlaps with an existing booking - Not available';
+        // Remove any existing selection
+        btn.classList.remove('selected');
+      } else {
+        console.log(`✅ KEEPING slot: ${btn.textContent} - available`);
+      }
+    });
+  }
+
+
+
   // Add year and month navigation
   function renderMonthDropdown(year, month) {
     monthDropdown.innerHTML = "";
@@ -269,35 +354,26 @@ document.addEventListener("DOMContentLoaded", function () {
             // Generate time slots when date is selected
             generateTimeSlots(selectedDuration);
 
-            const bookingInfoBox = document.querySelector('.booking-info-box');
-            const slotButtons = document.querySelectorAll('.slots button');
-
             // Parse selected date to YYYY-MM-DD
             const pad = n => n.toString().padStart(2, '0');
             const dateStrISO = `${selectedYear}-${pad(selectedMonth+1)}-${pad(day)}`;
 
+            // Fetch bookings and block overlapping slots
             fetch(`/api/bookings?date=${dateStrISO}`)
               .then(res => res.json())
               .then(bookings => {
-                console.log('API Response - Date:', dateStrISO);
-                console.log('API Response - Bookings:', bookings);
+                // Show booking info
+                const bookingInfoBox = document.querySelector('.booking-info-box');
+                let info = '';
+                if (bookings.length === 0) {
+                  info = 'No bookings for this date.';
+                } else {
+                  info = 'Booked slots:<br>' + bookings.map(b => b.time_slot).join('<br>');
+                }
+                if (bookingInfoBox) bookingInfoBox.innerHTML = `<strong>Booking Info</strong><br>${info}`;
                 
-                const slotButtons = document.querySelectorAll('.slots button');
-                slotButtons.forEach(btn => {
-                  const btnTimeSlot = btn.textContent;
-                  console.log('Checking time slot:', btnTimeSlot);
-                  
-                  // Check if this time slot overlaps with any existing booking
-                  const isOverlapping = bookings.some(booking => {
-                    const overlaps = timeSlotsOverlap(btnTimeSlot, booking.time_slot);
-                    console.log(`Comparing ${btnTimeSlot} with ${booking.time_slot}: ${overlaps}`);
-                    return overlaps;
-                  });
-                  
-                  console.log(`Time slot ${btnTimeSlot} is overlapping: ${isOverlapping}`);
-                  btn.disabled = isOverlapping;
-                  btn.style.opacity = btn.disabled ? 0.5 : 1;
-                });
+                // Block overlapping slots after they are generated
+                blockBookedSlots(bookings);
               });
               
             // Update booking summary if it exists and user has made selections
@@ -375,33 +451,26 @@ document.addEventListener("DOMContentLoaded", function () {
             const year = dateParts[3];
             const dateStrISO = `${year}-${month}-${day}`;
             
-            // Check bookings for this date and disable booked slots
-                    fetch(`/api/bookings?date=${dateStrISO}`)
-          .then(res => res.json())
-          .then(bookings => {
-            const slotButtons = document.querySelectorAll('.slots button');
-            slotButtons.forEach(btn => {
-              const btnTimeSlot = btn.textContent;
-              
-              // Check if this time slot overlaps with any existing booking
-              const isOverlapping = bookings.some(booking => timeSlotsOverlap(btnTimeSlot, booking.time_slot));
-              
-              btn.disabled = isOverlapping;
-              btn.style.opacity = btn.disabled ? 0.5 : 1;
-            });
-            
-            // Restore the selection if the same time slot exists and is not disabled
-            if (currentSelectedText) {
-              const newSlotButtons = document.querySelectorAll('.slots button');
-              newSlotButtons.forEach(btn => {
-                if (btn.textContent === currentSelectedText && !btn.disabled) {
-                  btn.classList.add('selected');
-                  selectedTimeSlot = currentSelectedText;
+            // Check bookings for this date and disable overlapping slots
+            fetch(`/api/bookings?date=${dateStrISO}`)
+              .then(res => res.json())
+              .then(bookings => {
+                // Block overlapping slots
+                blockBookedSlots(bookings);
+                
+                // Restore the selection if the same time slot exists and is not disabled
+                if (currentSelectedText) {
+                  const newSlotButtons = document.querySelectorAll('.slots button');
+                  newSlotButtons.forEach(btn => {
+                    if (btn.textContent === currentSelectedText && !btn.disabled) {
+                      btn.classList.add('selected');
+                      selectedTimeSlot = currentSelectedText;
+                    }
+                  });
                 }
               });
             }
           });
-          }
         }
         
         // Update booking summary if it exists and user has made selections
@@ -479,7 +548,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const dateISO = `${year}-${month}-${day}`;
       
       // Show booking summary in the booking form (right column)
-      const bookingSummary = document.getElementById('bookingSummary');
       const bookingSummaryContent = document.getElementById('bookingSummaryContent');
       
       if (bookingSummary && bookingSummaryContent) {
@@ -505,6 +573,13 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('confirmDate').textContent = selectedDate;
       document.getElementById('confirmTimeSlot').textContent = selectedTimeSlot;
       document.getElementById('confirmDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;
+      
+      // Log the form data being sent to backend
+      console.log('Form data being sent to backend:');
+      console.log('- Date:', dateISO);
+      console.log('- Time Slot:', selectedTimeSlot);
+      console.log('- Duration:', durationSelect.value);
+      console.log('- CSRF Token:', document.querySelector('input[name="_token"]').value);
       
       // Hide Next button and show Confirm Booking button
       // BUT keep the date highlight and selected date text visible
@@ -545,6 +620,10 @@ document.addEventListener("DOMContentLoaded", function () {
   renderMonthDropdown(selectedYear, selectedMonth);
   renderCalendar(selectedYear, selectedMonth);
   
+
+  
+
+
   // Handle form submission
   const bookingForm = document.getElementById('bookingForm');
   if (bookingForm) {
@@ -573,6 +652,14 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Submit the form data via AJAX to avoid page reload
       const formData = new FormData(bookingForm);
+      
+      // Debug: Log form data
+      console.log('Submitting booking form...');
+      console.log('Form action:', bookingForm.action);
+      console.log('Date:', formData.get('date'));
+      console.log('Time slot:', formData.get('time_slot'));
+      console.log('Duration:', formData.get('duration'));
+      
       fetch(bookingForm.action, {
         method: 'POST',
         body: formData,
@@ -580,12 +667,64 @@ document.addEventListener("DOMContentLoaded", function () {
           'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
         }
       })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Booking submitted successfully:', data);
+      .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response redirected:', response.redirected);
+        console.log('Response ok:', response.ok);
+        
+        if (response.redirected) {
+          // If there's a redirect, follow it
+          console.log('Following redirect to:', response.url);
+          window.location.href = response.url;
+        } else if (response.ok) {
+          // If successful, refresh the booking data and show success message
+          console.log('Booking submitted successfully, refreshing data...');
+          
+          // Refresh the booking data immediately
+          if (selectedDate) {
+            // Refresh booking data for selected date
+            const dateParts = selectedDate.split(' ');
+            const day = dateParts[0];
+            const month = dateParts[1];
+            const year = dateParts[3];
+            const dateStrISO = `${year}-${month}-${day}`;
+            
+            fetch(`/api/bookings?date=${dateStrISO}`)
+              .then(res => res.json())
+              .then(bookings => {
+                blockBookedSlots(bookings);
+              });
+          }
+          
+          // Show success message
+          alert('Booking created successfully! The time slot is now blocked for other users.');
+        } else {
+          // If there's an error, handle it
+          return response.text().then(text => {
+            console.error('Booking submission error:', text);
+            
+            // Try to extract error message from response
+            let errorMessage = 'There was an error creating your booking. Please try again.';
+            try {
+              // Check if response contains validation errors
+              if (text.includes('validation')) {
+                errorMessage = 'Please check your booking details and try again.';
+              } else if (text.includes('overlaps')) {
+                errorMessage = 'This time slot overlaps with an existing booking. Please choose a different time.';
+              } else if (text.includes('unauthenticated')) {
+                errorMessage = 'Please log in to make a booking.';
+              }
+            } catch (e) {
+              console.log('Could not parse error response');
+            }
+            
+            alert(errorMessage);
+          });
+        }
       })
       .catch(error => {
         console.error('Error submitting booking:', error);
+        alert('There was an error creating your booking. Please try again.');
       });
     });
   }
@@ -599,4 +738,56 @@ document.addEventListener("DOMContentLoaded", function () {
       bookingSummaryContent.innerHTML = 'Select a date and time to see booking details';
     }
   }
+  
+  // Auto-refresh functionality to update UI when bookings change
+  let autoRefreshInterval;
+  
+  function startAutoRefresh() {
+    // Clear any existing interval
+    if (autoRefreshInterval) {
+      clearInterval(autoRefreshInterval);
+    }
+    
+    // Refresh every 10 seconds
+    autoRefreshInterval = setInterval(() => {
+      console.log('Auto-refreshing booking data...');
+      
+      // Only refresh if a date is selected
+      if (selectedDate) {
+        // Refresh booking data for selected date
+        const dateParts = selectedDate.split(' ');
+        const day = dateParts[0];
+        const month = dateParts[1];
+        const year = dateParts[3];
+        const dateStrISO = `${year}-${month}-${day}`;
+        
+        fetch(`/api/bookings?date=${dateStrISO}`)
+          .then(res => res.json())
+          .then(bookings => {
+            blockBookedSlots(bookings);
+          });
+      }
+    }, 10000); // 10 seconds
+  }
+  
+  function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+      clearInterval(autoRefreshInterval);
+      autoRefreshInterval = null;
+    }
+  }
+  
+  // Start auto-refresh when page loads
+  startAutoRefresh();
+  
+  // Stop auto-refresh when page is hidden (to save resources)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopAutoRefresh();
+    } else {
+      startAutoRefresh();
+    }
+  });
+  
+
 });
