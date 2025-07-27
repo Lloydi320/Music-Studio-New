@@ -35,21 +35,58 @@ class AuthController extends Controller
                 return redirect('/')->with('error', 'Google login failed. No user information received.');
             }
 
+            // Check if this is a new user
+            $existingUser = User::where('email', $googleUser->email)->first();
+            $isNewUser = !$existingUser;
+
+            // Create or update user - allows ANY Gmail user to register
             $user = User::updateOrCreate([
                 'email' => $googleUser->email,
             ], [
                 'name' => $googleUser->name ?? 'Google User',
                 'google_id' => $googleUser->id,
                 'password' => bcrypt(uniqid()),
+                'email_verified_at' => now(), // Mark email as verified since it's from Google
             ]);
+
+            // Log the login/registration
+            if ($isNewUser) {
+                Log::info('New user registered via Google OAuth', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'google_id' => $googleUser->id
+                ]);
+            } else {
+                Log::info('Existing user logged in via Google OAuth', [
+                    'user_id' => $user->id,
+                    'email' => $user->email
+                ]);
+            }
 
             Auth::login($user);
           
+            // Store Google avatar and additional info in session
             if ($googleUser->avatar) {
                 session(['google_user_avatar' => $googleUser->avatar]);
             }
             
-            return redirect('/')->with('success', 'Successfully logged in with Google!');
+            // Store additional Google user info if available
+            session([
+                'google_user_info' => [
+                    'id' => $googleUser->id,
+                    'email' => $googleUser->email,
+                    'name' => $googleUser->name,
+                    'avatar' => $googleUser->avatar,
+                    'login_time' => now()->toDateTimeString()
+                ]
+            ]);
+            
+            $welcomeMessage = $isNewUser 
+                ? 'Welcome to Lemon Hub Studio! Your account has been created successfully.' 
+                : 'Welcome back to Lemon Hub Studio!';
+            
+            return redirect('/')->with('success', $welcomeMessage);
             
         } catch (\Exception $e) {
             Log::error('Google OAuth callback error: ' . $e->getMessage());
