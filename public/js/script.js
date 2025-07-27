@@ -137,43 +137,149 @@ document.addEventListener("DOMContentLoaded", () => {
   const feedbackForm = document.getElementById("feedbackForm");
   const feedbackEntries = document.getElementById("feedbackEntries");
 
-  feedbackForm.addEventListener("submit", (e) => {
+  feedbackForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const name = document.getElementById("name").value;
     const comment = document.getElementById("comment").value;
     const photo = document.getElementById("photo").files[0];
 
-    const feedbackCard = document.createElement("div");
-    feedbackCard.style.border = "1px solid #ddd";
-    feedbackCard.style.borderRadius = "8px";
-    feedbackCard.style.padding = "15px";
-    feedbackCard.style.marginBottom = "15px";
-    feedbackCard.style.background = "#fff";
-
-    feedbackCard.innerHTML = `
-      <h4>${name}</h4>
-      <p>Rating: ${'★'.repeat(selectedRating)}${'☆'.repeat(5 - selectedRating)}</p>
-      <p>${comment}</p>
-    `;
-
-    if (photo) {
-      const img = document.createElement("img");
-      img.src = URL.createObjectURL(photo);
-      img.style.width = "100%";
-      img.style.marginTop = "10px";
-      img.style.borderRadius = "6px";
-      feedbackCard.appendChild(img);
+    // Validate required fields
+    if (!name || !comment || selectedRating === 0) {
+      alert("Please fill in all required fields and select a rating.");
+      return;
     }
 
-    // Remove placeholder
-    const placeholder = feedbackEntries.querySelector(".placeholder");
-    if (placeholder) placeholder.remove();
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('rating', selectedRating);
+    formData.append('comment', comment);
+    formData.append('content', comment); // Backend expects 'content' field
+    if (photo) {
+      formData.append('photo', photo);
+    }
 
-    feedbackEntries.appendChild(feedbackCard);
-    feedbackForm.reset();
-    selectedRating = 0;
-    updateStars();
+    try {
+      // Send feedback to backend
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Create feedback card for display
+        const feedbackCard = document.createElement("div");
+        feedbackCard.style.border = "1px solid #ddd";
+        feedbackCard.style.borderRadius = "8px";
+        feedbackCard.style.padding = "15px";
+        feedbackCard.style.marginBottom = "15px";
+        feedbackCard.style.background = "#fff";
+
+        feedbackCard.innerHTML = `
+          <h4>${name}</h4>
+          <p>Rating: ${'★'.repeat(selectedRating)}${'☆'.repeat(5 - selectedRating)}</p>
+          <p>${comment}</p>
+          <small style="color: #666;">✅ Saved to database</small>
+        `;
+
+        if (photo) {
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(photo);
+          img.style.width = "100%";
+          img.style.maxWidth = "300px";
+          img.style.marginTop = "10px";
+          img.style.borderRadius = "8px";
+          img.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+          img.style.cursor = "pointer";
+          
+          // Add click to enlarge functionality
+          img.addEventListener('click', () => {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0,0,0,0.8);
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              z-index: 10000;
+              cursor: pointer;
+            `;
+            
+            const modalImg = document.createElement('img');
+            modalImg.src = img.src;
+            modalImg.style.cssText = `
+              max-width: 90%;
+              max-height: 90%;
+              border-radius: 8px;
+              box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            
+            modal.appendChild(modalImg);
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', () => {
+              document.body.removeChild(modal);
+            });
+          });
+          
+          feedbackCard.appendChild(img);
+        }
+
+        // Remove placeholder
+        const placeholder = feedbackEntries.querySelector(".placeholder");
+        if (placeholder) placeholder.remove();
+
+        // Add the new feedback to the display immediately
+        feedbackEntries.appendChild(feedbackCard);
+        feedbackForm.reset();
+        selectedRating = 0;
+        updateStars();
+        
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #28a745;
+          color: white;
+          padding: 15px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          z-index: 1000;
+          animation: slideIn 0.3s ease;
+        `;
+        successMessage.innerHTML = '✅ Feedback submitted successfully!';
+        document.body.appendChild(successMessage);
+        
+        // Remove success message after 3 seconds
+        setTimeout(() => {
+          successMessage.style.animation = 'slideOut 0.3s ease';
+          setTimeout(() => {
+            if (successMessage.parentNode) {
+              successMessage.parentNode.removeChild(successMessage);
+            }
+          }, 300);
+        }, 3000);
+      } else {
+        const errorData = await response.json();
+        alert("Error submitting feedback: " + (errorData.message || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      alert("Error submitting feedback. Please try again.");
+    }
   });
 });
 
