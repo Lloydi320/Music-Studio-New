@@ -23,7 +23,7 @@ Route::get('/booking', function () {
     return view('booking');
 })->name('booking');
 
-Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+Route::post('/booking', [BookingController::class, 'store'])->middleware('auth')->name('booking.store');
 
 
 
