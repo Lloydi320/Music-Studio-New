@@ -120,6 +120,14 @@
 
 <!-- Removed the form from the bottom. It will only show in the modal after clicking Next. -->
 
+<!-- Footer -->
+<footer class="booking-footer">
+  <div class="footer-content">
+    <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
+    <p>Professional Music Studio Services</p>
+  </div>
+</footer>
+
 <script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
 </body>
 </html>

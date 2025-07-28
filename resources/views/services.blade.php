@@ -20,7 +20,7 @@
     <nav>
       <ul class="nav-links">
         <li><a href="/">Home</a></li>
-        <li><a href="/services">About Us & Our Services</a></li>
+        <li><a href="/services" class="active">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="/feedback">Feedbacks</a></li>
       </ul>
@@ -137,6 +137,14 @@
 
 
  
+  <!-- Footer -->
+  <footer class="services-footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
+      <p>Professional Music Studio Services</p>
+    </div>
+  </footer>
+
   <script src="{{ asset('js/script.js') }}"></script>
   <script>
   // Check for hash on page load and scroll to it

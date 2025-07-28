@@ -19,7 +19,7 @@
     </div>
     <nav>
       <ul class="nav-links">
-        <li><a href="/">Home</a></li>
+        <li><a href="/" class="active">Home</a></li>
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="#" id="feedbackLink">Feedbacks</a></li>
