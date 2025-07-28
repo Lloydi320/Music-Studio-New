@@ -156,7 +156,8 @@ document.addEventListener("DOMContentLoaded", function () {
           slotAvailable = true;
         }
       }
-      start.setHours(start.getHours() + 1);
+      // Increment by 30 minutes instead of 1 hour
+      start.setMinutes(start.getMinutes() + 30);
     }
     if (!slotAvailable) {
       const note = document.createElement('div');
