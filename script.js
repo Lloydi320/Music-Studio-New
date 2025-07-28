@@ -15,8 +15,21 @@ const realDay = now.getDate();
 
 const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+let bookedDates = [];
+
+async function fetchBookedDates(year, month) {
+  try {
+    const res = await fetch(`/api/booked-dates?year=${year}&month=${month}`);
+    const data = await res.json();
+    bookedDates = data.booked_dates || [];
+  } catch (err) {
+    bookedDates = [];
+  }
+}
+
 if (calendarGrid && timeSlots && monthYear) {
-  function generateCalendar(year, month) {
+  async function generateCalendar(year, month) {
+    await fetchBookedDates(year, month);
     calendarGrid.innerHTML = "";
 
     dayNames.forEach(day => {
@@ -40,6 +53,11 @@ if (calendarGrid && timeSlots && monthYear) {
       const dateKey = `${year}-${monthString}-${d.toString().padStart(2, "0")}`;
       dateDiv.textContent = d;
 
+      if (bookedDates.includes(dateKey)) {
+        dateDiv.classList.add("booked");
+        dateDiv.title = "Booked";
+      }
+
       const isPastDate =
         year < realYear ||
         (year === realYear && month < realMonth) ||
@@ -48,10 +66,11 @@ if (calendarGrid && timeSlots && monthYear) {
       if (isPastDate) {
         dateDiv.classList.add("disabled");
       } else {
-        dateDiv.addEventListener("click", () => {
+        dateDiv.addEventListener("click", async () => {
           document.querySelectorAll(".calendar-grid div").forEach(el => el.classList.remove("selected"));
           dateDiv.classList.add("selected");
-          showTimeSlots(dateKey);
+          console.log('Clicked dateKey:', dateKey);
+          await showTimeSlots(dateKey);
         });
       }
 
@@ -61,14 +80,38 @@ if (calendarGrid && timeSlots && monthYear) {
     monthYear.textContent = `${new Date(year, month).toLocaleString("default", { month: "long" })} ${year}`;
   }
 
-  function showTimeSlots(dateKey) {
+  async function showTimeSlots(dateKey) {
     timeSlots.innerHTML = "";
     const heading = document.createElement("h4");
     heading.textContent = "Booking Info";
     timeSlots.appendChild(heading);
-    const message = document.createElement("p");
-    message.textContent = "No bookings for this date.";
-    timeSlots.appendChild(message);
+
+    try {
+      const res = await fetch(`/api/bookings-by-date?date=${dateKey}`);
+      const data = await res.json();
+      console.log('API response for', dateKey, ':', data);
+      if (data.bookings && data.bookings.length > 0) {
+        data.bookings.forEach(booking => {
+          const bookingDiv = document.createElement("div");
+          bookingDiv.className = "booking-detail";
+          bookingDiv.innerHTML = `
+            <strong>Time Slot:</strong> ${booking.time_slot}<br>
+            <strong>Status:</strong> ${booking.status}<br>
+            <strong>Reference:</strong> ${booking.reference}
+          `;
+          timeSlots.appendChild(bookingDiv);
+        });
+      } else {
+        const message = document.createElement("p");
+        message.textContent = "No bookings for this date.";
+        timeSlots.appendChild(message);
+      }
+    } catch (err) {
+      const message = document.createElement("p");
+      message.textContent = "Failed to load booking info.";
+      timeSlots.appendChild(message);
+      console.error('Error fetching booking info for', dateKey, ':', err);
+    }
   }
 
   document.getElementById("prevMonth").addEventListener("click", () => {

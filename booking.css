@@ -198,6 +198,14 @@ body {
   background-size: 16px;
 }
 
+.booked {
+  background-color: #ffd700 !important;
+  color: #222 !important;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
 
 
 .scrollable-time-slots {

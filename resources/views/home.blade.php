@@ -63,7 +63,7 @@
       <div class="calendar-container">
         <div id="calendar-header">
           <button id="prevMonth">&#9664;</button>
-          <span id="monthYear">April 2025</span>
+          <span id="monthYear"></span>
           <button id="nextMonth">&#9654;</button>
         </div>
         <div class="calendar-grid" id="calendarGrid"></div>

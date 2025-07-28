@@ -215,4 +215,23 @@ class BookingController extends Controller
         
         return response()->json(['status' => $booking->status]);
     }
+
+    /**
+     * Return all booked dates as an array of date strings (YYYY-MM-DD).
+     */
+    public function getBookedDates()
+    {
+        $dates = \App\Models\Booking::pluck('date')->unique()->values();
+        return response()->json(['booked_dates' => $dates]);
+    }
+
+    /**
+     * Return all bookings for a given date as JSON.
+     */
+    public function getBookingsByDate(Request $request)
+    {
+        $date = $request->query('date');
+        $bookings = \App\Models\Booking::where('date', $date)->get(['id', 'reference', 'user_id', 'date', 'time_slot', 'duration', 'status']);
+        return response()->json(['bookings' => $bookings]);
+    }
 } 

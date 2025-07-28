@@ -29,7 +29,8 @@ Route::get('/booking', function () {
 
 Route::post('/booking', [BookingController::class, 'store'])->middleware('auth')->name('booking.store');
 
-
+Route::get('/api/booked-dates', [App\Http\Controllers\BookingController::class, 'getBookedDates']);
+Route::get('/api/bookings-by-date', [App\Http\Controllers\BookingController::class, 'getBookingsByDate']);
 
 // Removed this route as it conflicts with API routes
 
