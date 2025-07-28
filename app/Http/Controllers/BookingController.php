@@ -7,9 +7,24 @@ use App\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Services\GoogleCalendarService;
 
 class BookingController extends Controller
 {
+    protected $calendarService;
+
+    public function __construct()
+    {
+        // Initialize calendar service only if Google Client is available
+        try {
+            if (class_exists('Google\Client')) {
+                $this->calendarService = app(GoogleCalendarService::class);
+            }
+        } catch (\Exception $e) {
+            $this->calendarService = null;
+        }
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -66,6 +81,19 @@ class BookingController extends Controller
             'duration' => $booking->duration,
             'user_id' => $booking->user_id
         ]);
+
+        // Create Google Calendar event for admin users (if service is available)
+        if ($this->calendarService) {
+            try {
+                $this->calendarService->createBookingEvent($booking);
+                Log::info('Google Calendar event created for booking', ['booking_id' => $booking->id]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to create Google Calendar event', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
 
         return redirect('/booking')->with('success', 'Your booking has been confirmed! Reference: ' . $booking->reference);
     }

@@ -19,7 +19,7 @@ class AuthController extends Controller
                 ->with(['prompt' => 'select_account'])
                 ->redirect();
         } catch (\Exception $e) {
-            \Log::error('Google OAuth redirect error: ' . $e->getMessage());
+            Log::error('Google OAuth redirect error: ' . $e->getMessage());
             return redirect('/')->with('error', 'Google OAuth is not configured properly.');
         }
     }

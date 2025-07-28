@@ -56,6 +56,9 @@
         <p>Bringing your music to life, one session at a time.</p>
         @if(Auth::check())
           <a href="/services#bottom-of-services" class="book-btn">Book Now!</a>
+          @if(Auth::user()->isAdmin())
+            <a href="/admin/dashboard" class="book-btn" style="background: #e74c3c; margin-left: 10px;">Admin Panel</a>
+          @endif
         @else
           <a href="/auth/google" class="book-btn">Login to Book Now!</a>
         @endif

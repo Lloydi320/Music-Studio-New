@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Feedback;
+use App\Models\Booking;
 
 class User extends Authenticatable
 {
@@ -23,6 +25,9 @@ class User extends Authenticatable
         'password',
         'google_id',
         'email_verified_at',
+        'is_admin',
+        'google_calendar_token',
+        'google_calendar_id',
     ];
 
     /**
@@ -45,11 +50,27 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class);
+    }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
+    }
+
+    public function hasGoogleCalendarAccess(): bool
+    {
+        return !empty($this->google_calendar_token);
     }
 }

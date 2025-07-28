@@ -17,6 +17,11 @@ class Booking extends Model
         'duration',
         'reference',
         'status',
+        'google_event_id',
+    ];
+
+    protected $casts = [
+        'duration' => 'integer',
     ];
 
     protected static function boot()
@@ -28,5 +33,10 @@ class Booking extends Model
                 $booking->reference = 'BK' . strtoupper(Str::random(8));
             }
         });
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 } 
