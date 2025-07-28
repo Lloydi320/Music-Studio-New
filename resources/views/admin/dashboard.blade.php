@@ -82,6 +82,7 @@
                             <th>Duration</th>
                             <th>Status</th>
                             <th>Calendar</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -103,6 +104,17 @@
                                 @else
                                     <span class="calendar-status not-synced">○ Not Synced</span>
                                 @endif
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ route('admin.booking.delete', $booking->id) }}" 
+                                      onsubmit="return confirm('Are you sure you want to delete booking {{ $booking->reference }} for {{ $booking->user->name }}? This will also remove it from Google Calendar.')" 
+                                      style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Delete Booking">
+                                        🗑️ Delete
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         @endforeach
@@ -468,6 +480,30 @@
     background: #fdf2e9;
     border-radius: 4px;
     border: 1px solid #f39c12;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.bookings-table td {
+    vertical-align: middle;
 }
 
 .no-bookings {

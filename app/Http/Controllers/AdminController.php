@@ -491,4 +491,53 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Failed to update rental status: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Delete a booking and remove from Google Calendar
+     */
+    public function deleteBooking($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $booking = Booking::findOrFail($id);
+            
+            // Delete from Google Calendar if event exists
+            if ($booking->google_event_id && $this->calendarService) {
+                try {
+                    $this->calendarService->deleteBookingEvent($booking);
+                    Log::info('Google Calendar event deleted for booking', [
+                        'booking_id' => $booking->id,
+                        'event_id' => $booking->google_event_id
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to delete Google Calendar event', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Continue with booking deletion even if calendar deletion fails
+                }
+            }
+            
+            // Store booking details for success message
+            $bookingReference = $booking->reference;
+            $clientName = $booking->user->name ?? 'Unknown';
+            
+            // Delete the booking from database
+            $booking->delete();
+            
+            return redirect()->back()->with('success', "Booking {$bookingReference} for {$clientName} has been deleted successfully.");
+        } catch (\Exception $e) {
+            Log::error('Failed to delete booking', [
+                'booking_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Failed to delete booking: ' . $e->getMessage());
+        }
+    }
 }

@@ -48,6 +48,11 @@ Route::post('/api/rental/{reference}/status', [InstrumentRentalController::class
 
 // Removed this route as it conflicts with API routes
 
+// Login route (redirects to Google OAuth)
+Route::get('/login', function () {
+    return redirect()->route('google.login');
+})->name('login');
+
 // Google OAuth routes
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
@@ -80,6 +85,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/database/clear-cache', [App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.database.clear-cache');
     Route::get('/instrument-rentals', [App\Http\Controllers\AdminController::class, 'instrumentRentals'])->name('admin.instrument-rentals');
     Route::post('/instrument-rentals/{id}/status', [App\Http\Controllers\AdminController::class, 'updateRentalStatus'])->name('admin.rental-status');
+    Route::delete('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'deleteBooking'])->name('admin.booking.delete');
 });
 
 Route::get('/debug-google', function () {
