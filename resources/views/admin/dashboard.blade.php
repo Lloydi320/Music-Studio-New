@@ -33,6 +33,14 @@
                 @endif
             </div>
         </div>
+        <div class="stat-card">
+            <h3>Total Rentals</h3>
+            <div class="stat-number">{{ $totalRentals }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Pending Rentals</h3>
+            <div class="stat-number pending">{{ $pendingRentals }}</div>
+        </div>
     </div>
 
     <!-- Quick Actions -->
@@ -44,6 +52,9 @@
             </a>
             <a href="{{ route('admin.database') }}" class="btn btn-success">
                 <i class="icon-database">🗄️</i> Database Management
+            </a>
+            <a href="{{ route('admin.instrument-rentals') }}" class="btn btn-info">
+                <i class="icon-rental"></i> Manage Instrument Rentals
             </a>
             @if($user->hasGoogleCalendarAccess())
                 <form method="POST" action="{{ route('admin.calendar.sync') }}" style="display: inline;">
@@ -316,6 +327,7 @@
 .btn-secondary { background: #95a5a6; color: white; }
 .btn-success { background: #27ae60; color: white; }
 .btn-danger { background: #e74c3c; color: white; }
+.btn-info { background: #17a2b8; color: white; }
 .btn-sm { padding: 5px 10px; font-size: 12px; }
 
 .bookings-table {

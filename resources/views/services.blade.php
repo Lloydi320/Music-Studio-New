@@ -20,7 +20,7 @@
     <nav>
       <ul class="nav-links">
         <li><a href="/">Home</a></li>
-        <li><a href="/services">About Us & Our Services</a></li>
+        <li><a href="/services" class="active">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="/feedback">Feedbacks</a></li>
       </ul>
@@ -85,7 +85,7 @@
         <small class="service-hint">Click to Book</small>
       </a>
 
-      <a href="/booking" class="service-box">
+      <a href="/instrument-rental" class="service-box">
         <img src="{{ asset('images/instruments.png') }}" alt="Instruments Rental" />
         <h3>Instruments Rental</h3>
         <p>Need a guitar, amp, or mic? Rent affordable gear for your session without the hassle.</p>
@@ -137,6 +137,14 @@
 
 
  
+  <!-- Footer -->
+  <footer class="services-footer">
+    <div class="footer-content">
+      <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
+      <p>Professional Music Studio Services</p>
+    </div>
+  </footer>
+
   <script src="{{ asset('js/script.js') }}"></script>
   <script>
   // Check for hash on page load and scroll to it
