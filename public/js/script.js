@@ -1,83 +1,152 @@
 
-const calendarGrid = document.getElementById("calendarGrid");
-const timeSlots = document.getElementById("timeSlots");
-const monthYear = document.getElementById("monthYear");
+console.log('*** THIS IS THE CORRECT JS FILE ***');
 
-const now = new Date();
-let currentMonth = 3;
-let currentYear = 2025;
+document.addEventListener("DOMContentLoaded", function () {
+  console.log('Attaching calendar event listeners...');
 
-const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const calendarGrid = document.getElementById("calendarGrid");
+  const timeSlots = document.getElementById("timeSlots");
+  const monthYear = document.getElementById("monthYear");
 
-if (calendarGrid && timeSlots && monthYear) {
-  function generateCalendar(year, month) {
-    calendarGrid.innerHTML = "";
+  const now = new Date();
+  let currentMonth = now.getMonth();
+  let currentYear = now.getFullYear();
 
-    dayNames.forEach(day => {
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "day-name";
-      dayDiv.textContent = day;
-      calendarGrid.appendChild(dayDiv);
-    });
+  const realMonth = now.getMonth();
+  const realYear = now.getFullYear();
+  const realDay = now.getDate();
 
-    const firstDay = new Date(year, month, 1);
-    const startDay = (firstDay.getDay() + 6) % 7;
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const monthString = (month + 1).toString().padStart(2, "0");
+  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    for (let i = 0; i < startDay; i++) {
-      calendarGrid.appendChild(document.createElement("div"));
+  let bookedDates = [];
+
+  async function fetchBookedDates(year, month) {
+    try {
+      const res = await fetch(`/api/booked-dates?year=${year}&month=${month}`);
+      const data = await res.json();
+      bookedDates = data.booked_dates || [];
+    } catch (err) {
+      bookedDates = [];
     }
+  }
 
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateDiv = document.createElement("div");
-      const dateKey = `${year}-${monthString}-${d.toString().padStart(2, "0")}`;
-      dateDiv.textContent = d;
+  if (calendarGrid && timeSlots && monthYear) {
+    async function generateCalendar(year, month) {
+      await fetchBookedDates(year, month);
+      calendarGrid.innerHTML = "";
 
-      dateDiv.addEventListener("click", () => {
-        document.querySelectorAll(".calendar-grid div").forEach(el => el.classList.remove("selected"));
-        dateDiv.classList.add("selected");
-        showTimeSlots(dateKey);
+      dayNames.forEach(day => {
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "day-name";
+        dayDiv.textContent = day;
+        calendarGrid.appendChild(dayDiv);
       });
 
-      calendarGrid.appendChild(dateDiv);
+      const firstDay = new Date(year, month, 1);
+      const startDay = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const monthString = (month + 1).toString().padStart(2, "0");
+
+      for (let i = 0; i < startDay; i++) {
+        calendarGrid.appendChild(document.createElement("div"));
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateDiv = document.createElement("div");
+        const dateKey = `${year}-${monthString}-${d.toString().padStart(2, "0")}`;
+        dateDiv.textContent = d;
+
+        if (bookedDates.includes(dateKey)) {
+          dateDiv.classList.add("booked");
+          dateDiv.title = "Booked";
+        }
+
+        const isPastDate =
+          year < realYear ||
+          (year === realYear && month < realMonth) ||
+          (year === realYear && month === realMonth && d < realDay);
+
+        if (isPastDate) {
+          dateDiv.classList.add("disabled");
+        } else {
+          dateDiv.addEventListener("click", async () => {
+            document.querySelectorAll(".calendar-grid div").forEach(el => el.classList.remove("selected"));
+            dateDiv.classList.add("selected");
+            console.log('Clicked dateKey:', dateKey);
+            await showTimeSlots(dateKey);
+          });
+        }
+
+        calendarGrid.appendChild(dateDiv);
+      }
+
+      monthYear.textContent = `${new Date(year, month).toLocaleString("default", { month: "long" })} ${year}`;
     }
 
-    monthYear.textContent = `${new Date(year, month).toLocaleString("default", { month: "long" })} ${year}`;
-  }
+    async function showTimeSlots(dateKey) {
+      timeSlots.innerHTML = "";
+      const heading = document.createElement("h4");
+      heading.textContent = "Booking Info";
+      timeSlots.appendChild(heading);
 
-  function showTimeSlots(dateKey) {
-    timeSlots.innerHTML = "";
-    const heading = document.createElement("h4");
-    heading.textContent = "Booking Info";
-    timeSlots.appendChild(heading);
-    const message = document.createElement("p");
-    message.textContent = "No bookings for this date.";
-    timeSlots.appendChild(message);
-  }
-
-  document.getElementById("prevMonth").addEventListener("click", () => {
-    if (currentMonth === 0) {
-      currentMonth = 11;
-      currentYear--;
-    } else {
-      currentMonth--;
+      try {
+        const res = await fetch(`/api/bookings-by-date?date=${dateKey}`);
+        const data = await res.json();
+        console.log('API response for', dateKey, ':', data);
+        if (data.bookings && data.bookings.length > 0) {
+          data.bookings.forEach(booking => {
+            const bookingDiv = document.createElement("div");
+            bookingDiv.className = "booking-detail";
+            bookingDiv.style.marginBottom = "16px";
+            bookingDiv.style.padding = "10px";
+            bookingDiv.style.borderBottom = "2.5px solid #333";
+            bookingDiv.innerHTML = `
+              <strong>Time Slot:</strong> ${booking.time_slot}<br>
+              <strong>Status:</strong> ${booking.status}
+            `;
+            timeSlots.appendChild(bookingDiv);
+          });
+        } else {
+          const message = document.createElement("p");
+          message.textContent = "No bookings for this date.";
+          timeSlots.appendChild(message);
+        }
+      } catch (err) {
+        const message = document.createElement("p");
+        message.textContent = "Failed to load booking info.";
+        timeSlots.appendChild(message);
+        console.error('Error fetching booking info for', dateKey, ':', err);
+      }
     }
+
+    document.getElementById("prevMonth").addEventListener("click", () => {
+      if (
+        currentYear > realYear ||
+        (currentYear === realYear && currentMonth > realMonth)
+      ) {
+        if (currentMonth === 0) {
+          currentMonth = 11;
+          currentYear--;
+        } else {
+          currentMonth--;
+        }
+        generateCalendar(currentYear, currentMonth);
+      }
+    });
+
+    document.getElementById("nextMonth").addEventListener("click", () => {
+      if (currentMonth === 11) {
+        currentMonth = 0;
+        currentYear++;
+      } else {
+        currentMonth++;
+      }
+      generateCalendar(currentYear, currentMonth);
+    });
+
     generateCalendar(currentYear, currentMonth);
-  });
-
-  document.getElementById("nextMonth").addEventListener("click", () => {
-    if (currentMonth === 11) {
-      currentMonth = 0;
-      currentYear++;
-    } else {
-      currentMonth++;
-    }
-    generateCalendar(currentYear, currentMonth);
-  });
-
-  generateCalendar(currentYear, currentMonth);
-}
+  }
+});
 
 
 

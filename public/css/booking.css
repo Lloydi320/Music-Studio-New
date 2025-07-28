@@ -554,4 +554,80 @@ body.booking-page::before {
   border-color: #ffeaa7;
 }
 
+.studio-info-flex {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.studio-info-flex .studio-image {
+  max-width: 300px;
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.studio-info-text {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  .studio-info-flex {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .studio-info-flex .studio-image {
+    max-width: 100%;
+  }
+}
+
+.studio-info-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.studio-image-col {
+  flex: 0 0 auto;
+}
+
+.studio-image-col .studio-image {
+  max-width: 320px;
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.studio-text-col {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 800px) {
+  .studio-info-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .studio-image-col .studio-image {
+    max-width: 100%;
+  }
+}
+
+body.booking-page, html {
+  overflow: hidden !important;
+}
+
 

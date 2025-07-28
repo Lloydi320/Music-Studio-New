@@ -46,58 +46,14 @@ document.addEventListener("DOMContentLoaded", function () {
       btn.title = '';
     });
     
-    // Then, only block the specific slots that are actually booked
+    // Then, only hide the specific slots that are actually booked (exact match only)
     slotButtons.forEach(btn => {
       // Extract start and end times from button (e.g., "10:00 AM - 01:00 PM")
-      const [btnStartStr, btnEndStr] = btn.textContent.split(" - ");
-      const btnStart = new Date(`1970-01-01T${convertTo24H(btnStartStr)}`);
-      const btnEnd = new Date(`1970-01-01T${convertTo24H(btnEndStr)}`);
-      
-      // Check if this time slot overlaps with any booking in the database
-      const overlaps = bookings.some(b => {
-        // Extract start time from booking (e.g., "10:00 AM - 01:00 PM" -> "10:00 AM")
-        const [bookedStartStr, bookedEndStr] = b.time_slot.split(" - ");
-        const bookedStart = new Date(`1970-01-01T${convertTo24H(bookedStartStr)}`);
-        
-        // Calculate the actual end time based on duration from database
-        const bookedEnd = new Date(bookedStart.getTime() + (b.duration * 60 * 60 * 1000));
-        
-        console.log(`Checking overlap: Button ${btn.textContent} (${btnStart.toTimeString()} - ${btnEnd.toTimeString()}) vs Booking ${b.time_slot} (${bookedStart.toTimeString()} - ${bookedEnd.toTimeString()}) [${b.duration}hrs]`);
-        
-        // Block time slots that would overlap with existing bookings
-        // Check if the button's time range would overlap with the booked time range
-        const hasOverlap = (btnStart < bookedEnd && btnEnd > bookedStart);
-        
-        // Calculate overlap duration for logging
-        const overlapStart = Math.max(btnStart.getTime(), bookedStart.getTime());
-        const overlapEnd = Math.min(btnEnd.getTime(), bookedEnd.getTime());
-        const overlapDuration = overlapEnd - overlapStart;
-        
-        // Block if there's any overlap (even 1 minute)
-        const shouldBlock = hasOverlap;
-        
-        if (shouldBlock) {
-          console.log(`OVERLAP FOUND: ${btn.textContent} overlaps with ${b.time_slot} (${b.duration}hrs) - Overlap: ${Math.round(overlapDuration / (60 * 1000))} minutes`);
-        }
-        
-        return shouldBlock;
-      });
-
-      // Only block if this specific slot overlaps with an existing booking
-      const shouldBlock = overlaps;
-      
-      if (shouldBlock) {
-        console.log(`❌ BLOCKING slot: ${btn.textContent} - overlaps with booking`);
-        btn.disabled = true;
-        btn.style.opacity = 0.5;
-        btn.style.backgroundColor = '#f5f5f5';
-        btn.style.color = '#999';
-        btn.style.cursor = 'not-allowed';
-        btn.title = 'This time slot overlaps with an existing booking - Not available';
-        // Remove any existing selection
-        btn.classList.remove('selected');
-      } else {
-        console.log(`✅ KEEPING slot: ${btn.textContent} - available`);
+      const btnTimeRange = btn.textContent.trim();
+      // Hide the button if its time range exactly matches any booked slot's time range
+      const isBooked = bookings.some(b => b.time_slot.trim() === btnTimeRange);
+      if (isBooked) {
+        btn.remove();
       }
     });
   }
@@ -124,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function generateTimeSlots(durationHours) {
+  function generateTimeSlots(durationHours, selectedDate = null, bookings = []) {
     if (!slotsContainer) return;
     
     slotsContainer.innerHTML = "";
@@ -132,54 +88,67 @@ document.addEventListener("DOMContentLoaded", function () {
     const closingHour = 20; // 8 PM
     const durationMinutes = durationHours * 60;
 
-    let start = new Date();
+    // Use selectedDate if provided, otherwise default to today
+    let slotDate = selectedDate ? new Date(selectedDate) : new Date();
+    slotDate.setHours(0, 0, 0, 0);
+
+    let start = new Date(slotDate);
     start.setHours(openingHour, 0, 0, 0);
 
-    const latestStart = new Date();
+    const latestStart = new Date(slotDate);
     latestStart.setHours(closingHour, 0, 0, 0);
     latestStart.setMinutes(latestStart.getMinutes() - durationMinutes);
 
+    const now = new Date();
+    const isToday = slotDate.toDateString() === now.toDateString();
+
+    let slotAvailable = false;
     while (start <= latestStart) {
-      const end = new Date(start.getTime() + durationMinutes * 60000);
-
-      const btn = document.createElement("button");
-      btn.textContent = `${formatTime(start)} - ${formatTime(end)}`;
-      
-      // Add click event for time slot selection (will be disabled for overlapping slots)
-      btn.addEventListener("click", function() {
-        // Only allow click if button is not disabled
-        if (!this.disabled) {
-          document.querySelectorAll(".slots button").forEach(b => b.classList.remove("selected"));
-          this.classList.add("selected");
-          selectedTimeSlot = this.textContent;
-          
-          // Update booking summary if it exists and user has made selections
-          const bookingSummary = document.getElementById('bookingSummary');
-          const confirmTimeSlot = document.getElementById('confirmTimeSlot');
-          const confirmDuration = document.getElementById('confirmDuration');
-          
-          if (bookingSummary && confirmTimeSlot && selectedDateLabel.textContent) {
-            bookingSummary.style.display = 'block';
-            confirmTimeSlot.textContent = selectedTimeSlot;
-            confirmDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
-          }
-          
-          // If booking form is visible (user clicked Next), revert back to Next button
-          const bookingForm = document.getElementById('bookingForm');
-          const nextBtn = document.querySelector('.next-btn');
-          if (bookingForm && bookingForm.style.display !== 'none') {
-            bookingForm.style.display = 'none';
-            if (nextBtn) {
-              nextBtn.style.display = 'block';
+      // If today, hide slots that start in the past
+      if (!(isToday && start < now)) {
+        const end = new Date(start.getTime() + durationMinutes * 60000);
+        const slotLabel = `${formatTime(start)} - ${formatTime(end)}`;
+        // Hide if this slot is already booked (exact match)
+        const isBooked = bookings.some(b => b.time_slot.trim() === slotLabel);
+        if (!isBooked) {
+          const btn = document.createElement("button");
+          btn.textContent = slotLabel;
+          btn.addEventListener("click", function() {
+            if (!this.disabled) {
+              document.querySelectorAll(".slots button").forEach(b => b.classList.remove("selected"));
+              this.classList.add("selected");
+              selectedTimeSlot = this.textContent;
+              const bookingSummary = document.getElementById('bookingSummary');
+              const confirmTimeSlot = document.getElementById('confirmTimeSlot');
+              const confirmDuration = document.getElementById('confirmDuration');
+              if (bookingSummary && confirmTimeSlot && selectedDateLabel.textContent) {
+                bookingSummary.style.display = 'block';
+                confirmTimeSlot.textContent = selectedTimeSlot;
+                confirmDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
+              }
+              const bookingForm = document.getElementById('bookingForm');
+              const nextBtn = document.querySelector('.next-btn');
+              if (bookingForm && bookingForm.style.display !== 'none') {
+                bookingForm.style.display = 'none';
+                if (nextBtn) {
+                  nextBtn.style.display = 'block';
+                }
+              }
             }
-          }
+          });
+          slotsContainer.appendChild(btn);
+          slotAvailable = true;
         }
-      });
-      
-      slotsContainer.appendChild(btn);
-
-      // increment by 1 hour (remove 30-minute intervals)
+      }
       start.setHours(start.getHours() + 1);
+    }
+    if (!slotAvailable) {
+      const note = document.createElement('div');
+      note.style.margin = '16px 0';
+      note.style.textAlign = 'center';
+      note.style.color = '#888';
+      note.textContent = 'No available time slots for the selected date and duration.';
+      slotsContainer.appendChild(note);
     }
   }
 
@@ -224,7 +193,8 @@ document.addEventListener("DOMContentLoaded", function () {
             selectedCell = cell;
 
             // Generate time slots when date is selected
-            generateTimeSlots(selectedDuration);
+            const selectedDateObj = new Date(year, month, day);
+            generateTimeSlots(selectedDuration, selectedDateObj);
 
             // Parse selected date to YYYY-MM-DD
             const pad = n => n.toString().padStart(2, '0');
@@ -243,9 +213,8 @@ document.addEventListener("DOMContentLoaded", function () {
                   info = 'Booked slots:<br>' + bookings.map(b => b.time_slot).join('<br>');
                 }
                 if (bookingInfoBox) bookingInfoBox.innerHTML = `<strong>Booking Info</strong><br>${info}`;
-                
-                // Block overlapping slots after they are generated
-                blockBookedSlots(bookings);
+                // Generate time slots and hide booked ones
+                generateTimeSlots(selectedDuration, selectedDateObj, bookings);
               });
               
             // Update booking summary if it exists and user has made selections

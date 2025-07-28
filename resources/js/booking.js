@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
-      console.log('Next button clicked!');
+      console.log('Next button clicked!');    
       
       // Get selected date, time slot, and duration
       const selectedDate = document.getElementById('selectedDateLabel').textContent;
