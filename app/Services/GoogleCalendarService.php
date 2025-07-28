@@ -192,12 +192,14 @@ class GoogleCalendarService
         $createdEvent = $service->events->insert($calendarId, $event);
 
         // Store the event ID in the booking for future updates/deletions
+        // Note: This will be overwritten if multiple admins exist, but we now use search for deletion
         $booking->update(['google_event_id' => $createdEvent->getId()]);
 
-                    Log::info('Calendar event created', [
+        Log::info('Calendar event created', [
             'booking_id' => $booking->id,
             'event_id' => $createdEvent->getId(),
-            'admin_id' => $admin->id
+            'admin_id' => $admin->id,
+            'calendar_id' => $calendarId
         ]);
     }
 
@@ -300,7 +302,39 @@ class GoogleCalendarService
         $service = new Calendar($this->client);
 
         try {
-            $service->events->delete($admin->google_calendar_id, $booking->google_event_id);
+            // First, try to find the event by searching for it
+            $optParams = [
+                'q' => 'Studio Session - ' . $booking->user->name,
+                'timeMin' => Carbon::parse($booking->date)->startOfDay()->toIso8601String(),
+                'timeMax' => Carbon::parse($booking->date)->endOfDay()->toIso8601String(),
+                'singleEvents' => true
+            ];
+            
+            $events = $service->events->listEvents($admin->google_calendar_id, $optParams);
+            
+            foreach ($events->getItems() as $event) {
+                $description = $event->getDescription() ?: '';
+                // Check if this event matches our booking by reference
+                if (strpos($description, $booking->reference) !== false) {
+                    $service->events->delete($admin->google_calendar_id, $event->getId());
+                    Log::info('Google Calendar event deleted for admin', [
+                        'booking_id' => $booking->id,
+                        'event_id' => $event->getId(),
+                        'admin_id' => $admin->id
+                    ]);
+                    return;
+                }
+            }
+            
+            // If not found by search, try the stored event ID as fallback
+            if ($booking->google_event_id) {
+                $service->events->delete($admin->google_calendar_id, $booking->google_event_id);
+                Log::info('Google Calendar event deleted using stored ID', [
+                    'booking_id' => $booking->id,
+                    'event_id' => $booking->google_event_id,
+                    'admin_id' => $admin->id
+                ]);
+            }
         } catch (Exception $e) {
             Log::warning('Could not delete event for admin ' . $admin->id . ': ' . $e->getMessage());
         }
