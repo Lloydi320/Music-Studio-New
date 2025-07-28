@@ -87,47 +87,114 @@
         </div>
     </div>
 
-    <!-- Recent Sync Activity -->
-    <div class="sync-activity">
-        <h2>Recent Calendar Events</h2>
-        @php
-            $syncedBookings = \App\Models\Booking::whereNotNull('google_event_id')
-                                               ->with('user')
-                                               ->latest()
-                                               ->take(5)
-                                               ->get();
-        @endphp
+    <!-- Unified Calendar View -->
+    <div class="calendar-view">
+        <h2>📅 Calendar Overview</h2>
         
-        @if($syncedBookings->count() > 0)
-            <div class="activity-list">
-                @foreach($syncedBookings as $booking)
-                <div class="activity-item">
-                    <div class="activity-icon">📅</div>
-                    <div class="activity-content">
-                        <div class="activity-title">
-                            <strong>{{ $booking->user->name }}</strong> - {{ $booking->reference }}
+        @if($user->hasGoogleCalendarAccess() && count($upcomingEvents) > 0)
+            <div class="calendar-section">
+                <h3>🔮 Upcoming Events (Next 4 Weeks)</h3>
+                <div class="events-grid">
+                    @foreach($upcomingEvents as $event)
+                    <div class="event-card {{ $event['is_studio_booking'] ? 'studio-event' : 'other-event' }}">
+                        <div class="event-time">
+                            <div class="event-date">{{ $event['start']->format('M d') }}</div>
+                            <div class="event-hour">{{ $event['start']->format('g:i A') }}</div>
                         </div>
-                        <div class="activity-details">
-                            {{ \Carbon\Carbon::parse($booking->date)->format('M d, Y') }} at {{ $booking->time_slot }}
-                            ({{ $booking->duration }}h)
+                        <div class="event-details">
+                            <div class="event-title">{{ $event['title'] }}</div>
+                            <div class="event-duration">{{ $event['duration'] }}h duration</div>
+                            @if($event['attendees'])
+                                <div class="event-attendees">
+                                    👥 {{ count($event['attendees']) }} attendee(s)
+                                </div>
+                            @endif
+                            @if($event['location'])
+                                <div class="event-location">📍 {{ $event['location'] }}</div>
+                            @endif
                         </div>
-                        <div class="activity-time">
-                            Synced {{ $booking->updated_at->diffForHumans() }}
+                        <div class="event-type">
+                            @if($event['is_studio_booking'])
+                                <span class="type-badge studio">🎵 Studio</span>
+                            @else
+                                <span class="type-badge other">📅 Other</span>
+                            @endif
                         </div>
                     </div>
-                    <div class="activity-status">
-                        <span class="status-badge status-{{ $booking->status }}">
-                            {{ ucfirst($booking->status) }}
-                        </span>
-                    </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
-        @else
-            <div class="no-activity">
-                <p>No calendar events found. New bookings will automatically appear here.</p>
             </div>
         @endif
+
+        <!-- System Bookings vs Calendar Sync Status -->
+        <div class="sync-comparison">
+            <h3>🔄 Booking Sync Status</h3>
+            <div class="comparison-grid">
+                <div class="comparison-section">
+                    <h4>📋 System Bookings</h4>
+                    @if($systemBookings->count() > 0)
+                        <div class="bookings-list">
+                            @foreach($systemBookings as $booking)
+                            <div class="booking-item {{ $booking->google_event_id ? 'synced' : 'unsynced' }}">
+                                <div class="booking-info">
+                                    <div class="booking-title">
+                                        <strong>{{ $booking->user->name }}</strong>
+                                        <span class="booking-ref">{{ $booking->reference }}</span>
+                                    </div>
+                                    <div class="booking-time">
+                                        {{ \Carbon\Carbon::parse($booking->date)->format('M d, Y') }} 
+                                        at {{ $booking->time_slot }} ({{ $booking->duration }}h)
+                                    </div>
+                                </div>
+                                <div class="sync-status">
+                                    @if($booking->google_event_id)
+                                        <span class="sync-badge synced">✅ Synced</span>
+                                    @else
+                                        <span class="sync-badge unsynced">⏳ Pending</span>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="no-bookings">
+                            <p>No upcoming system bookings found.</p>
+                        </div>
+                    @endif
+                </div>
+
+                @if($user->hasGoogleCalendarAccess())
+                <div class="comparison-section">
+                    <h4>📅 Google Calendar Events</h4>
+                    @if(count($calendarEvents) > 0)
+                        <div class="calendar-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">{{ count($calendarEvents) }}</span>
+                                <span class="stat-label">Total Events</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ count(array_filter($calendarEvents, function($e) { return $e['is_studio_booking']; })) }}</span>
+                                <span class="stat-label">Studio Sessions</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ count(array_filter($calendarEvents, function($e) { return !$e['is_studio_booking']; })) }}</span>
+                                <span class="stat-label">Other Events</span>
+                            </div>
+                        </div>
+                        <div class="calendar-actions">
+                            <a href="https://calendar.google.com" target="_blank" class="btn btn-info">
+                                🔗 Open Google Calendar
+                            </a>
+                        </div>
+                    @else
+                        <div class="no-events">
+                            <p>No events found in your Google Calendar for the next 3 months.</p>
+                        </div>
+                    @endif
+                </div>
+                @endif
+            </div>
+        </div>
     </div>
     @endif
 
@@ -282,7 +349,7 @@
 .btn-secondary { background: #95a5a6; color: white; }
 .btn-secondary:hover { background: #7f8c8d; }
 
-.sync-actions, .sync-activity, .instructions {
+.sync-actions, .calendar-view, .instructions {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -406,6 +473,223 @@
     color: #666;
 }
 
+/* New Calendar View Styles */
+.calendar-section {
+    margin-bottom: 30px;
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.event-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid #ddd;
+    display: flex;
+    gap: 15px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.event-card.studio-event {
+    border-left-color: #e74c3c;
+    background: linear-gradient(135deg, #fff5f5 0%, #f8f9fa 100%);
+}
+
+.event-card.other-event {
+    border-left-color: #3498db;
+    background: linear-gradient(135deg, #f0f8ff 0%, #f8f9fa 100%);
+}
+
+.event-time {
+    text-align: center;
+    min-width: 60px;
+}
+
+.event-date {
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.event-hour {
+    color: #666;
+    font-size: 12px;
+}
+
+.event-details {
+    flex: 1;
+}
+
+.event-title {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.event-duration, .event-attendees, .event-location {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.event-type {
+    align-self: flex-start;
+}
+
+.type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.type-badge.studio {
+    background: #fee;
+    color: #e74c3c;
+}
+
+.type-badge.other {
+    background: #eff8ff;
+    color: #3498db;
+}
+
+.sync-comparison {
+    margin-top: 30px;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.comparison-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.comparison-section h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.booking-item {
+    background: white;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid #ddd;
+}
+
+.booking-item.synced {
+    border-left-color: #27ae60;
+}
+
+.booking-item.unsynced {
+    border-left-color: #f39c12;
+}
+
+.booking-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.booking-ref {
+    font-size: 12px;
+    color: #666;
+    margin-left: 8px;
+}
+
+.booking-time {
+    font-size: 12px;
+    color: #666;
+}
+
+.sync-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.sync-badge.synced {
+    background: #d4edda;
+    color: #155724;
+}
+
+.sync-badge.unsynced {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.calendar-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    flex: 1;
+}
+
+.stat-number {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.calendar-actions {
+    text-align: center;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+}
+
+.no-bookings, .no-events {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
 .navigation {
     margin-top: 30px;
 }
@@ -425,6 +709,36 @@
         flex-direction: column;
         text-align: center;
     }
+    
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .comparison-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .event-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .event-time {
+        min-width: auto;
+    }
+    
+    .calendar-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .booking-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
 }
 </style>
-@endsection 
+@endsection

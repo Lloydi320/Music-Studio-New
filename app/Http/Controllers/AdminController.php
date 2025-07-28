@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use App\Services\GoogleCalendarService;
 use App\Models\User;
 use App\Models\Booking;
@@ -63,7 +66,29 @@ class AdminController extends Controller
         if (!Auth::check() || !$user->isAdmin()) {
             abort(403, 'Access denied. Admin access required.');
         }
-        return view('admin.calendar', compact('user'));
+
+        // Get Google Calendar events if connected
+        $calendarEvents = [];
+        $upcomingEvents = [];
+        if ($user->hasGoogleCalendarAccess() && $this->calendarService) {
+            try {
+                $calendarEvents = $this->calendarService->getCalendarEvents($user);
+                $upcomingEvents = $this->calendarService->getUpcomingEvents($user, 10);
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch calendar events: ' . $e->getMessage());
+            }
+        }
+
+        // Get system bookings for comparison
+        $systemBookings = Booking::with('user')
+            ->where('status', 'confirmed')
+            ->where('date', '>=', now()->format('Y-m-d'))
+            ->orderBy('date')
+            ->orderBy('time_slot')
+            ->take(20)
+            ->get();
+
+        return view('admin.calendar', compact('user', 'calendarEvents', 'upcomingEvents', 'systemBookings'));
     }
 
     /**
@@ -208,23 +233,213 @@ class AdminController extends Controller
      */
     public function removeAdmin(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id'
-        ]);
+        // Handle both regular users and admin_users only records
+        if ($request->has('admin_email')) {
+            $request->validate([
+                'admin_email' => 'required|email'
+            ]);
+        } else {
+            $request->validate([
+                'user_id' => 'required|exists:users,id'
+            ]);
+        }
 
         try {
-            $user = User::findOrFail($request->user_id);
-            
-            // Prevent removing admin from current user
-            if ($user->id === Auth::id()) {
-                return redirect()->back()->with('error', 'You cannot remove admin privileges from yourself.');
+            if ($request->has('admin_email')) {
+                // Remove admin that only exists in admin_users table
+                $adminEmail = $request->admin_email;
+                $adminUser = DB::table('admin_users')->where('email', $adminEmail)->first();
+                
+                if (!$adminUser) {
+                    return redirect()->back()->with('error', 'Admin user not found.');
+                }
+                
+                // Prevent removing current user's admin privileges
+                if ($adminEmail === Auth::user()->email) {
+                    return redirect()->back()->with('error', 'You cannot remove admin privileges from yourself.');
+                }
+                
+                // Prevent removing super admin privileges
+                if ($adminUser->role === 'super_admin') {
+                    return redirect()->back()->with('error', 'Super admin privileges cannot be removed.');
+                }
+                
+                DB::table('admin_users')->where('email', $adminEmail)->delete();
+                return redirect()->back()->with('success', "Admin privileges removed from {$adminUser->name}.");
+            } else {
+                // Remove admin from regular users table
+                $user = User::findOrFail($request->user_id);
+                
+                // Prevent removing admin from current user
+                if ($user->id === Auth::id()) {
+                    return redirect()->back()->with('error', 'You cannot remove admin privileges from yourself.');
+                }
+
+                // Check if user is a super admin and prevent removal
+                $adminUser = DB::table('admin_users')->where('email', $user->email)->first();
+                if ($adminUser && $adminUser->role === 'super_admin') {
+                    return redirect()->back()->with('error', 'Super admin privileges cannot be removed.');
+                }
+
+                // Update main users table
+                $user->update(['is_admin' => false]);
+                
+                // Remove from admin_users table if exists
+                DB::table('admin_users')->where('email', $user->email)->delete();
+
+                return redirect()->back()->with('success', "Admin privileges removed from {$user->name}.");
             }
-
-            $user->update(['is_admin' => false]);
-
-            return redirect()->back()->with('success', "Admin privileges removed from {$user->name}.");
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to remove admin privileges: ' . $e->getMessage());
         }
     }
-} 
+
+    /**
+     * Show database management page
+     */
+    public function database()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        // Get database statistics
+        $totalBookings = Booking::count();
+        $totalUsers = User::count();
+        $adminUsers = User::where('is_admin', true)->count();
+        $recentBookings = Booking::with('user')->latest()->take(10)->get();
+        
+        // Get Google Calendar integration statistics
+        $calendarConnectedAdmins = User::where('is_admin', true)
+                                      ->whereNotNull('google_calendar_token')
+                                      ->count();
+        
+        $syncedBookings = Booking::where('status', 'confirmed')
+                                ->whereNotNull('google_event_id')
+                                ->count();
+        
+        $unsyncedBookings = Booking::where('status', 'confirmed')
+                                  ->whereNull('google_event_id')
+                                  ->count();
+        
+        $totalCalendarEvents = Booking::whereNotNull('google_event_id')->count();
+        
+        // Calculate approximate database size
+        try {
+            $databaseName = config('database.connections.mysql.database');
+            $sizeQuery = DB::select("SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 1) AS 'size_mb' FROM information_schema.tables WHERE table_schema = ?", [$databaseName]);
+            $databaseSize = ($sizeQuery[0]->size_mb ?? 0) . ' MB';
+        } catch (\Exception $e) {
+            $databaseSize = 'Unknown';
+        }
+        
+        return view('admin.database', compact(
+            'user',
+            'totalBookings',
+            'totalUsers', 
+            'adminUsers',
+            'recentBookings',
+            'databaseSize',
+            'calendarConnectedAdmins',
+            'syncedBookings',
+            'unsyncedBookings',
+            'totalCalendarEvents'
+        ));
+    }
+
+    /**
+     * Create database backup
+     */
+    public function createBackup()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $databaseName = config('database.connections.mysql.database');
+            $backupFileName = 'backup_' . $databaseName . '_' . date('Y-m-d_H-i-s') . '.sql';
+            $backupPath = storage_path('app/backups/' . $backupFileName);
+            
+            // Create backups directory if it doesn't exist
+            if (!file_exists(dirname($backupPath))) {
+                mkdir(dirname($backupPath), 0755, true);
+            }
+            
+            // Use mysqldump command (requires mysqldump to be available)
+            $host = config('database.connections.mysql.host');
+            $port = config('database.connections.mysql.port');
+            $username = config('database.connections.mysql.username');
+            $password = config('database.connections.mysql.password');
+            
+            $command = "mysqldump -h{$host} -P{$port} -u{$username}";
+            if ($password) {
+                $command .= " -p{$password}";
+            }
+            $command .= " {$databaseName} > {$backupPath}";
+            
+            exec($command, $output, $returnCode);
+            
+            if ($returnCode === 0 && file_exists($backupPath)) {
+                return response()->download($backupPath)->deleteFileAfterSend(true);
+            } else {
+                return redirect()->back()->with('error', 'Failed to create database backup. Please ensure mysqldump is available.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to create backup: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Run database migrations
+     */
+    public function runMigrations()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $output = Artisan::output();
+            
+            return redirect()->back()->with('success', 'Database migrations completed successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to run migrations: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Clear application cache
+     */
+    public function clearCache()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            // Clear various caches
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+            
+            return redirect()->back()->with('success', 'All caches cleared successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to clear cache: ' . $e->getMessage());
+        }
+    }
+}

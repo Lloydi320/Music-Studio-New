@@ -42,6 +42,9 @@
             <a href="{{ route('admin.calendar') }}" class="btn btn-primary">
                 <i class="icon-calendar"></i> Google Calendar Setup
             </a>
+            <a href="{{ route('admin.database') }}" class="btn btn-success">
+                <i class="icon-database">🗄️</i> Database Management
+            </a>
             @if($user->hasGoogleCalendarAccess())
                 <form method="POST" action="{{ route('admin.calendar.sync') }}" style="display: inline;">
                     @csrf
@@ -107,12 +110,40 @@
         <!-- Make Admin Form -->
         <div class="admin-form">
             <h3>Grant Admin Access</h3>
+            
+            @if ($errors->any())
+                <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #f5c6cb;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            
+            @if(session('success'))
+                <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb;">
+                    {{ session('success') }}
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #f5c6cb;">
+                    {{ session('error') }}
+                </div>
+            @endif
+            
             <form method="POST" action="{{ route('admin.make') }}">
                 @csrf
                 <div class="form-group">
                     <label for="email">User Email:</label>
                     <input type="email" id="email" name="email" required 
-                           placeholder="Enter user email to grant admin access">
+                           value="{{ old('email') }}"
+                           placeholder="Enter user email to grant admin access"
+                           class="@error('email') error @enderror">
+                    @error('email')
+                        <span class="error-message" style="color: #e74c3c; font-size: 14px; display: block; margin-top: 5px;">{{ $message }}</span>
+                    @enderror
                     <button type="submit" class="btn btn-success">Make Admin</button>
                 </div>
             </form>
@@ -123,30 +154,78 @@
             <h3>Current Admins</h3>
             @php
                 $admins = \App\Models\User::where('is_admin', true)->get();
+                $adminUsers = \Illuminate\Support\Facades\DB::table('admin_users')
+                    ->where('is_active', true)
+                    ->orderBy('role', 'desc')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
             @endphp
-            @if($admins->count() > 0)
+            @if($admins->count() > 0 || $adminUsers->count() > 0)
                 <div class="admin-list">
                     @foreach($admins as $admin)
+                    @php
+                        $adminUserRecord = $adminUsers->firstWhere('email', $admin->email);
+                        $role = $adminUserRecord ? $adminUserRecord->role : 'admin';
+                    @endphp
                     <div class="admin-item">
                         <div class="admin-info">
                             <strong>{{ $admin->name }}</strong>
                             <span class="admin-email">{{ $admin->email }}</span>
+                            @if($role === 'super_admin')
+                                <span class="role-badge super-admin">👑 Super Admin</span>
+                            @else
+                                <span class="role-badge admin">👤 Admin</span>
+                            @endif
                             @if($admin->hasGoogleCalendarAccess())
                                 <span class="calendar-badge">Calendar Connected</span>
                             @endif
                         </div>
                         @if($admin->id !== Auth::id())
-                        <form method="POST" action="{{ route('admin.remove') }}" 
-                              onsubmit="return confirm('Remove admin privileges from {{ $admin->name }}?')"
-                              style="display: inline;">
-                            @csrf
-                            <input type="hidden" name="user_id" value="{{ $admin->id }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Remove Admin</button>
-                        </form>
+                            @if($role !== 'super_admin')
+                            <form method="POST" action="{{ route('admin.remove') }}" 
+                                  onsubmit="return confirm('Remove admin privileges from {{ $admin->name }}? This will remove admin access.')"
+                                  style="display: inline;">
+                                @csrf
+                                <input type="hidden" name="user_id" value="{{ $admin->id }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Remove Admin</button>
+                            </form>
+                            @else
+                            <span class="protected-admin">🔒 Protected</span>
+                            @endif
                         @else
                         <span class="current-user">(You)</span>
                         @endif
                     </div>
+                    @endforeach
+                    
+                    {{-- Show admin_users records that don't have corresponding users --}}
+                    @foreach($adminUsers as $adminUser)
+                        @if(!$admins->contains('email', $adminUser->email))
+                        <div class="admin-item">
+                            <div class="admin-info">
+                                <strong>{{ $adminUser->name }}</strong>
+                                <span class="admin-email">{{ $adminUser->email }}</span>
+                                @if($adminUser->role === 'super_admin')
+                                    <span class="role-badge super-admin">👑 Super Admin</span>
+                                @else
+                                    <span class="role-badge admin">👤 Admin</span>
+                                @endif
+                                <span class="status-badge">Admin Users Only</span>
+                            </div>
+                            @if($adminUser->role !== 'super_admin')
+                            <form method="POST" action="{{ route('admin.remove') }}" 
+                                  onsubmit="return confirm('Remove admin privileges from {{ $adminUser->name }}? This will remove admin access.')"
+                                  style="display: inline;">
+                                @csrf
+                                <input type="hidden" name="user_id" value="0">
+                                <input type="hidden" name="admin_email" value="{{ $adminUser->email }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Remove Admin</button>
+                            </form>
+                            @else
+                            <span class="protected-admin">🔒 Protected</span>
+                            @endif
+                        </div>
+                        @endif
                     @endforeach
                 </div>
             @else
@@ -290,6 +369,18 @@
     border-radius: 4px;
 }
 
+.form-group input[type="email"].error {
+    border-color: #e74c3c;
+    background-color: #fdf2f2;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    display: block;
+    margin-top: 5px;
+}
+
 .admin-list {
     display: flex;
     flex-direction: column;
@@ -317,17 +408,54 @@
 }
 
 .calendar-badge {
-    background: #d4edda;
-    color: #155724;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 10px;
-    text-transform: uppercase;
+    background: #27ae60;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.role-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+.role-badge.super-admin {
+    background: #f39c12;
+    color: white;
+}
+
+.role-badge.admin {
+    background: #3498db;
+    color: white;
+}
+
+.status-badge {
+    background: #95a5a6;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-left: 10px;
 }
 
 .current-user {
     color: #666;
     font-style: italic;
+}
+
+.protected-admin {
+    color: #e67e22;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 4px 8px;
+    background: #fdf2e9;
+    border-radius: 4px;
+    border: 1px solid #f39c12;
 }
 
 .no-bookings {
@@ -336,4 +464,4 @@
     padding: 40px;
 }
 </style>
-@endsection 
+@endsection

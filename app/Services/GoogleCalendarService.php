@@ -305,4 +305,114 @@ class GoogleCalendarService
             Log::warning('Could not delete event for admin ' . $admin->id . ': ' . $e->getMessage());
         }
     }
-} 
+
+    /**
+     * Fetch events from Google Calendar for a specific date range
+     */
+    public function getCalendarEvents(User $user, $startDate = null, $endDate = null)
+    {
+        try {
+            if (!$user->hasGoogleCalendarAccess()) {
+                return [];
+            }
+
+            $this->setTokenForUser($user);
+            $service = new Calendar($this->client);
+
+            // Default to current month if no dates provided
+            if (!$startDate) {
+                $startDate = Carbon::now()->startOfMonth();
+            }
+            if (!$endDate) {
+                $endDate = Carbon::now()->endOfMonth()->addMonths(2); // Show next 3 months
+            }
+
+            $optParams = [
+                'orderBy' => 'startTime',
+                'singleEvents' => true,
+                'timeMin' => $startDate->toIso8601String(),
+                'timeMax' => $endDate->toIso8601String(),
+                'maxResults' => 100
+            ];
+
+            $events = $service->events->listEvents($user->google_calendar_id, $optParams);
+            $calendarEvents = [];
+
+            foreach ($events->getItems() as $event) {
+                $start = $event->getStart();
+                $end = $event->getEnd();
+                
+                // Skip all-day events or events without proper time
+                if (!$start->getDateTime() || !$end->getDateTime()) {
+                    continue;
+                }
+
+                $startDateTime = Carbon::parse($start->getDateTime());
+                $endDateTime = Carbon::parse($end->getDateTime());
+
+                $calendarEvents[] = [
+                    'id' => $event->getId(),
+                    'title' => $event->getSummary() ?: 'Untitled Event',
+                    'description' => $event->getDescription() ?: '',
+                    'start' => $startDateTime,
+                    'end' => $endDateTime,
+                    'duration' => $endDateTime->diffInHours($startDateTime),
+                    'attendees' => $this->formatAttendees($event->getAttendees()),
+                    'is_studio_booking' => strpos($event->getSummary() ?: '', 'Studio Session') !== false,
+                    'location' => $event->getLocation() ?: '',
+                    'status' => $event->getStatus() ?: 'confirmed'
+                ];
+            }
+
+            return $calendarEvents;
+        } catch (Exception $e) {
+            Log::error('Failed to fetch calendar events: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Format attendees for display
+     */
+    private function formatAttendees($attendees)
+    {
+        if (!$attendees) {
+            return [];
+        }
+
+        $formatted = [];
+        foreach ($attendees as $attendee) {
+            $formatted[] = [
+                'email' => $attendee->getEmail(),
+                'name' => $attendee->getDisplayName() ?: $attendee->getEmail(),
+                'status' => $attendee->getResponseStatus() ?: 'needsAction'
+            ];
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Get upcoming events for dashboard display
+     */
+    public function getUpcomingEvents(User $user, $limit = 10)
+    {
+        try {
+            $events = $this->getCalendarEvents(
+                $user, 
+                Carbon::now(), 
+                Carbon::now()->addWeeks(4)
+            );
+
+            // Sort by start time and limit
+            usort($events, function($a, $b) {
+                return $a['start']->timestamp <=> $b['start']->timestamp;
+            });
+
+            return array_slice($events, 0, $limit);
+        } catch (Exception $e) {
+            Log::error('Failed to fetch upcoming events: ' . $e->getMessage());
+            return [];
+        }
+    }
+}

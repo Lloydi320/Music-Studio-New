@@ -23,6 +23,9 @@
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="#" id="feedbackLink">Feedbacks</a></li>
+        @if(Auth::check() && Auth::user()->isAdmin())
+        <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
+        @endif
       </ul>
     </nav>
     @if(Auth::check())

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->string('google_event_id')->nullable()->after('status');
+            $table->string('google_event_id')->nullable();
         });
     }
 
@@ -25,4 +25,4 @@ return new class extends Migration
             $table->dropColumn('google_event_id');
         });
     }
-}; 
+};
