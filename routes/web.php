@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\InstrumentRentalController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\FeedbackController;
 
@@ -32,6 +33,19 @@ Route::post('/booking', [BookingController::class, 'store'])->middleware('auth')
 Route::get('/api/booked-dates', [App\Http\Controllers\BookingController::class, 'getBookedDates']);
 Route::get('/api/bookings-by-date', [App\Http\Controllers\BookingController::class, 'getBookingsByDate']);
 
+// Instrument Rental Routes
+Route::get('/instrument-rental', [InstrumentRentalController::class, 'index'])->name('instrument-rental');
+Route::post('/instrument-rental', [InstrumentRentalController::class, 'store'])->middleware('auth')->name('instrument-rental.store');
+
+// Instrument Rental API Routes
+Route::get('/api/instruments-by-type', [InstrumentRentalController::class, 'getInstrumentsByType']);
+Route::get('/api/daily-rate', [InstrumentRentalController::class, 'getDailyRate']);
+Route::post('/api/check-rental-availability', [InstrumentRentalController::class, 'checkAvailability']);
+Route::get('/api/user-rentals', [InstrumentRentalController::class, 'getUserRentals'])->middleware('auth');
+Route::get('/api/rental/{reference}', [InstrumentRentalController::class, 'getByReference']);
+Route::post('/api/rental/{reference}/cancel', [InstrumentRentalController::class, 'cancelByReference'])->middleware('auth');
+Route::post('/api/rental/{reference}/status', [InstrumentRentalController::class, 'updateStatus']);
+
 // Removed this route as it conflicts with API routes
 
 // Google OAuth routes
@@ -60,6 +74,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/google-calendar/sync', [App\Http\Controllers\AdminController::class, 'syncBookingsToCalendar'])->name('admin.calendar.sync');
     Route::post('/make-admin', [App\Http\Controllers\AdminController::class, 'makeAdmin'])->name('admin.make');
     Route::post('/remove-admin', [App\Http\Controllers\AdminController::class, 'removeAdmin'])->name('admin.remove');
+    Route::get('/instrument-rentals', [App\Http\Controllers\AdminController::class, 'instrumentRentals'])->name('admin.instrument-rentals');
+    Route::post('/instrument-rentals/{id}/status', [App\Http\Controllers\AdminController::class, 'updateRentalStatus'])->name('admin.rental-status');
 });
 
 Route::get('/debug-google', function () {

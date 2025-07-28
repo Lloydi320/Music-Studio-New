@@ -85,7 +85,7 @@
         <small class="service-hint">Click to Book</small>
       </a>
 
-      <a href="/booking" class="service-box">
+      <a href="/instrument-rental" class="service-box">
         <img src="{{ asset('images/instruments.png') }}" alt="Instruments Rental" />
         <h3>Instruments Rental</h3>
         <p>Need a guitar, amp, or mic? Rent affordable gear for your session without the hassle.</p>

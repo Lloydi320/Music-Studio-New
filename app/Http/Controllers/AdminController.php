@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use App\Services\GoogleCalendarService;
 use App\Models\User;
 use App\Models\Booking;
+use App\Models\InstrumentRental;
 
 class AdminController extends Controller
 {
@@ -43,12 +44,22 @@ class AdminController extends Controller
         $confirmedBookings = Booking::where('status', 'confirmed')->count();
         $recentBookings = Booking::with('user')->latest()->take(10)->get();
         
+        // Instrument rental statistics
+        $totalRentals = InstrumentRental::count();
+        $pendingRentals = InstrumentRental::where('status', 'pending')->count();
+        $activeRentals = InstrumentRental::where('status', 'active')->count();
+        $recentRentals = InstrumentRental::with('user')->latest()->take(10)->get();
+        
         return view('admin.dashboard', compact(
             'user', 
             'totalBookings', 
             'pendingBookings', 
             'confirmedBookings', 
-            'recentBookings'
+            'recentBookings',
+            'totalRentals',
+            'pendingRentals',
+            'activeRentals',
+            'recentRentals'
         ));
     }
 
@@ -225,6 +236,44 @@ class AdminController extends Controller
             return redirect()->back()->with('success', "Admin privileges removed from {$user->name}.");
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to remove admin privileges: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Show instrument rentals management page
+     */
+    public function instrumentRentals()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $rentals = InstrumentRental::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('admin.instrument-rentals', compact('user', 'rentals'));
+    }
+
+    /**
+     * Update instrument rental status
+     */
+    public function updateRentalStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,active,returned,cancelled'
+        ]);
+
+        try {
+            $rental = InstrumentRental::findOrFail($id);
+            $rental->update(['status' => $request->status]);
+
+            return redirect()->back()->with('success', "Rental status updated to {$request->status}.");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update rental status: ' . $e->getMessage());
         }
     }
 } 
