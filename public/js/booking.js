@@ -80,6 +80,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function parseTimeRange(timeRange, date) {
+    // timeRange: "08:00 AM - 11:00 AM"
+    const [startStr, endStr] = timeRange.split('-').map(s => s.trim());
+    const start = new Date(date);
+    const end = new Date(date);
+    // Parse times
+    const [startHour, startMin, startPeriod] = startStr.match(/(\d+):(\d+) (\w+)/).slice(1);
+    const [endHour, endMin, endPeriod] = endStr.match(/(\d+):(\d+) (\w+)/).slice(1);
+    start.setHours((startPeriod === 'PM' && startHour !== '12' ? +startHour + 12 : +startHour), +startMin, 0, 0);
+    end.setHours((endPeriod === 'PM' && endHour !== '12' ? +endHour + 12 : +endHour), +endMin, 0, 0);
+    return [start, end];
+  }
+
   function generateTimeSlots(durationHours, selectedDate = null, bookings = []) {
     if (!slotsContainer) return;
     
@@ -108,9 +121,12 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!(isToday && start < now)) {
         const end = new Date(start.getTime() + durationMinutes * 60000);
         const slotLabel = `${formatTime(start)} - ${formatTime(end)}`;
-        // Hide if this slot is already booked (exact match)
-        const isBooked = bookings.some(b => b.time_slot.trim() === slotLabel);
-        if (!isBooked) {
+        // Check for overlap with any booking
+        const overlaps = bookings.some(b => {
+          const [bookedStart, bookedEnd] = parseTimeRange(b.time_slot, slotDate);
+          return start < bookedEnd && end > bookedStart;
+        });
+        if (!overlaps) {
           const btn = document.createElement("button");
           btn.textContent = slotLabel;
           btn.addEventListener("click", function() {
