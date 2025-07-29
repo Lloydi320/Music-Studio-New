@@ -106,6 +106,30 @@
                                 @endif
                             </td>
                             <td>
+                                @if($booking->status === 'pending')
+                                    <!-- Approve Button -->
+                                    <form method="POST" action="{{ route('admin.booking.approve', $booking->id) }}" 
+                                          style="display: inline; margin-right: 5px;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-success btn-sm" title="Approve Booking">
+                                            ✓ Approve
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Reject Button -->
+                                    <form method="POST" action="{{ route('admin.booking.reject', $booking->id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to reject booking {{ $booking->reference }} for {{ $booking->user->name }}?')" 
+                                          style="display: inline; margin-right: 5px;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-warning btn-sm" title="Reject Booking">
+                                            ✗ Reject
+                                        </button>
+                                    </form>
+                                @endif
+                                
+                                <!-- Delete Button (always available) -->
                                 <form method="POST" action="{{ route('admin.booking.delete', $booking->id) }}" 
                                       onsubmit="return confirm('Are you sure you want to delete booking {{ $booking->reference }} for {{ $booking->user->name }}? This will also remove it from Google Calendar.')" 
                                       style="display: inline;">
@@ -500,6 +524,26 @@
 
 .btn-danger:hover {
     background-color: #c0392b;
+}
+
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+    transition: background-color 0.2s;
+}
+
+.btn-success:hover {
+    background-color: #229954;
+}
+
+.btn-warning {
+    background-color: #f39c12;
+    color: white;
+    transition: background-color 0.2s;
+}
+
+.btn-warning:hover {
+    background-color: #e67e22;
 }
 
 .bookings-table td {

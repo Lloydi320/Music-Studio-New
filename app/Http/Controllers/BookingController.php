@@ -44,9 +44,9 @@ class BookingController extends Controller
         $newStartTime = Carbon::createFromFormat('h:i A', $startTime);
         $newEndTime = $newStartTime->copy()->addHours($duration);
         
-        // Check for overlapping bookings on the same date
+        // Check for overlapping bookings on the same date (only confirmed bookings)
         $overlappingBookings = Booking::where('date', $request->date)
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->get();
         
         foreach ($overlappingBookings as $existingBooking) {
@@ -69,7 +69,7 @@ class BookingController extends Controller
             'date' => $request->date,
             'time_slot' => $request->time_slot,
             'duration' => $duration, // Use the already cast integer
-            'status' => 'confirmed',
+            'status' => 'pending',
         ]);
 
         // Log the booking creation for debugging
@@ -82,20 +82,14 @@ class BookingController extends Controller
             'user_id' => $booking->user_id
         ]);
 
-        // Create Google Calendar event for admin users (if service is available)
-        if ($this->calendarService) {
-            try {
-                $this->calendarService->createBookingEvent($booking);
-                Log::info('Google Calendar event created for booking', ['booking_id' => $booking->id]);
-            } catch (\Exception $e) {
-                Log::warning('Failed to create Google Calendar event', [
-                    'booking_id' => $booking->id,
-                    'error' => $e->getMessage()
-                ]);
-            }
-        }
+        // Note: Google Calendar event will be created only after admin approval
+        Log::info('Booking created and pending approval', [
+            'booking_id' => $booking->id,
+            'reference' => $booking->reference,
+            'status' => 'pending'
+        ]);
 
-        return redirect('/booking')->with('success', 'Your booking has been confirmed! Reference: ' . $booking->reference);
+        return redirect('/booking')->with('success', 'Your booking has been submitted and is pending admin approval. Reference: ' . $booking->reference);
     }
 
     public function getByDate(Request $request)
@@ -105,7 +99,7 @@ class BookingController extends Controller
         ]);
         
         $bookings = Booking::where('date', $request->date)
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->get(['time_slot', 'user_id', 'duration']);
         
         // Calculate the actual occupied time ranges for each booking
@@ -262,4 +256,4 @@ class BookingController extends Controller
         $bookings = \App\Models\Booking::where('date', $date)->get(['id', 'reference', 'user_id', 'date', 'time_slot', 'duration', 'status']);
         return response()->json(['bookings' => $bookings]);
     }
-} 
+}

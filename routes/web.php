@@ -86,6 +86,8 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/instrument-rentals', [App\Http\Controllers\AdminController::class, 'instrumentRentals'])->name('admin.instrument-rentals');
     Route::post('/instrument-rentals/{id}/status', [App\Http\Controllers\AdminController::class, 'updateRentalStatus'])->name('admin.rental-status');
     Route::delete('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'deleteBooking'])->name('admin.booking.delete');
+Route::patch('/bookings/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveBooking'])->name('admin.booking.approve');
+Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');
 });
 
 Route::get('/debug-google', function () {

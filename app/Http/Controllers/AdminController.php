@@ -540,4 +540,91 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Failed to delete booking: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Approve a pending booking
+     */
+    public function approveBooking($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $booking = Booking::findOrFail($id);
+            
+            if ($booking->status !== 'pending') {
+                return redirect()->back()->with('error', 'Only pending bookings can be approved.');
+            }
+            
+            // Update booking status to confirmed
+            $booking->update(['status' => 'confirmed']);
+            
+            // Create Google Calendar event for approved booking
+            if ($this->calendarService) {
+                try {
+                    $this->calendarService->createBookingEvent($booking);
+                    Log::info('Google Calendar event created for approved booking', [
+                        'booking_id' => $booking->id,
+                        'reference' => $booking->reference
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to create Google Calendar event for approved booking', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Continue with approval even if calendar creation fails
+                }
+            }
+            
+            return redirect()->back()->with('success', "Booking {$booking->reference} for {$booking->user->name} has been approved and confirmed.");
+        } catch (\Exception $e) {
+            Log::error('Failed to approve booking', [
+                'booking_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Failed to approve booking: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject a pending booking
+     */
+    public function rejectBooking($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $booking = Booking::findOrFail($id);
+            
+            if ($booking->status !== 'pending') {
+                return redirect()->back()->with('error', 'Only pending bookings can be rejected.');
+            }
+            
+            // Update booking status to cancelled
+            $booking->update(['status' => 'cancelled']);
+            
+            Log::info('Booking rejected by admin', [
+                'booking_id' => $booking->id,
+                'reference' => $booking->reference,
+                'admin_id' => $user->id
+            ]);
+            
+            return redirect()->back()->with('success', "Booking {$booking->reference} for {$booking->user->name} has been rejected.");
+        } catch (\Exception $e) {
+            Log::error('Failed to reject booking', [
+                'booking_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Failed to reject booking: ' . $e->getMessage());
+        }
+    }
 }
