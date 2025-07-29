@@ -44,9 +44,9 @@ class BookingController extends Controller
         $newStartTime = Carbon::createFromFormat('h:i A', $startTime);
         $newEndTime = $newStartTime->copy()->addHours($duration);
         
-        // Check for overlapping bookings on the same date (only confirmed bookings)
+        // Check for overlapping bookings on the same date (pending and confirmed bookings)
         $overlappingBookings = Booking::where('date', $request->date)
-            ->where('status', 'confirmed')
+            ->whereIn('status', ['pending', 'confirmed'])
             ->get();
         
         foreach ($overlappingBookings as $existingBooking) {
@@ -99,7 +99,7 @@ class BookingController extends Controller
         ]);
         
         $bookings = Booking::where('date', $request->date)
-            ->where('status', 'confirmed')
+            ->whereIn('status', ['pending', 'confirmed'])
             ->get(['time_slot', 'user_id', 'duration']);
         
         // Calculate the actual occupied time ranges for each booking
@@ -146,9 +146,9 @@ class BookingController extends Controller
         $newStartTime = Carbon::createFromFormat('h:i A', $startTime);
         $newEndTime = $newStartTime->copy()->addHours($duration);
         
-        // Check for overlapping bookings on the same date
+        // Check for overlapping bookings on the same date (pending and confirmed bookings)
         $overlappingBookings = Booking::where('date', $request->date)
-            ->where('status', '!=', 'cancelled')
+            ->whereIn('status', ['pending', 'confirmed'])
             ->get();
         
         foreach ($overlappingBookings as $existingBooking) {
