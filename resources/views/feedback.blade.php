@@ -500,6 +500,8 @@
     }
   </script>
 
+  <script src="{{ asset('js/page-transitions.js') }}"></script>
+
   <div id="contactPopup" class="contact-popup">
     <div class="contact-card">
       <button class="close-contact" id="closeContact">&times;</button>

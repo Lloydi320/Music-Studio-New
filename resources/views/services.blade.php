@@ -146,6 +146,7 @@
   </footer>
 
       <script src="{{ asset('js/script.js') }}"></script>
+      <script src="{{ asset('js/page-transitions.js') }}"></script>
   <script>
   // Check for hash on page load and scroll to it
   document.addEventListener('DOMContentLoaded', function() {

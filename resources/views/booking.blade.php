@@ -129,5 +129,6 @@
 </footer>
 
 <script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/page-transitions.js') }}"></script>
 </body>
 </html>

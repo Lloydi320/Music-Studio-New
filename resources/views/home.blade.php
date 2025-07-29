@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Lemon Hub Studio</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link rel="preload" href="{{ asset('images/studio-bg.jpg') }}" as="image">
 
 </head>
 
@@ -164,8 +165,20 @@
   </footer>
 
       <script src="{{ asset('js/script.js') }}"></script>
+      <script src="{{ asset('js/page-transitions.js') }}"></script>
   
   <script>
+    // Preload background image for faster loading
+    document.addEventListener('DOMContentLoaded', function() {
+      const hero = document.querySelector('.hero');
+      const bgImage = new Image();
+      
+      bgImage.onload = function() {
+        hero.classList.add('loaded');
+      };
+      
+      bgImage.src = '/images/studio-bg.jpg';
+    });
     // Global variables for feedback form
     let selectedRating = 0;
     

@@ -1238,5 +1238,6 @@
       });
     });
   </script>
+  <script src="{{ asset('js/page-transitions.js') }}"></script>
 </body>
 </html> 

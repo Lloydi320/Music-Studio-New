@@ -567,6 +567,7 @@
     </div>
   </footer>
 
+  <script src="{{ asset('js/page-transitions.js') }}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Contact popup functionality
