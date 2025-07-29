@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedMonth = today.getMonth();
   let selectedCell = null;
   let selectedTimeSlot = '';
-  let selectedDuration = 3;
+  let selectedDuration = 1;
 
   const monthNames = [
     "January", "February", "March", "April", "May", "June",

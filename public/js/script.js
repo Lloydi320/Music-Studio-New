@@ -1,105 +1,169 @@
+// Home page calendar functionality
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🎯 Calendar script loaded!');
+  
+  // Calendar variables
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth();
+  const realYear = new Date().getFullYear();
+  const realMonth = new Date().getMonth();
 
-console.log('*** THIS IS THE CORRECT JS FILE ***');
+  // Calendar elements
+  const calendarGrid = document.getElementById('calendarGrid');
+  const monthYear = document.getElementById('monthYear');
+  const timeSlots = document.getElementById('timeSlots');
+  const prevMonth = document.getElementById('prevMonth');
+  const nextMonth = document.getElementById('nextMonth');
 
-document.addEventListener("DOMContentLoaded", function () {
-  console.log('Attaching calendar event listeners...');
+  console.log('🔍 Calendar elements found:', {
+    calendarGrid: !!calendarGrid,
+    monthYear: !!monthYear,
+    timeSlots: !!timeSlots,
+    prevMonth: !!prevMonth,
+    nextMonth: !!nextMonth
+  });
 
-  const calendarGrid = document.getElementById("calendarGrid");
-  const timeSlots = document.getElementById("timeSlots");
-  const monthYear = document.getElementById("monthYear");
-
-  const now = new Date();
-  let currentMonth = now.getMonth();
-  let currentYear = now.getFullYear();
-
-  const realMonth = now.getMonth();
-  const realYear = now.getFullYear();
-  const realDay = now.getDate();
-
-  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  let bookedDates = [];
-
-  async function fetchBookedDates(year, month) {
-    try {
-      const res = await fetch(`/api/booked-dates?year=${year}&month=${month}`);
-      const data = await res.json();
-      bookedDates = data.booked_dates || [];
-    } catch (err) {
-      bookedDates = [];
-    }
-  }
-
-  if (calendarGrid && timeSlots && monthYear) {
+  if (calendarGrid && monthYear) {
+    console.log('✅ Calendar elements found, generating calendar...');
+    
+    // Generate calendar
     async function generateCalendar(year, month) {
-      await fetchBookedDates(year, month);
-      calendarGrid.innerHTML = "";
+      console.log('📅 Generating calendar for:', year, month);
+      
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const daysInMonth = lastDay.getDate();
+      const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
-      dayNames.forEach(day => {
-        const dayDiv = document.createElement("div");
-        dayDiv.className = "day-name";
-        dayDiv.textContent = day;
-        calendarGrid.appendChild(dayDiv);
+      calendarGrid.innerHTML = '';
+
+      // Days of week header
+      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      daysOfWeek.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'day-name';
+        dayHeader.textContent = day;
+        calendarGrid.appendChild(dayHeader);
       });
 
-      const firstDay = new Date(year, month, 1);
-      const startDay = (firstDay.getDay() + 6) % 7;
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const monthString = (month + 1).toString().padStart(2, "0");
-
-      for (let i = 0; i < startDay; i++) {
-        calendarGrid.appendChild(document.createElement("div"));
-      }
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateDiv = document.createElement("div");
-        const dateKey = `${year}-${monthString}-${d.toString().padStart(2, "0")}`;
-        dateDiv.textContent = d;
-
-        if (bookedDates.includes(dateKey)) {
-          dateDiv.classList.add("booked");
-          dateDiv.title = "Booked";
-        }
-
-        const isPastDate =
-          year < realYear ||
-          (year === realYear && month < realMonth) ||
-          (year === realYear && month === realMonth && d < realDay);
-
-        if (isPastDate) {
-          dateDiv.classList.add("disabled");
+      // Fetch booked dates for this month
+      let bookedDates = [];
+      try {
+        const response = await fetch(`/api/booked-dates`);
+        const data = await response.json();
+        console.log('📊 API Response:', data);
+        
+        // Handle the API response format
+        if (data.booked_dates) {
+          bookedDates = data.booked_dates;
+        } else if (Array.isArray(data)) {
+          bookedDates = data;
         } else {
-          dateDiv.addEventListener("click", async () => {
-            document.querySelectorAll(".calendar-grid div").forEach(el => el.classList.remove("selected"));
-            dateDiv.classList.add("selected");
-            console.log('Clicked dateKey:', dateKey);
-            await showTimeSlots(dateKey);
-          });
+          bookedDates = [];
         }
-
-        calendarGrid.appendChild(dateDiv);
+        
+        console.log('📊 Booked dates:', bookedDates);
+      } catch (error) {
+        console.error('Error fetching booked dates:', error);
+        bookedDates = [];
       }
 
-      monthYear.textContent = `${new Date(year, month).toLocaleString("default", { month: "long" })} ${year}`;
+      // Calculate the start date for the calendar grid (first day of the week that contains the first day of the month)
+      const startDate = new Date(firstDay);
+      startDate.setDate(startDate.getDate() - firstDayOfWeek);
+
+      // Generate 42 cells (6 rows × 7 days)
+      for (let i = 0; i < 42; i++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+        
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        
+        dayElement.textContent = currentDate.getDate();
+        
+        // Check if this date is in the current month
+        if (currentDate.getMonth() === month) {
+          dayElement.classList.add('current-month');
+          
+          // Check if date is today
+          const today = new Date();
+          if (currentDate.toDateString() === today.toDateString()) {
+            dayElement.classList.add('today');
+          }
+          
+          // Check if date has bookings
+          const dateKey = currentDate.toISOString().split('T')[0];
+          console.log('Checking date:', dateKey, 'against booked dates:', bookedDates);
+          
+          if (bookedDates.includes(dateKey)) {
+            dayElement.classList.add('booked');
+            dayElement.title = 'Booked';
+            console.log('✅ Date is booked:', dateKey);
+          }
+          
+          // Check if date is in the past
+          if (currentDate < new Date().setHours(0, 0, 0, 0)) {
+            dayElement.classList.add('past');
+            dayElement.style.color = '#bbb';
+            dayElement.style.backgroundColor = '#ececec';
+            dayElement.style.textDecoration = 'line-through';
+            dayElement.style.opacity = '0.7';
+            dayElement.style.pointerEvents = 'none';
+          } else {
+            // Add click event for future dates
+            dayElement.addEventListener('click', () => {
+              showTimeSlots(dateKey);
+            });
+          }
+        } else {
+          // This date is not in the current month
+          dayElement.classList.add('other-month');
+          dayElement.style.color = '#ccc';
+          dayElement.style.backgroundColor = 'transparent';
+        }
+        
+        calendarGrid.appendChild(dayElement);
+      }
+
+      // Update month/year display
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      monthYear.textContent = `${monthNames[month]} ${year}`;
+      
+      console.log('✅ Calendar generated successfully!');
     }
 
+    // Show time slots for selected date
     async function showTimeSlots(dateKey) {
-      timeSlots.innerHTML = "";
-      const heading = document.createElement("h4");
-      heading.textContent = "Booking Info";
-      timeSlots.appendChild(heading);
-
       try {
-        const res = await fetch(`/api/bookings-by-date?date=${dateKey}`);
-        const data = await res.json();
-        console.log('API response for', dateKey, ':', data);
+        // Clear previous time slots
+        timeSlots.innerHTML = '';
+        
+        // Show loading
+        timeSlots.innerHTML = '<p>Loading booking info...</p>';
+        
+        // Fetch booking details from API
+        const response = await fetch(`/api/bookings-by-date?date=${dateKey}`);
+        const data = await response.json();
+        console.log('📋 Booking details for', dateKey, ':', data);
+        
+        // Clear loading message
+        timeSlots.innerHTML = '';
+        
+        const heading = document.createElement('h4');
+        heading.textContent = 'Booking Info';
+        timeSlots.appendChild(heading);
+        
         if (data.bookings && data.bookings.length > 0) {
           data.bookings.forEach(booking => {
-            const bookingDiv = document.createElement("div");
-            bookingDiv.className = "booking-detail";
-            bookingDiv.style.marginBottom = "16px";
-            bookingDiv.style.padding = "10px";
-            bookingDiv.style.borderBottom = "2.5px solid #333";
+            const bookingDiv = document.createElement('div');
+            bookingDiv.className = 'booking-detail';
+            bookingDiv.style.marginBottom = '16px';
+            bookingDiv.style.padding = '10px';
+            bookingDiv.style.borderBottom = '2.5px solid #333';
             bookingDiv.innerHTML = `
               <strong>Time Slot:</strong> ${booking.time_slot}<br>
               <strong>Status:</strong> ${booking.status}
@@ -107,49 +171,52 @@ document.addEventListener("DOMContentLoaded", function () {
             timeSlots.appendChild(bookingDiv);
           });
         } else {
-          const message = document.createElement("p");
-          message.textContent = "No bookings for this date.";
+          const message = document.createElement('p');
+          message.textContent = 'No bookings for this date.';
           timeSlots.appendChild(message);
         }
       } catch (err) {
-        const message = document.createElement("p");
-        message.textContent = "Failed to load booking info.";
-        timeSlots.appendChild(message);
         console.error('Error fetching booking info for', dateKey, ':', err);
+        timeSlots.innerHTML = '<p>Failed to load booking info.</p>';
       }
     }
 
-    document.getElementById("prevMonth").addEventListener("click", () => {
-      if (
-        currentYear > realYear ||
-        (currentYear === realYear && currentMonth > realMonth)
-      ) {
-        if (currentMonth === 0) {
-          currentMonth = 11;
-          currentYear--;
+    // Navigation buttons
+    if (prevMonth) {
+      prevMonth.addEventListener("click", () => {
+        if (currentYear > realYear || (currentYear === realYear && currentMonth > realMonth)) {
+          if (currentMonth === 0) {
+            currentMonth = 11;
+            currentYear--;
+          } else {
+            currentMonth--;
+          }
+          generateCalendar(currentYear, currentMonth);
+        }
+      });
+    }
+
+    if (nextMonth) {
+      nextMonth.addEventListener("click", () => {
+        if (currentMonth === 11) {
+          currentMonth = 0;
+          currentYear++;
         } else {
-          currentMonth--;
+          currentMonth++;
         }
         generateCalendar(currentYear, currentMonth);
-      }
-    });
+      });
+    }
 
-    document.getElementById("nextMonth").addEventListener("click", () => {
-      if (currentMonth === 11) {
-        currentMonth = 0;
-        currentYear++;
-      } else {
-        currentMonth++;
-      }
-      generateCalendar(currentYear, currentMonth);
-    });
-
+    // Initial calendar generation
+    console.log('🚀 Starting initial calendar generation...');
     generateCalendar(currentYear, currentMonth);
+  } else {
+    console.error('❌ Calendar elements not found!');
   }
 });
 
-
-
+// Contact popup functionality
 document.addEventListener("DOMContentLoaded", () => {
   const contactLink = document.getElementById("contactLink");
   const contactPopup = document.getElementById("contactPopup");
@@ -158,8 +225,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (contactLink && contactPopup && closeContact) {
     contactLink.addEventListener("click", (e) => {
       e.preventDefault();
-
-     
+      
+      // Calculate scrollbar width to prevent layout shift
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
       document.body.style.paddingRight = `${scrollbarWidth}px`;
@@ -183,177 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  const stars = document.querySelectorAll(".rating-stars span");
-  let selectedRating = 0;
-
-  stars.forEach(star => {
-    star.addEventListener("click", () => {
-      selectedRating = parseInt(star.dataset.value);
-      updateStars();
-    });
-  });
-
-  function updateStars() {
-    stars.forEach(star => {
-      star.classList.toggle("active", parseInt(star.dataset.value) <= selectedRating);
-    });
-  }
-
-
-  const feedbackForm = document.getElementById("feedbackForm");
-  const feedbackEntries = document.getElementById("feedbackEntries");
-
-  feedbackForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById("name").value;
-    const comment = document.getElementById("comment").value;
-    const photo = document.getElementById("photo").files[0];
-
-    // Validate required fields
-    if (!name || !comment || selectedRating === 0) {
-      alert("Please fill in all required fields and select a rating.");
-      return;
-    }
-
-    // Create FormData for file upload
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('rating', selectedRating);
-    formData.append('comment', comment);
-    formData.append('content', comment); // Backend expects 'content' field
-    if (photo) {
-      formData.append('photo', photo);
-    }
-
-    try {
-      // Send feedback to backend
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-          'Accept': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Create feedback card for display
-        const feedbackCard = document.createElement("div");
-        feedbackCard.style.border = "1px solid #ddd";
-        feedbackCard.style.borderRadius = "8px";
-        feedbackCard.style.padding = "15px";
-        feedbackCard.style.marginBottom = "15px";
-        feedbackCard.style.background = "#fff";
-
-        feedbackCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>Rating: ${'★'.repeat(selectedRating)}${'☆'.repeat(5 - selectedRating)}</p>
-          <p>${comment}</p>
-          <small style="color: #666;">✅ Saved to database</small>
-        `;
-
-        if (photo) {
-          const img = document.createElement("img");
-          img.src = URL.createObjectURL(photo);
-          img.style.width = "100%";
-          img.style.maxWidth = "300px";
-          img.style.marginTop = "10px";
-          img.style.borderRadius = "8px";
-          img.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
-          img.style.cursor = "pointer";
-          
-          // Add click to enlarge functionality
-          img.addEventListener('click', () => {
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background: rgba(0,0,0,0.8);
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              z-index: 10000;
-              cursor: pointer;
-            `;
-            
-            const modalImg = document.createElement('img');
-            modalImg.src = img.src;
-            modalImg.style.cssText = `
-              max-width: 90%;
-              max-height: 90%;
-              border-radius: 8px;
-              box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            `;
-            
-            modal.appendChild(modalImg);
-            document.body.appendChild(modal);
-            
-            modal.addEventListener('click', () => {
-              document.body.removeChild(modal);
-            });
-          });
-          
-          feedbackCard.appendChild(img);
-        }
-
-        // Remove placeholder
-        const placeholder = feedbackEntries.querySelector(".placeholder");
-        if (placeholder) placeholder.remove();
-
-        // Add the new feedback to the display immediately
-        feedbackEntries.appendChild(feedbackCard);
-        feedbackForm.reset();
-        selectedRating = 0;
-        updateStars();
-        
-        // Show success message
-        const successMessage = document.createElement('div');
-        successMessage.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #28a745;
-          color: white;
-          padding: 15px 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-          z-index: 1000;
-          animation: slideIn 0.3s ease;
-        `;
-        successMessage.innerHTML = '✅ Feedback submitted successfully!';
-        document.body.appendChild(successMessage);
-        
-        // Remove success message after 3 seconds
-        setTimeout(() => {
-          successMessage.style.animation = 'slideOut 0.3s ease';
-          setTimeout(() => {
-            if (successMessage.parentNode) {
-              successMessage.parentNode.removeChild(successMessage);
-            }
-          }, 300);
-        }, 3000);
-      } else {
-        const errorData = await response.json();
-        alert("Error submitting feedback: " + (errorData.message || "Unknown error"));
-      }
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
-      alert("Error submitting feedback. Please try again.");
-    }
-  });
-});
-
-
-
+// Feedback popup functionality
 document.addEventListener("DOMContentLoaded", () => {
   const feedbackLink = document.getElementById("feedbackLink");
   const feedbackPopup = document.getElementById("feedbackPopup");
@@ -362,17 +259,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (feedbackLink && feedbackPopup && closeFeedback) {
     feedbackLink.addEventListener("click", (e) => {
       e.preventDefault();
+      
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
       document.body.style.paddingRight = `${scrollbarWidth}px`;
+
       feedbackPopup.classList.add("active");
     });
+
     closeFeedback.addEventListener("click", () => {
       feedbackPopup.classList.remove("active");
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";
     });
-    feedbackPopup.addEventListener("click", (e) => {
+
+    window.addEventListener("click", (e) => {
       if (e.target === feedbackPopup) {
         feedbackPopup.classList.remove("active");
         document.body.style.overflow = "";
@@ -380,6 +281,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
-
-
+}); 

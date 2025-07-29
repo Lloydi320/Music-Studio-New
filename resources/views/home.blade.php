@@ -163,7 +163,7 @@
     <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo" />
   </footer>
 
-  <script src="{{ asset('js/script.js') }}"></script>
+      <script src="{{ asset('js/script.js') }}"></script>
   
   <script>
     // Global variables for feedback form

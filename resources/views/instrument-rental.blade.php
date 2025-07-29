@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
   <style>
          .rental-container {
-       max-width: 1200px;
+       max-width: 1400px;
        margin: 0 auto;
        padding: 20px;
        background: #fff;
@@ -40,8 +40,8 @@
 
          .rental-form {
        display: grid;
-       grid-template-columns: 1fr 1fr;
-       gap: 30px;
+       grid-template-columns: 1fr 1fr 1fr;
+       gap: 25px;
        margin-bottom: 30px;
      }
 
@@ -98,6 +98,8 @@
        margin-bottom: 30px;
        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
      }
+     
+
 
          .price-summary h3 {
        margin: 0 0 15px 0;
@@ -126,6 +128,8 @@
        border: 2px solid rgba(255, 255, 255, 0.5);
        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
      }
+     
+
 
      .package-option label {
        display: flex;
@@ -151,6 +155,10 @@
        color: #111;
        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
      }
+     
+
+     
+
 
          .submit-section {
        text-align: center;
@@ -213,6 +221,311 @@
        color: #dbb411;
      }
      
+     .rental-terms-compact {
+       margin-top: 20px;
+       padding: 15px;
+       background: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%);
+       border-radius: 8px;
+       border: 2px solid #ffd700;
+       box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+     }
+     
+     .rental-terms-compact h4 {
+       color: #111;
+       margin: 0 0 10px 0;
+       font-size: 1.1em;
+     }
+     
+     .terms-compact {
+       display: flex;
+       flex-direction: column;
+       gap: 8px;
+     }
+     
+     .term-compact {
+       font-size: 0.85em;
+       color: #555;
+       line-height: 1.3;
+     }
+     
+     .form-section .price-details {
+       margin-bottom: 20px;
+     }
+     
+     .form-section .price-item {
+       display: flex;
+       justify-content: space-between;
+       padding: 8px 0;
+       border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+       font-size: 0.9em;
+     }
+     
+     .form-section .price-item:last-child {
+       border-bottom: none;
+       font-weight: bold;
+       font-size: 1em;
+     }
+     
+     .form-section .package-option {
+       margin: 15px 0;
+       padding: 12px;
+       background: rgba(255, 255, 255, 0.4);
+       border-radius: 6px;
+       border: 1px solid rgba(255, 255, 255, 0.6);
+     }
+     
+     .form-section .total-price {
+       font-size: 1.3em;
+       padding: 12px;
+       margin-top: 15px;
+       background: rgba(255, 255, 255, 0.5);
+       border: 2px solid rgba(255, 215, 0, 0.5);
+     }
+     
+     .payment-note {
+       margin-top: 15px;
+       padding: 12px;
+       background: rgba(255, 255, 255, 0.4);
+       border-radius: 6px;
+       border: 1px solid rgba(255, 215, 0, 0.3);
+       font-size: 0.9em;
+     }
+     
+     .payment-note ul {
+       margin: 8px 0 0 0;
+       padding-left: 20px;
+     }
+     
+            .payment-note li {
+         margin-bottom: 4px;
+         color: #555;
+       }
+       
+       /* Modal Styles */
+       .modal {
+         display: none;
+         position: fixed;
+         z-index: 9999;
+         left: 0;
+         top: 0;
+         width: 100vw;
+         height: 100vh;
+         background-color: rgba(0, 0, 0, 0.6);
+         backdrop-filter: blur(5px);
+       }
+       
+       .modal-content {
+         background-color: white;
+         margin: 1% auto;
+         padding: 0;
+         border-radius: 10px;
+         width: 95%;
+         max-width: 700px;
+         max-height: 85vh;
+         overflow-y: auto;
+         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+       }
+       
+       .modal-header {
+         background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
+         color: #111;
+         padding: 15px 20px;
+         border-radius: 10px 10px 0 0;
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+       }
+       
+       .modal-header h2 {
+         margin: 0;
+         font-size: 1.3em;
+       }
+       
+       .close-modal {
+         color: #111;
+         font-size: 28px;
+         font-weight: bold;
+         cursor: pointer;
+         line-height: 1;
+       }
+       
+       .close-modal:hover {
+         color: #333;
+       }
+       
+       .modal-body {
+         padding: 12px 18px;
+       }
+       
+       .summary-section {
+         margin-bottom: 15px;
+       }
+       
+       .summary-section h3 {
+         color: #111;
+         margin: 0 0 8px 0;
+         font-size: 1em;
+         border-bottom: 2px solid #ffd700;
+         padding-bottom: 2px;
+       }
+       
+       .summary-item {
+         display: flex;
+         justify-content: space-between;
+         padding: 4px 0;
+         border-bottom: 1px solid #eee;
+         font-size: 0.9em;
+       }
+       
+       .summary-item.total {
+         font-weight: bold;
+         font-size: 1.05em;
+         color: #dbb411;
+         border-bottom: 2px solid #ffd700;
+       }
+       
+       .payment-reminder {
+         background: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%);
+         border: 2px solid #ffd700;
+         border-radius: 8px;
+         padding: 10px;
+         margin-top: 12px;
+       }
+       
+       .payment-reminder strong {
+         color: #111;
+       }
+       
+       .payment-reminder p {
+         margin: 6px 0 0 0;
+         color: #555;
+         font-size: 0.85em;
+       }
+       
+       .modal-footer {
+         padding: 12px 18px;
+         border-top: 1px solid #eee;
+         display: flex;
+         gap: 15px;
+         justify-content: flex-end;
+       }
+       
+       .btn-cancel, .btn-confirm {
+         padding: 10px 20px;
+         border: none;
+         border-radius: 6px;
+         font-size: 14px;
+         font-weight: bold;
+         cursor: pointer;
+         transition: all 0.3s ease;
+       }
+       
+       .btn-cancel {
+         background: #f8f9fa;
+         color: #666;
+         border: 2px solid #ddd;
+       }
+       
+       .btn-cancel:hover {
+         background: #e9ecef;
+         border-color: #adb5bd;
+       }
+       
+       .btn-confirm {
+         background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
+         color: #111;
+         border: 2px solid #ffd700;
+         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+       }
+       
+       .btn-confirm:hover {
+         transform: translateY(-2px);
+         box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+       }
+       
+       /* Responsive modal for smaller screens */
+       @media (max-height: 700px) {
+         .modal-content {
+           margin: 0.5% auto;
+           max-height: 98vh;
+         }
+         
+         .modal-header {
+           padding: 10px 15px;
+         }
+         
+         .modal-header h2 {
+           font-size: 1.2em;
+         }
+         
+         .modal-body {
+           padding: 8px 12px;
+         }
+         
+         .summary-section {
+           margin-bottom: 10px;
+         }
+         
+         .summary-section h3 {
+           font-size: 0.95em;
+           margin: 0 0 6px 0;
+         }
+         
+         .summary-item {
+           padding: 3px 0;
+           font-size: 0.85em;
+         }
+         
+         .payment-reminder {
+           padding: 6px;
+           margin-top: 8px;
+         }
+         
+         .payment-reminder p {
+           font-size: 0.75em;
+         }
+         
+         .modal-footer {
+           padding: 8px 12px;
+         }
+         
+         .btn-cancel, .btn-confirm {
+           padding: 6px 14px;
+           font-size: 12px;
+         }
+       }
+     
+     /* Responsive design */
+     @media (max-width: 1200px) {
+       .rental-form {
+         grid-template-columns: 1fr 1fr;
+         gap: 20px;
+       }
+       
+       .rental-form .form-section:last-child {
+         grid-column: 1 / -1;
+         max-width: 600px;
+         margin: 0 auto;
+       }
+     }
+     
+     @media (max-width: 768px) {
+       .rental-form {
+         grid-template-columns: 1fr;
+         gap: 20px;
+       }
+       
+       .rental-container {
+         padding: 15px;
+       }
+       
+       .rental-header h1 {
+         font-size: 2em;
+       }
+     }
+     
+
+     
      /* Custom input styles to match the yellow theme */
      input[type="text"], input[type="email"], input[type="number"], input[type="date"], select, textarea {
        width: 100%;
@@ -230,13 +543,7 @@
        box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
      }
      
-     select {
-       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffd700' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-       background-repeat: no-repeat;
-       background-position: right 12px center;
-       background-size: 16px;
-       padding-right: 40px;
-     }
+
 
     .alert {
       padding: 15px;
@@ -419,6 +726,27 @@
               <label for="daily_rate">Daily Rate:</label>
               <input type="text" id="daily_rate" value="₱0.00" readonly>
             </div>
+
+            <div class="form-group">
+              <label for="venue_type">Venue Type:</label>
+              <select name="venue_type" required>
+                <option value="indoor">Indoor Venue (Required for safety)</option>
+                <option value="outdoor" disabled>Outdoor Venue (Not allowed)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="event_duration_hours">Event Duration (Hours):</label>
+              <input type="number" name="event_duration_hours" min="1" max="12" value="7" required>
+              <small>Maximum 7 hours included. ₱200 per exceeding hour.</small>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" name="documentation_consent" value="1" checked>
+                I consent to photos/videos being taken for studio documentation
+              </label>
+            </div>
           </div>
 
           <div class="form-section">
@@ -464,70 +792,71 @@
             </div>
 
             <div class="form-group">
-              <label for="venue_type">Venue Type:</label>
-              <select name="venue_type" required>
-                <option value="indoor">Indoor Venue (Required for safety)</option>
-                <option value="outdoor" disabled>Outdoor Venue (Not allowed)</option>
-              </select>
+              <label for="notes">Special Requirements or Notes:</label>
+              <textarea name="notes" id="notes" rows="3" placeholder="Any special requirements, setup needs, or additional information..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>💰 Price Summary</h3>
+            
+            <div class="price-details">
+              <div class="price-item">
+                <span>Daily Rate:</span>
+                <span id="summary_daily_rate">₱0.00</span>
+              </div>
+              <div class="price-item">
+                <span>Duration:</span>
+                <span id="summary_duration">0 days</span>
+              </div>
+              <div class="price-item">
+                <span>Subtotal:</span>
+                <span id="summary_subtotal">₱0.00</span>
+              </div>
+              <div class="price-item">
+                <span>Transportation Fee:</span>
+                <span id="transportation_fee">₱0.00</span>
+              </div>
+              <div class="price-item">
+                <span>Reservation Fee & Security Deposit:</span>
+                <span>₱300.00</span>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="event_duration_hours">Event Duration (Hours):</label>
-              <input type="number" name="event_duration_hours" min="1" max="12" value="7" required>
-              <small>Maximum 7 hours included. ₱200 per exceeding hour.</small>
-            </div>
-
-            <div class="form-group">
+            <div class="package-option">
               <label>
-                <input type="checkbox" name="documentation_consent" value="1" checked>
-                I consent to photos/videos being taken for studio documentation
+                <input type="checkbox" id="full_package" name="full_package">
+                <strong>Full Package Rental (₱4,500/day)</strong> - Includes all equipment
               </label>
             </div>
+
+            <div class="total-price">
+              Total: <span id="summary_total">₱0.00</span>
+            </div>
+            
+            <div class="payment-note">
+              <strong>💳 Payment Terms:</strong>
+              <ul>
+                <li>Security deposit (₱300) must be paid first to confirm booking</li>
+                <li>Full payment will be collected upon pickup/delivery</li>
+                <li>Cash or digital payment accepted</li>
+              </ul>
+            </div>
+
+            <div class="rental-terms-compact">
+              <h4>⚠️ Key Terms</h4>
+              <div class="terms-compact">
+                <div class="term-compact">• ₱300 Reservation Fee (Refundable Upon Event Completion)</div>
+                <div class="term-compact">• Indoor venues only</div>
+                <div class="term-compact">• Max 7 hours included</div>
+                <div class="term-compact">• ID required for pickup</div>
+                <div class="term-compact">• Full payment before pickup</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="price-summary">
-          <h3>💰 Price Summary</h3>
-                     <div class="price-details">
-             <div class="price-item">
-               <span>Daily Rate:</span>
-               <span id="summary_daily_rate">₱0.00</span>
-             </div>
-             <div class="price-item">
-               <span>Duration:</span>
-               <span id="summary_duration">0 days</span>
-             </div>
-             <div class="price-item">
-               <span>Subtotal:</span>
-               <span id="summary_subtotal">₱0.00</span>
-             </div>
-             <div class="price-item">
-               <span>Transportation Fee:</span>
-               <span id="transportation_fee">₱0.00</span>
-             </div>
-             <div class="price-item">
-               <span>Reservation Fee & Security Deposit:</span>
-               <span>₱300.00</span>
-             </div>
-           </div>
-          <div class="package-option">
-            <label>
-              <input type="checkbox" id="full_package" name="full_package">
-              <strong>Full Package Rental (₱4,500/day)</strong> - Includes all equipment
-            </label>
-          </div>
-          <div class="total-price">
-            Total: <span id="summary_total">₱0.00</span>
-          </div>
-        </div>
 
-        <div class="form-section">
-          <h3>📝 Additional Notes</h3>
-          <div class="form-group">
-            <label for="notes">Special Requirements or Notes:</label>
-            <textarea name="notes" id="notes" rows="4" placeholder="Any special requirements, setup needs, or additional information..."></textarea>
-          </div>
-        </div>
 
         <div class="rental-terms">
           <h3>⚠️ Rental Terms & Conditions</h3>
@@ -560,8 +889,105 @@
         </div>
 
         <div class="submit-section">
-          <button type="submit" class="submit-btn">🎵 Confirm Instrument Rental</button>
+          <button type="button" class="submit-btn" id="showSummaryBtn">🎵 Confirm Instrument Rental</button>
         </div>
+      </form>
+      
+      <!-- Rental Summary Modal -->
+      <div id="rentalSummaryModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>📋 Rental Booking Summary</h2>
+            <span class="close-modal">&times;</span>
+          </div>
+          <div class="modal-body">
+            <div class="summary-section">
+              <h3>🎸 Instrument Details</h3>
+              <div class="summary-item">
+                <span>Instrument Type:</span>
+                <span id="modal_instrument_type">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Specific Instrument:</span>
+                <span id="modal_instrument_name">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Daily Rate:</span>
+                <span id="modal_daily_rate">-</span>
+              </div>
+            </div>
+            
+            <div class="summary-section">
+              <h3>📅 Rental Period</h3>
+              <div class="summary-item">
+                <span>Start Date:</span>
+                <span id="modal_start_date">-</span>
+              </div>
+              <div class="summary-item">
+                <span>End Date:</span>
+                <span id="modal_end_date">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Duration:</span>
+                <span id="modal_duration">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Event Duration:</span>
+                <span id="modal_event_duration">-</span>
+              </div>
+            </div>
+            
+            <div class="summary-section">
+              <h3>📍 Location & Services</h3>
+              <div class="summary-item">
+                <span>Pickup Location:</span>
+                <span id="modal_pickup">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Return Location:</span>
+                <span id="modal_return">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Transportation:</span>
+                <span id="modal_transportation">-</span>
+              </div>
+            </div>
+            
+            <div class="summary-section">
+              <h3>💰 Payment Summary</h3>
+              <div class="summary-item">
+                <span>Subtotal:</span>
+                <span id="modal_subtotal">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Transportation Fee:</span>
+                <span id="modal_transportation_fee">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Extra Hour Charges:</span>
+                <span id="modal_extra_hours">-</span>
+              </div>
+              <div class="summary-item total">
+                <span>Total Amount:</span>
+                <span id="modal_total">-</span>
+              </div>
+              <div class="summary-item">
+                <span>Security Deposit (Paid First):</span>
+                <span>₱300.00</span>
+              </div>
+            </div>
+            
+            <div class="payment-reminder">
+              <strong>💳 Payment Reminder:</strong>
+              <p>Security deposit (₱300) must be paid first to confirm this booking. Full payment will be collected upon pickup/delivery. Security deposit is refundable upon event completion.</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" id="cancelBooking">❌ Cancel</button>
+            <button type="button" class="btn-confirm" id="confirmBooking">✅ Confirm Booking</button>
+          </div>
+        </div>
+      </div>
       </form>
     </div>
   </div>
@@ -637,12 +1063,16 @@
        // Add event listeners for full package and transportation
        document.getElementById('full_package').addEventListener('change', updatePriceSummary);
        document.getElementById('transportation_select').addEventListener('change', updatePriceSummary);
+       
+       // Add event listener for event duration hours
+       document.querySelector('input[name="event_duration_hours"]').addEventListener('input', updatePriceSummary);
 
              // Update price summary
        function updatePriceSummary() {
          const selectedType = instrumentTypeSelect.value;
          const fullPackage = document.getElementById('full_package').checked;
          const transportation = document.getElementById('transportation_select').value;
+         const eventDurationHours = parseInt(document.querySelector('input[name="event_duration_hours"]').value) || 7;
          
          let dailyRate = 0;
          let duration = parseInt(durationInput.value) || 0;
@@ -656,40 +1086,148 @@
          const subtotal = dailyRate * duration;
          const transportationFee = transportation === 'delivery' ? 550 : 0; // Average of ₱500-₱600
          const reservationFee = 300; // Reservation fee & security deposit
-         const total = subtotal + transportationFee + reservationFee;
+         
+         // Calculate extra hour charges (₱200 per exceeding hour after 7 hours)
+         const maxIncludedHours = 7;
+         const extraHours = Math.max(0, eventDurationHours - maxIncludedHours);
+         const extraHourCharges = extraHours * 200;
+         
+         const total = subtotal + transportationFee + reservationFee + extraHourCharges;
          
          document.getElementById('summary_daily_rate').textContent = `₱${dailyRate.toFixed(2)}`;
          document.getElementById('summary_duration').textContent = `${duration} day${duration !== 1 ? 's' : ''}`;
          document.getElementById('summary_subtotal').textContent = `₱${subtotal.toFixed(2)}`;
          document.getElementById('transportation_fee').textContent = `₱${transportationFee.toFixed(2)}`;
          document.getElementById('summary_total').textContent = `₱${total.toFixed(2)}`;
+         
+         // Update the event duration note to show extra charges if applicable
+         const eventDurationInput = document.querySelector('input[name="event_duration_hours"]');
+         const noteElement = eventDurationInput.parentNode.querySelector('small');
+         if (extraHours > 0) {
+           noteElement.textContent = `Maximum 7 hours included. ₱200 per exceeding hour. (Extra ${extraHours} hour(s): ₱${extraHourCharges.toFixed(2)})`;
+           noteElement.style.color = '#e67e22';
+           noteElement.style.fontWeight = 'bold';
+         } else {
+           noteElement.textContent = 'Maximum 7 hours included. ₱200 per exceeding hour.';
+           noteElement.style.color = '';
+           noteElement.style.fontWeight = '';
+         }
        }
 
-      // Form validation
-      form.addEventListener('submit', function(e) {
+      // Modal functionality
+      const modal = document.getElementById('rentalSummaryModal');
+      const showSummaryBtn = document.getElementById('showSummaryBtn');
+      const closeModal = document.querySelector('.close-modal');
+      const cancelBooking = document.getElementById('cancelBooking');
+      const confirmBooking = document.getElementById('confirmBooking');
+      
+      // Show modal when button is clicked
+      showSummaryBtn.addEventListener('click', function() {
+        // Validate form first
+        if (!validateForm()) {
+          return;
+        }
+        
+        // Populate modal with current form data
+        populateModal();
+        
+        // Show modal
+        modal.style.display = 'block';
+      });
+      
+      // Close modal functions
+      function closeModalFunc() {
+        modal.style.display = 'none';
+      }
+      
+      closeModal.addEventListener('click', closeModalFunc);
+      cancelBooking.addEventListener('click', closeModalFunc);
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+          closeModalFunc();
+        }
+      });
+      
+      // Confirm booking
+      confirmBooking.addEventListener('click', function() {
+        // Submit the form
+        form.submit();
+      });
+      
+      // Form validation function
+      function validateForm() {
         const startDate = new Date(startDateInput.value);
         const endDate = new Date(endDateInput.value);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
         if (startDate < today) {
-          e.preventDefault();
           alert('Start date cannot be in the past.');
-          return;
+          return false;
         }
         
         if (endDate <= startDate) {
-          e.preventDefault();
           alert('End date must be after start date.');
-          return;
+          return false;
         }
         
         if (!instrumentTypeSelect.value || !instrumentNameSelect.value) {
-          e.preventDefault();
           alert('Please select both instrument type and specific instrument.');
-          return;
+          return false;
         }
-      });
+        
+        return true;
+      }
+      
+      // Populate modal with form data
+      function populateModal() {
+        const selectedType = instrumentTypeSelect.value;
+        const selectedInstrument = instrumentNameSelect.value;
+        const eventDurationHours = parseInt(document.querySelector('input[name="event_duration_hours"]').value) || 7;
+        const transportation = document.getElementById('transportation_select').value;
+        const pickupLocation = document.querySelector('select[name="pickup_location"]').value;
+        const returnLocation = document.querySelector('select[name="return_location"]').value;
+        
+        // Get instrument names
+        const instrumentTypes = @json($instrumentTypes);
+        const availableInstruments = @json($availableInstruments);
+        
+        // Calculate prices
+        const fullPackage = document.getElementById('full_package').checked;
+        let dailyRate = 0;
+        let duration = parseInt(durationInput.value) || 0;
+        
+        if (fullPackage) {
+          dailyRate = 4500;
+        } else {
+          dailyRate = dailyRates[selectedType] || 0;
+        }
+        
+        const subtotal = dailyRate * duration;
+        const transportationFee = transportation === 'delivery' ? 550 : 0;
+        const maxIncludedHours = 7;
+        const extraHours = Math.max(0, eventDurationHours - maxIncludedHours);
+        const extraHourCharges = extraHours * 200;
+        const total = subtotal + transportationFee + 300 + extraHourCharges; // 300 is reservation fee
+        
+        // Populate modal fields
+        document.getElementById('modal_instrument_type').textContent = instrumentTypes[selectedType] || '-';
+        document.getElementById('modal_instrument_name').textContent = availableInstruments[selectedType]?.[selectedInstrument] || '-';
+        document.getElementById('modal_daily_rate').textContent = `₱${dailyRate.toFixed(2)}`;
+        document.getElementById('modal_start_date').textContent = startDateInput.value || '-';
+        document.getElementById('modal_end_date').textContent = endDateInput.value || '-';
+        document.getElementById('modal_duration').textContent = durationInput.value || '-';
+        document.getElementById('modal_event_duration').textContent = `${eventDurationHours} hour(s)`;
+        document.getElementById('modal_pickup').textContent = pickupLocation === 'Studio' ? 'Studio (288H Sto.Domingo Street, Calamba)' : pickupLocation;
+        document.getElementById('modal_return').textContent = returnLocation === 'Studio' ? 'Studio (288H Sto.Domingo Street, Calamba)' : returnLocation;
+        document.getElementById('modal_transportation').textContent = transportation === 'delivery' ? 'Delivery & Pickup (₱550)' : 'No Transportation (Self Pickup)';
+        document.getElementById('modal_subtotal').textContent = `₱${subtotal.toFixed(2)}`;
+        document.getElementById('modal_transportation_fee').textContent = `₱${transportationFee.toFixed(2)}`;
+        document.getElementById('modal_extra_hours').textContent = extraHours > 0 ? `₱${extraHourCharges.toFixed(2)} (${extraHours} extra hour(s))` : '₱0.00';
+        document.getElementById('modal_total').textContent = `₱${total.toFixed(2)}`;
+      }
 
       // Set minimum end date based on start date
       startDateInput.addEventListener('change', function() {

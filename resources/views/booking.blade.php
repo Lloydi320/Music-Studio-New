@@ -52,7 +52,7 @@
       <div class="info-section fixed-info-section">
         <p class="studio-name">Lemon Hub Studio</p>
         <h2><span id="serviceType">STUDIO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
-        <p class="duration">🕒 <span id="selectedDurationLabel">3 hrs</span></p>
+        <p class="duration">🕒 <span id="selectedDurationLabel">1 hr</span></p>
         <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
         <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
       </div>
@@ -70,9 +70,9 @@
               <!-- Duration dropdown -->
               <label for="durationSelect" style="display:block; margin: 10px 0 5px;">Choose Duration:</label>
               <select id="durationSelect">
-                <option value="1">1 hour</option>
+                <option value="1" selected>1 hour</option>
                 <option value="2">2 hours</option>
-                <option value="3" selected>3 hours</option>
+                <option value="3">3 hours</option>
                 <option value="4">4 hours</option>
                 <option value="5">5 hours</option>
                 <option value="6">6 hours</option>
