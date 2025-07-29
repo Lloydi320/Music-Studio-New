@@ -85,7 +85,7 @@
         <small class="service-hint">Click to Rent</small>
       </a>
 
-      <a href="/booking" class="service-box">
+      <a href="/music-lessons" class="service-box">
         <img src="{{ asset('images/lessons.jpg') }}" alt="Music Lessons" />
         <h3>Music Lessons</h3>
         <p>Private or group lessons in vocals, guitar, keyboard, and drums. Ideal for all ages and skill levels.</p>

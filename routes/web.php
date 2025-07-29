@@ -15,6 +15,10 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
+Route::get('/music-lessons', function () {
+    return view('music-lessons');
+})->name('music-lessons');
+
 Route::get('/feedback', function () {
     return view('feedback');
 })->name('feedback');
