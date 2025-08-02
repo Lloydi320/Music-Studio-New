@@ -36,6 +36,7 @@ Route::post('/booking', [BookingController::class, 'store'])->middleware('auth')
 
 Route::get('/api/booked-dates', [App\Http\Controllers\BookingController::class, 'getBookedDates']);
 Route::get('/api/bookings-by-date', [App\Http\Controllers\BookingController::class, 'getBookingsByDate']);
+Route::get('/api/bookings', [App\Http\Controllers\BookingController::class, 'getByDate']);
 
 // Instrument Rental Routes
 Route::get('/instrument-rental', [InstrumentRentalController::class, 'index'])->name('instrument-rental');
@@ -52,12 +53,12 @@ Route::post('/api/rental/{reference}/status', [InstrumentRentalController::class
 
 // Removed this route as it conflicts with API routes
 
-// Login route (redirects to Google OAuth)
+// Login route (show login page with tabs)
 Route::get('/login', function () {
-    return redirect()->route('google.login');
+    return view('login');
 })->name('login');
 
-// Google OAuth routes
+// Google OAuth routes with type parameter
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -96,6 +97,7 @@ Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::cla
 // Add these new routes for instrument rental approval
 Route::patch('/instrument-rentals/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveRental'])->name('admin.rental.approve');
 Route::patch('/instrument-rentals/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectRental'])->name('admin.rental.reject');
+Route::get('/api/bookings/dates-with-status', [BookingController::class, 'getBookedDatesWithStatus']);
 });
 
 Route::get('/debug-google', function () {
@@ -105,4 +107,8 @@ Route::get('/debug-google', function () {
         'redirect' => config('services.google.redirect'),
     ];
 });
+
+// Google Calendar webhook (should be outside auth middleware)
+Route::post('/webhooks/google-calendar', [App\Http\Controllers\GoogleCalendarWebhookController::class, 'handleWebhook'])
+    ->name('google.calendar.webhook');
 

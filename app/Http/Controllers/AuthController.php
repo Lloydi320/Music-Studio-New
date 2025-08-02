@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\Log;
 class AuthController extends Controller
 {
     
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
         try {
+            // Store login type in session
+            $loginType = $request->get('type', 'user');
+            session(['login_type' => $loginType]);
+            
             /** @var \Laravel\Socialite\Two\GoogleProvider $googleDriver */
             $googleDriver = Socialite::driver('google');
             return $googleDriver
@@ -22,7 +26,7 @@ class AuthController extends Controller
                 ->redirect();
         } catch (\Exception $e) {
             Log::error('Google OAuth redirect error: ' . $e->getMessage());
-            return redirect('/')->with('error', 'Google OAuth is not configured properly.');
+            return redirect('/login')->with('error', 'Google OAuth is not configured properly.');
         }
     }
 
@@ -36,35 +40,49 @@ class AuthController extends Controller
 
             if (!$googleUser || !$googleUser->email) {
                 Log::error('Google OAuth callback: No user or email received');
-                return redirect('/')->with('error', 'Google login failed. No user information received.');
+                return redirect('/login')->with('error', 'Google login failed. No user information received.');
             }
 
+            // Get login type from session
+            $loginType = session('login_type', 'user');
+            
             // Check if this is a new user
             $existingUser = User::where('email', $googleUser->email)->first();
             $isNewUser = !$existingUser;
 
-            // Create or update user - allows ANY Gmail user to register
-            $user = User::updateOrCreate([
-                'email' => $googleUser->email,
-            ], [
-                'name' => $googleUser->name ?? 'Google User',
-                'google_id' => $googleUser->id,
-                'password' => bcrypt(uniqid()),
-                'email_verified_at' => now(), // Mark email as verified since it's from Google
-            ]);
+            // For admin login, check if user exists and is admin
+            if ($loginType === 'admin') {
+                if (!$existingUser) {
+                    return redirect('/login')->with('error', 'Admin account not found. Please contact the system administrator.');
+                }
+                
+                if (!$existingUser->isAdmin()) {
+                    return redirect('/login')->with('error', 'Access denied. Admin privileges required.');
+                }
+                
+                $user = $existingUser;
+            } else {
+                // Regular user login - create or update user
+                $user = User::updateOrCreate([
+                    'email' => $googleUser->email,
+                ], [
+                    'name' => $googleUser->name ?? 'Google User',
+                    'google_id' => $googleUser->id,
+                ]);
+            }
 
-            // Log the login/registration
-            if ($isNewUser) {
+            // Log the login
+            if ($isNewUser && $loginType === 'user') {
                 Log::info('New user registered via Google OAuth', [
                     'user_id' => $user->id,
                     'email' => $user->email,
-                    'name' => $user->name,
-                    'google_id' => $googleUser->id
+                    'name' => $user->name
                 ]);
             } else {
-                Log::info('Existing user logged in via Google OAuth', [
+                Log::info('User logged in via Google OAuth', [
                     'user_id' => $user->id,
-                    'email' => $user->email
+                    'email' => $user->email,
+                    'login_type' => $loginType
                 ]);
             }
 
@@ -82,57 +100,42 @@ class AuthController extends Controller
                     'email' => $googleUser->email,
                     'name' => $googleUser->name,
                     'avatar' => $googleUser->avatar,
-                    'login_time' => now()->toDateTimeString()
+                    'login_time' => now()->toDateTimeString(),
+                    'login_type' => $loginType
                 ]
             ]);
             
-            $welcomeMessage = $isNewUser 
-                ? 'Welcome to Lemon Hub Studio! Your account has been created successfully.' 
-                : 'Welcome back to Lemon Hub Studio!';
+            // Clear login type from session
+            session()->forget('login_type');
             
-            // Check if user is admin and redirect accordingly
-            /** @var User $user */
+            // Redirect based on user type
             if ($user->isAdmin()) {
-                return redirect('/admin/dashboard')->with('success', $welcomeMessage . ' Redirected to admin dashboard.');
+                return redirect()->route('admin.dashboard')->with('success', 'Welcome back, Admin!');
+            } else {
+                return redirect('/')->with('success', 'Welcome to Lemon Hub Studio!');
             }
-            
-            return redirect('/')->with('success', $welcomeMessage);
             
         } catch (\Exception $e) {
             Log::error('Google OAuth callback error: ' . $e->getMessage());
-            return redirect('/')->with('error', 'Google login failed. Please try again. Error: ' . $e->getMessage());
+            return redirect('/login')->with('error', 'Login failed. Please try again.');
         }
     }
 
-   
     public function logout(Request $request)
     {
-        try {
-            // Clear all session data
-            $request->session()->flush();
-            
-            // Logout the user
-            Auth::logout();
-            
-            // Clear Google avatar session
-            if (session()->has('google_user_avatar')) {
-                session()->forget('google_user_avatar');
-            }
-            
-            // Clear CSRF token and regenerate session
-            $request->session()->forget('_token');
-            $request->session()->regenerate();
-            
-            // Clear any Socialite session data
-            if (session()->has('socialite.state')) {
-                session()->forget('socialite.state');
-            }
-            
-            return redirect('/')->with('success', 'Successfully logged out!');
-            
-        } catch (\Exception $e) {
-            Log::error('Logout error: ' . $e->getMessage());
-            return redirect('/')->with('error', 'Logout failed. Please try again.');
+        $user = Auth::user();
+        
+        if ($user) {
+            Log::info('User logged out', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
         }
+        
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect('/')->with('success', 'You have been logged out successfully.');
     }
 }

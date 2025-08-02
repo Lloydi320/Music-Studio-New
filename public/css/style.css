@@ -1335,4 +1335,22 @@ html {
   font-size: 13px;
 }
 
+.stat-card.cancelled {
+    border-left: 4px solid #e74c3c;
+}
+
+.cancelled-booking {
+    background-color: #fdf2f2;
+    opacity: 0.8;
+}
+
+.status-badge.status-cancelled {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.cancelled-booking td {
+    color: #666;
+}
+
 

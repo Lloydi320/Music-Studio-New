@@ -48,7 +48,7 @@
         </div>
       </div>
     @else
-      <a href="/auth/google" class="book-btn" style="margin-left: 30px;">Login with Google</a>
+      <a href="/login" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 

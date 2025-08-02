@@ -12,34 +12,20 @@
     <!-- Quick Stats -->
     <div class="stats-grid">
         <div class="stat-card">
-            <h3>Total Bookings</h3>
-            <div class="stat-number">{{ $totalBookings }}</div>
+            <h3>{{ $totalBookings }}</h3>
+            <p>Total Active Bookings</p>
         </div>
         <div class="stat-card">
-            <h3>Pending</h3>
-            <div class="stat-number pending">{{ $pendingBookings }}</div>
+            <h3>{{ $pendingBookings }}</h3>
+            <p>Pending Approval</p>
         </div>
         <div class="stat-card">
-            <h3>Confirmed</h3>
-            <div class="stat-number confirmed">{{ $confirmedBookings }}</div>
+            <h3>{{ $confirmedBookings }}</h3>
+            <p>Confirmed Bookings</p>
         </div>
-        <div class="stat-card">
-            <h3>Calendar Status</h3>
-            <div class="stat-status">
-                @if($user->hasGoogleCalendarAccess())
-                    <span class="status-connected">✓ Connected</span>
-                @else
-                    <span class="status-disconnected">✗ Not Connected</span>
-                @endif
-            </div>
-        </div>
-        <div class="stat-card">
-            <h3>Total Rentals</h3>
-            <div class="stat-number">{{ $totalRentals }}</div>
-        </div>
-        <div class="stat-card">
-            <h3>Pending Rentals</h3>
-            <div class="stat-number pending">{{ $pendingRentals }}</div>
+        <div class="stat-card cancelled">
+            <h3>{{ $cancelledBookings }}</h3>
+            <p>Cancelled Bookings</p>
         </div>
     </div>
 
@@ -358,6 +344,61 @@
                 <p>No admin users found.</p>
             @endif
         </div>
+    </div>
+
+    <!-- Recent Cancelled Bookings -->
+    <div class="admin-section">
+        <h2>Recently Cancelled Bookings</h2>
+        @php
+            $cancelledBookings = App\Models\Booking::with('user')
+                ->where('status', 'cancelled')
+                ->latest('cancelled_at')
+                ->take(5)
+                ->get();
+        @endphp
+        
+        @if($cancelledBookings->count() > 0)
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Cancelled</th>
+                            <th>Reason</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($cancelledBookings as $booking)
+                        <tr class="cancelled-booking">
+                            <td><strong>{{ $booking->reference }}</strong></td>
+                            <td>{{ $booking->user->name }}</td>
+                            <td>{{ \Carbon\Carbon::parse($booking->date)->format('M d, Y') }}</td>
+                            <td>{{ $booking->time_slot }}</td>
+                            <td>{{ $booking->cancelled_at ? \Carbon\Carbon::parse($booking->cancelled_at)->format('M d, Y H:i') : 'N/A' }}</td>
+                            <td>{{ $booking->cancellation_reason ?? 'Manual cancellation' }}</td>
+                            <td>
+                                <form method="POST" action="{{ route('admin.booking.delete', $booking->id) }}" 
+                                      onsubmit="return confirm('Are you sure you want to permanently delete this cancelled booking?')" 
+                                      style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Permanently Delete">
+                                        🗑️ Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p>No cancelled bookings found.</p>
+        @endif
     </div>
 </div>
 

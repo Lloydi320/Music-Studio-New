@@ -42,10 +42,14 @@ class AdminController extends Controller
         if (!Auth::check() || !$user->isAdmin()) {
             abort(403, 'Access denied. Admin access required.');
         }
-        $totalBookings = Booking::count();
+        $totalBookings = Booking::whereIn('status', ['pending', 'confirmed'])->count();
         $pendingBookings = Booking::where('status', 'pending')->count();
         $confirmedBookings = Booking::where('status', 'confirmed')->count();
-        $recentBookings = Booking::with('user')->latest()->take(10)->get();
+        $recentBookings = Booking::with('user')->whereIn('status', ['pending', 'confirmed'])->latest()->take(10)->get();
+        
+        // Add cancelled bookings query
+        $cancelledBookings = Booking::where('status', 'cancelled')->latest()->take(10)->get();
+        $cancelledBookingsCount = Booking::where('status', 'cancelled')->count();
         
         // Instrument rental statistics
         $totalRentals = InstrumentRental::count();
@@ -59,6 +63,8 @@ class AdminController extends Controller
             'pendingBookings', 
             'confirmedBookings', 
             'recentBookings',
+            'cancelledBookings',
+            'cancelledBookingsCount',
             'totalRentals',
             'pendingRentals',
             'activeRentals',
@@ -148,7 +154,17 @@ class AdminController extends Controller
             $success = $this->calendarService->handleCallback($request->code, $user);
             
             if ($success) {
-                return redirect('/admin/calendar')->with('success', 'Google Calendar connected successfully!');
+                // Setup webhook for automatic sync
+                $webhookSetup = $this->calendarService->setupWebhook($user);
+                
+                $message = 'Google Calendar connected successfully!';
+                if ($webhookSetup) {
+                    $message .= ' Automatic sync enabled.';
+                } else {
+                    $message .= ' Note: Automatic sync setup failed, but manual sync is available.';
+                }
+                
+                return redirect('/admin/calendar')->with('success', $message);
             } else {
                 return redirect('/admin/calendar')->with('error', 'Failed to connect Google Calendar.');
             }
@@ -165,9 +181,18 @@ class AdminController extends Controller
         try {
             /** @var User $user */
             $user = Auth::user();
+            
+            // Stop webhook before disconnecting
+            if ($this->calendarService) {
+                $this->calendarService->stopWebhook($user);
+            }
+            
             $user->update([
                 'google_calendar_token' => null,
-                'google_calendar_id' => null
+                'google_calendar_id' => null,
+                'google_webhook_channel_id' => null,
+                'google_webhook_resource_id' => null,
+                'google_webhook_expiration' => null
             ]);
 
             return redirect('/admin/calendar')->with('success', 'Google Calendar disconnected successfully.');

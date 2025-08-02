@@ -99,7 +99,7 @@ class GoogleCalendarService
     /**
      * Set the access token for a specific user
      */
-    private function setTokenForUser(User $user)
+    public function setTokenForUser(User $user)
     {
         if (!$user->google_calendar_token) {
             throw new Exception('User does not have Google Calendar access');
@@ -448,5 +448,94 @@ class GoogleCalendarService
             Log::error('Failed to fetch upcoming events: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /**
+     * Set up webhook for calendar changes
+     */
+    public function setupWebhook(User $user)
+    {
+        if (!$user->hasGoogleCalendarAccess()) {
+            return false;
+        }
+
+        try {
+            $this->setTokenForUser($user);
+            $service = new Calendar($this->client);
+
+            // Create a unique channel ID
+            $channelId = 'studio-booking-' . $user->id . '-' . time();
+            $webhookUrl = config('app.url') . '/webhooks/google-calendar';
+
+            $channel = new \Google\Service\Calendar\Channel([
+                'id' => $channelId,
+                'type' => 'web_hook',
+                'address' => $webhookUrl,
+                'expiration' => (time() + (7 * 24 * 60 * 60)) * 1000, // 7 days
+            ]);
+
+            $watchRequest = $service->events->watch($user->google_calendar_id, $channel);
+            
+            // Store webhook info in user record
+            $user->update([
+                'google_webhook_channel_id' => $channelId,
+                'google_webhook_resource_id' => $watchRequest->getResourceId(),
+                'google_webhook_expiration' => Carbon::createFromTimestamp($watchRequest->getExpiration() / 1000)
+            ]);
+
+            Log::info('Google Calendar webhook setup successful', [
+                'user_id' => $user->id,
+                'channel_id' => $channelId,
+                'resource_id' => $watchRequest->getResourceId()
+            ]);
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Failed to setup Google Calendar webhook: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Stop webhook for calendar changes
+     */
+    public function stopWebhook(User $user)
+    {
+        if (!$user->google_webhook_channel_id || !$user->google_webhook_resource_id) {
+            return true;
+        }
+
+        try {
+            $this->setTokenForUser($user);
+            $service = new Calendar($this->client);
+
+            $channel = new \Google\Service\Calendar\Channel([
+                'id' => $user->google_webhook_channel_id,
+                'resourceId' => $user->google_webhook_resource_id
+            ]);
+
+            $service->channels->stop($channel);
+            
+            // Clear webhook info from user record
+            $user->update([
+                'google_webhook_channel_id' => null,
+                'google_webhook_resource_id' => null,
+                'google_webhook_expiration' => null
+            ]);
+
+            Log::info('Google Calendar webhook stopped', ['user_id' => $user->id]);
+            return true;
+        } catch (Exception $e) {
+            Log::error('Failed to stop Google Calendar webhook: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get the Google Client instance
+     */
+    public function getClient()
+    {
+        return $this->client;
     }
 }
