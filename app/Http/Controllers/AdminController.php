@@ -627,4 +627,80 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Failed to reject booking: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Approve a pending instrument rental
+     */
+    public function approveRental($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $rental = InstrumentRental::findOrFail($id);
+            
+            if ($rental->status !== 'pending') {
+                return redirect()->back()->with('error', 'Only pending rentals can be approved.');
+            }
+            
+            // Update rental status to confirmed
+            $rental->update(['status' => 'confirmed']);
+            
+            Log::info('Instrument rental approved by admin', [
+                'rental_id' => $rental->id,
+                'reference' => $rental->reference,
+                'admin_id' => $user->id
+            ]);
+            
+            return redirect()->back()->with('success', "Rental {$rental->reference} for {$rental->user->name} has been approved and confirmed.");
+        } catch (\Exception $e) {
+            Log::error('Failed to approve rental', [
+                'rental_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Failed to approve rental: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject a pending instrument rental
+     */
+    public function rejectRental($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $rental = InstrumentRental::findOrFail($id);
+            
+            if ($rental->status !== 'pending') {
+                return redirect()->back()->with('error', 'Only pending rentals can be rejected.');
+            }
+            
+            // Update rental status to cancelled
+            $rental->update(['status' => 'cancelled']);
+            
+            Log::info('Instrument rental rejected by admin', [
+                'rental_id' => $rental->id,
+                'reference' => $rental->reference,
+                'admin_id' => $user->id
+            ]);
+            
+            return redirect()->back()->with('success', "Rental {$rental->reference} for {$rental->user->name} has been rejected.");
+        } catch (\Exception $e) {
+            Log::error('Failed to reject rental', [
+                'rental_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Failed to reject rental: ' . $e->getMessage());
+        }
+    }
 }

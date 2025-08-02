@@ -92,6 +92,10 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::delete('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'deleteBooking'])->name('admin.booking.delete');
 Route::patch('/bookings/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveBooking'])->name('admin.booking.approve');
 Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');
+
+// Add these new routes for instrument rental approval
+Route::patch('/instrument-rentals/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveRental'])->name('admin.rental.approve');
+Route::patch('/instrument-rentals/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectRental'])->name('admin.rental.reject');
 });
 
 Route::get('/debug-google', function () {

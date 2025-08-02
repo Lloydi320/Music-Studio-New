@@ -73,4 +73,29 @@ class User extends Authenticatable
     {
         return !empty($this->google_calendar_token);
     }
+
+    // Add this method to the User class
+    public static function rules()
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'google_id' => 'nullable|string|unique:users',
+            'is_admin' => 'boolean',
+            'google_calendar_token' => 'nullable|json',
+            'google_calendar_id' => 'nullable|string',
+        ];
+    }
+
+    public static function updateRules($id = null)
+    {
+        return [
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $id,
+            'google_id' => 'nullable|string|unique:users,google_id,' . $id,
+            'is_admin' => 'sometimes|boolean',
+            'google_calendar_token' => 'nullable|json',
+            'google_calendar_id' => 'nullable|string',
+        ];
+    }
 }

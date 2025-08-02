@@ -15,7 +15,9 @@ class AuthController extends Controller
     public function redirectToGoogle()
     {
         try {
-            return Socialite::driver('google')
+            /** @var \Laravel\Socialite\Two\GoogleProvider $googleDriver */
+            $googleDriver = Socialite::driver('google');
+            return $googleDriver
                 ->with(['prompt' => 'select_account'])
                 ->redirect();
         } catch (\Exception $e) {
@@ -28,7 +30,9 @@ class AuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            /** @var \Laravel\Socialite\Two\GoogleProvider $googleDriver */
+            $googleDriver = Socialite::driver('google');
+            $googleUser = $googleDriver->stateless()->user();
 
             if (!$googleUser || !$googleUser->email) {
                 Log::error('Google OAuth callback: No user or email received');
@@ -85,6 +89,12 @@ class AuthController extends Controller
             $welcomeMessage = $isNewUser 
                 ? 'Welcome to Lemon Hub Studio! Your account has been created successfully.' 
                 : 'Welcome back to Lemon Hub Studio!';
+            
+            // Check if user is admin and redirect accordingly
+            /** @var User $user */
+            if ($user->isAdmin()) {
+                return redirect('/admin/dashboard')->with('success', $welcomeMessage . ' Redirected to admin dashboard.');
+            }
             
             return redirect('/')->with('success', $welcomeMessage);
             

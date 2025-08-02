@@ -105,21 +105,41 @@
                                 </div>
                             </td>
                             <td>
-                                <span class="status-badge status-{{ $rental->status }}">
-                                    {{ ucfirst($rental->status) }}
-                                </span>
-                            </td>
-                            <td>
+                                @if($rental->status === 'pending')
+                                    <!-- Approve Button -->
+                                    <form method="POST" action="{{ route('admin.rental.approve', $rental->id) }}" 
+                                          style="display: inline; margin-right: 5px;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-success btn-sm" title="Approve Rental">
+                                            ✓ Approve
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Reject Button -->
+                                    <form method="POST" action="{{ route('admin.rental.reject', $rental->id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to reject rental {{ $rental->reference }} for {{ $rental->user->name }}?')" 
+                                          style="display: inline; margin-right: 5px;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-warning btn-sm" title="Reject Rental">
+                                            ✗ Reject
+                                        </button>
+                                    </form>
+                                @endif
+                                
+                                <!-- Status Change Dropdown (for non-pending statuses) -->
+                                @if($rental->status !== 'pending')
                                 <form action="{{ route('admin.rental-status', $rental->id) }}" method="POST" style="display: inline;">
                                     @csrf
                                     <select name="status" onchange="this.form.submit()" class="status-select">
-                                        <option value="pending" {{ $rental->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                         <option value="confirmed" {{ $rental->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
                                         <option value="active" {{ $rental->status === 'active' ? 'selected' : '' }}>Active</option>
                                         <option value="returned" {{ $rental->status === 'returned' ? 'selected' : '' }}>Returned</option>
                                         <option value="cancelled" {{ $rental->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                     </select>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                                                  @if($rental->notes)
@@ -306,12 +326,47 @@
     font-weight: bold;
 }
 
+/* Add to existing <style> section */
+.btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
 .status-select {
-    padding: 6px 10px;
+    padding: 4px 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 0.9em;
-    background: white;
+    font-size: 12px;
 }
 
 .rental-notes {
@@ -361,4 +416,4 @@
     }
 }
 </style>
-@endsection 
+@endsection

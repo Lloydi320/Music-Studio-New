@@ -150,6 +150,85 @@
         @endif
     </div>
 
+    <!-- Recent Instrument Rentals -->
+    <div class="recent-rentals">
+        <h2>Recent Instrument Rentals</h2>
+        @if($recentRentals->count() > 0)
+            <div class="rentals-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Client</th>
+                            <th>Instrument</th>
+                            <th>Rental Period</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($recentRentals as $rental)
+                        <tr>
+                            <td><strong>{{ $rental->reference }}</strong></td>
+                            <td>{{ $rental->user->name }}</td>
+                            <td>{{ $rental->instrument_name }}</td>
+                            <td>
+                                {{ \Carbon\Carbon::parse($rental->rental_start_date)->format('M d') }} - 
+                                {{ \Carbon\Carbon::parse($rental->rental_end_date)->format('M d, Y') }}
+                                <br><small>{{ $rental->rental_duration_days }} days</small>
+                            </td>
+                            <td>₱{{ number_format($rental->total_amount, 2) }}</td>
+                            <td>
+                                <span class="status-badge status-{{ $rental->status }}">
+                                    {{ ucfirst($rental->status) }}
+                                </span>
+                            </td>
+                            <td>
+                                @if($rental->status === 'pending')
+                                    <!-- Approve Button -->
+                                    <form method="POST" action="{{ route('admin.rental.approve', $rental->id) }}" 
+                                          style="display: inline; margin-right: 5px;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-success btn-sm" title="Approve Rental">
+                                            ✓ Approve
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Reject Button -->
+                                    <form method="POST" action="{{ route('admin.rental.reject', $rental->id) }}" 
+                                          onsubmit="return confirm('Are you sure you want to reject rental {{ $rental->reference }} for {{ $rental->user->name }}?')" 
+                                          style="display: inline; margin-right: 5px;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-warning btn-sm" title="Reject Rental">
+                                            ✗ Reject
+                                        </button>
+                                    </form>
+                                @else
+                                    <!-- Status Change Dropdown -->
+                                    <form action="{{ route('admin.rental-status', $rental->id) }}" method="POST" style="display: inline;">
+                                        @csrf
+                                        <select name="status" onchange="this.form.submit()" class="status-select">
+                                            <option value="confirmed" {{ $rental->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                            <option value="active" {{ $rental->status === 'active' ? 'selected' : '' }}>Active</option>
+                                            <option value="returned" {{ $rental->status === 'returned' ? 'selected' : '' }}>Returned</option>
+                                            <option value="cancelled" {{ $rental->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        </select>
+                                    </form>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p class="no-rentals">No instrument rentals found.</p>
+        @endif
+    </div>
+
     <!-- User Management -->
     <div class="user-management">
         <h2>User Management</h2>
@@ -553,6 +632,48 @@
 .no-bookings {
     text-align: center;
     color: #666;
+    padding: 40px;
+}
+.recent-rentals {
+    margin-bottom: 40px;
+}
+
+.rentals-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.rentals-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rentals-table th,
+.rentals-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.rentals-table th {
+    background: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+}
+
+.status-select {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.no-rentals {
+    text-align: center;
+    color: #666;
+    font-style: italic;
     padding: 40px;
 }
 </style>
