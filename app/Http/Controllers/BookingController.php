@@ -52,7 +52,8 @@ class BookingController extends Controller
         
         foreach ($existingBookings as $existingBooking) {
             $existingStartTime = trim(explode('-', $existingBooking->time_slot)[0]);
-            $existingStart = Carbon::createFromFormat('Y-m-d g:i A', $existingBooking->date . ' ' . $existingStartTime);
+            $existingDateOnly = explode(' ', $existingBooking->date)[0]; // Extract just the date part
+            $existingStart = Carbon::createFromFormat('Y-m-d g:i A', $existingDateOnly . ' ' . $existingStartTime);
             $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
             
             // Check if there's any overlap
