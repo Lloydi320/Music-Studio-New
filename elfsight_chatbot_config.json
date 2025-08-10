@@ -1,0 +1,32 @@
+{
+  "business_info": {
+    "name": "Lemon Hub Studio",
+    "type": "Music Studio",
+    "description": "Professional music studio offering lessons, recording, and instrument rentals",
+    "location": "Your Location Here",
+    "phone": "Your Phone Number",
+    "email": "Your Email Here",
+    "website": "Your Website URL",
+    "hours": "Your Operating Hours"
+  },
+  "services": [
+    "Music Lessons",
+    "Studio Recording",
+    "Instrument Rentals",
+    "Band Practice Sessions"
+  ],
+  "greeting_messages": {
+    "welcome": "Hello! Welcome to Lemon Hub Studio! How can I help you today?",
+    "fallback": "I'm here to help with any questions about our music studio services. What would you like to know?"
+  },
+  "quick_replies": [
+    "Book a lesson",
+    "Studio rates",
+    "Available instruments",
+    "Contact info"
+  ],
+  "training_data": {
+    "note": "Training data cleared - ready for your custom responses",
+    "qa_pairs": []
+  }
+}

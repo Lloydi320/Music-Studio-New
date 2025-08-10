@@ -633,5 +633,276 @@
     });
   </script>
 
+  <!-- Elfsight AI Chatbot Widget -->
+  <script src="https://static.elfsight.com/platform/platform.js" async></script>
+  <div class="elfsight-app-69dfc65a-ea8b-4259-9e37-def017e1c03f" data-elfsight-app-lazy id="draggable-chatbot"></div>
+
+  <!-- Draggable Chatbot Circle Styles -->
+  <style>
+    #draggable-chatbot {
+      position: fixed !important;
+      z-index: 9999 !important;
+      cursor: move;
+      transition: all 0.2s ease;
+    }
+
+    /* Make the chatbot circle draggable when minimized/closed */
+    #draggable-chatbot .eapps-widget-toolbar,
+    #draggable-chatbot [class*="toolbar"],
+    #draggable-chatbot [class*="trigger"],
+    #draggable-chatbot [class*="button"] {
+      cursor: move !important;
+    }
+
+    /* Hover effect for the draggable circle */
+    #draggable-chatbot:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Ensure the chatbot stays within viewport */
+    #draggable-chatbot {
+      max-width: 100vw;
+      max-height: 100vh;
+    }
+  </style>
+  
+  <!-- Reset Chatbot Conversation on Page Refresh -->
+  <script>
+    // Comprehensive chatbot reset with multiple approaches
+    window.addEventListener('load', function() {
+      // Method 1: Clear all storage data
+      try {
+        // Clear localStorage
+        Object.keys(localStorage).forEach(key => {
+          if (key.toLowerCase().includes('elfsight') || 
+              key.toLowerCase().includes('chatbot') || 
+              key.toLowerCase().includes('eapps') ||
+              key.toLowerCase().includes('widget')) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        // Clear sessionStorage
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.toLowerCase().includes('elfsight') || 
+              key.toLowerCase().includes('chatbot') || 
+              key.toLowerCase().includes('eapps') ||
+              key.toLowerCase().includes('widget')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+        
+        // Clear cookies
+        document.cookie.split(';').forEach(function(c) {
+          var eqPos = c.indexOf('=');
+          var name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
+          if (name.toLowerCase().includes('elfsight') || 
+              name.toLowerCase().includes('chatbot') ||
+              name.toLowerCase().includes('eapps') ||
+              name.toLowerCase().includes('widget')) {
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + window.location.hostname;
+            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+          }
+        });
+      } catch (e) {
+        console.log('Storage clearing completed with some limitations');
+      }
+      
+      // Method 2: Force complete widget reset
+      setTimeout(function() {
+        try {
+          const chatbotElement = document.querySelector('.elfsight-app-69dfc65a-ea8b-4259-9e37-def017e1c03f');
+          if (chatbotElement) {
+            // Store parent for reinsertion
+            const parent = chatbotElement.parentNode;
+            const nextSibling = chatbotElement.nextSibling;
+            
+            // Completely remove the widget
+            chatbotElement.remove();
+            
+            // Wait a moment then recreate
+            setTimeout(function() {
+              const newChatbot = document.createElement('div');
+              newChatbot.className = 'elfsight-app-69dfc65a-ea8b-4259-9e37-def017e1c03f';
+              newChatbot.setAttribute('data-elfsight-app-lazy', '');
+              newChatbot.setAttribute('id', 'draggable-chatbot');
+              
+              // Insert back in original position
+              if (nextSibling) {
+                parent.insertBefore(newChatbot, nextSibling);
+              } else {
+                parent.appendChild(newChatbot);
+              }
+              
+              // Force platform reinitialization
+              setTimeout(function() {
+                if (window.eapps) {
+                  if (window.eapps.reinit) window.eapps.reinit();
+                  if (window.eapps.refresh) window.eapps.refresh();
+                  if (window.eapps.reload) window.eapps.reload();
+                }
+                if (window.ElfsightPlatform) {
+                  if (window.ElfsightPlatform.reinit) window.ElfsightPlatform.reinit();
+                  if (window.ElfsightPlatform.refresh) window.ElfsightPlatform.refresh();
+                }
+                console.log('Chatbot conversation reset - fresh start guaranteed');
+              }, 500);
+            }, 200);
+          }
+        } catch (e) {
+          console.log('Widget reset completed with fallback method');
+        }
+      }, 800);
+    });
+  </script>
+
+  <!-- Draggable Chatbot Circle Functionality -->
+  <script>
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    let chatbotElement;
+
+    // Wait for chatbot to load and initialize dragging
+    function initializeDraggableChatbot() {
+      chatbotElement = document.getElementById('draggable-chatbot');
+      
+      if (!chatbotElement) {
+        setTimeout(initializeDraggableChatbot, 1000);
+        return;
+      }
+
+      // Add drag functionality to the chatbot circle
+      chatbotElement.addEventListener('mousedown', dragStart);
+      chatbotElement.addEventListener('touchstart', dragStart, { passive: false });
+      
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('touchmove', drag, { passive: false });
+      
+      document.addEventListener('mouseup', dragEnd);
+      document.addEventListener('touchend', dragEnd);
+
+      console.log('Draggable chatbot circle initialized!');
+    }
+
+    function dragStart(e) {
+      // Only allow dragging when clicking on the chatbot circle (not when chat is open)
+      const chatWindow = chatbotElement.querySelector('[class*="chat"], [class*="window"], [class*="content"]');
+      if (chatWindow && chatWindow.offsetHeight > 100) {
+        // Chat is open, don't drag
+        return;
+      }
+
+      if (e.type === 'touchstart') {
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
+      } else {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+      }
+
+      isDragging = true;
+      chatbotElement.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        
+        if (e.type === 'touchmove') {
+          currentX = e.touches[0].clientX - initialX;
+          currentY = e.touches[0].clientY - initialY;
+        } else {
+          currentX = e.clientX - initialX;
+          currentY = e.clientY - initialY;
+        }
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        // Keep chatbot within viewport bounds
+        const rect = chatbotElement.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width;
+        const maxY = window.innerHeight - rect.height;
+        
+        currentX = Math.max(0, Math.min(currentX, maxX));
+        currentY = Math.max(0, Math.min(currentY, maxY));
+
+        setTranslate(currentX, currentY, chatbotElement);
+      }
+    }
+
+    function dragEnd(e) {
+      if (isDragging) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+        chatbotElement.style.cursor = 'move';
+        
+        // Snap to edges if close (within 30px)
+        const rect = chatbotElement.getBoundingClientRect();
+        const snapDistance = 30;
+        
+        if (rect.left < snapDistance) {
+          currentX = 0;
+          xOffset = 0;
+        }
+        if (rect.right > window.innerWidth - snapDistance) {
+          currentX = window.innerWidth - rect.width;
+          xOffset = currentX;
+        }
+        if (rect.top < snapDistance) {
+          currentY = 0;
+          yOffset = 0;
+        }
+        if (rect.bottom > window.innerHeight - snapDistance) {
+          currentY = window.innerHeight - rect.height;
+          yOffset = currentY;
+        }
+        
+        setTranslate(currentX, currentY, chatbotElement);
+      }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+      el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      if (chatbotElement) {
+        const rect = chatbotElement.getBoundingClientRect();
+        
+        // Ensure chatbot stays within new viewport
+        if (rect.right > window.innerWidth) {
+          currentX = window.innerWidth - rect.width;
+          xOffset = currentX;
+        }
+        if (rect.bottom > window.innerHeight) {
+          currentY = window.innerHeight - rect.height;
+          yOffset = currentY;
+        }
+        
+        setTranslate(currentX, currentY, chatbotElement);
+      }
+    });
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeDraggableChatbot);
+    } else {
+      initializeDraggableChatbot();
+    }
+
+    // Also try to initialize after a delay to ensure Elfsight widget is loaded
+    setTimeout(initializeDraggableChatbot, 2000);
+  </script>
+
 </body>
 </html>

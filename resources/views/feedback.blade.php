@@ -67,7 +67,8 @@
       <h2>Share Your Experience</h2>
       <form id="feedbackForm">
         <label for="name">Your Name</label>
-        <input type="text" id="name" required />
+        <input type="text" id="name" required 
+               @if(Auth::check()) value="{{ Auth::user()->name }}" @endif />
 
         <label for="rating">Rating</label>
         <div class="rating-stars">
