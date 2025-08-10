@@ -159,10 +159,7 @@
   </div>
 </div>
 
- 
-  <footer class="footer-logo">
-    <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo" />
-  </footer>
+  
 
       <script src="{{ asset('js/script.js') }}"></script>
       <script src="{{ asset('js/page-transitions.js') }}"></script>
@@ -632,6 +629,10 @@
       }
     });
   </script>
+
+  <footer class="footer-logo">
+    <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo" />
+  </footer>
 
 </body>
 </html>
