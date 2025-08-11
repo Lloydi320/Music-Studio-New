@@ -1,0 +1,195 @@
+{
+  "business_info": {
+    "name": "Lemon Hub Studio",
+    "type": "Music Studio",
+    "description": "Professional music studio offering lessons, recording, and instrument rentals",
+    "location": "Your Location Here",
+    "phone": "Your Phone Number",
+    "email": "Your Email Here",
+    "website": "Your Website URL",
+    "hours": "Your Operating Hours"
+  },
+  "services": [
+    "Music Lessons",
+    "Studio Recording",
+    "Instrument Rentals",
+    "Band Practice Sessions"
+  ],
+  "greeting_messages": {
+    "welcome": "Hello! Welcome to Lemon Hub Studio! How can I help you today?",
+    "fallback": "I'm here to help with any questions about our music studio services. What would you like to know?"
+  },
+  "quick_replies": [
+    "What services do you offer?",
+    "What are your rates?",
+    "How do I book a session?",
+    "What equipment do you use?",
+    "How do I reschedule?"
+  ],
+  "training_data": {
+    "note": "Updated with comprehensive FAQs for Lemon Hub Studio - Complete Training Data",
+    "instructions": "Always match user questions to the most relevant FAQ. Provide detailed, accurate information based on the studio's actual services, rates, and policies. Use exact pricing and policy information as provided.",
+    "qa_pairs": [
+      {
+        "question": "Where is the studio located?",
+        "answer": "We are located at 2nd Filmont, Sto. Domingo Street, Mayapa, Calamba, Laguna. You can also find us on Google Maps for the exact pin location.",
+        "keywords": ["location", "where", "address", "find", "directions", "map", "located", "place"]
+      },
+      {
+        "question": "Is the use of studio equipment free?",
+        "answer": "Yes, all equipment is free to use except the keyboard, which has an additional ₱50 fee for the entire session.",
+        "keywords": ["equipment free", "free equipment", "equipment cost", "keyboard fee", "additional fee"]
+      },
+      {
+        "question": "What equipment is available in the studio?",
+        "answer": "We provide a full band setup, including drums, amplifiers, microphones, speakers, and more.",
+        "keywords": ["equipment", "gear", "instruments", "drums", "amplifiers", "microphones", "speakers", "band setup"]
+      },
+      {
+        "question": "How many people are allowed inside the studio?",
+        "answer": "We allow a maximum of 8 people, whether they are band members or guests.",
+        "keywords": ["capacity", "people", "maximum", "how many", "band members", "guests", "limit"]
+      },
+      {
+        "question": "Is the reservation fee refundable if I cancel?",
+        "answer": "No. The reservation fee will be forfeited if you cancel your booking.",
+        "keywords": ["refund", "cancel", "reservation fee", "refundable", "cancellation", "forfeited"]
+      },
+      {
+        "question": "What if we arrive late?",
+        "answer": "We do not adjust the session time for late arrivals. Please allow extra time for possible traffic or bad weather conditions.",
+        "keywords": ["late", "arrive late", "session time", "traffic", "weather", "punctual"]
+      },
+      {
+        "question": "How much is the rehearsal rate?",
+        "answer": "Our rehearsal rates are:\n• ₱230 – 1 hour\n• ₱400 – 2 hours\n• ₱600 – 3 hours\n• ₱800 – 4 hours",
+        "keywords": ["rehearsal", "rate", "price", "cost", "hourly", "studio rental", "practice"]
+      },
+      {
+        "question": "How much is the live recording session rate?",
+        "answer": "₱1500 per hour with 2–3 songs per hour (consumption-based).",
+        "keywords": ["recording", "live recording", "recording rate", "songs", "studio recording"]
+      },
+      {
+        "question": "Do you rent out instruments for events outside the studio?",
+        "answer": "Yes. Our full band equipment package is ₱4,500 (transportation not included). We can also rent out specific instruments upon request.",
+        "keywords": ["rent", "instruments", "events", "outside", "band equipment", "package", "transportation"]
+      },
+      {
+        "question": "Do you offer music lessons?",
+        "answer": "Yes. We offer:\n🎙️ Voice Lessons\n🥁 Drum Lessons\n🎸 Guitar Lessons\n🪕 Ukulele Lessons\n🎸 Bass Guitar Lessons\n🎹 Keyboard Lessons",
+        "keywords": ["lessons", "music lessons", "voice", "drums", "guitar", "ukulele", "bass", "keyboard", "teaching"]
+      },
+      {
+        "question": "How much is the lesson rate?",
+        "answer": "Our lesson rates are:\n• ₱850 per individual session\n• ₱4,000 for a 5-hour session package\n• ₱7,800 for a 10-hour session package (consumption-based, discounted rate)",
+        "keywords": ["lesson rate", "lesson price", "individual session", "package", "discounted", "music lesson cost"]
+      },
+      {
+        "question": "Is there an age limit for students?",
+        "answer": "Yes. Students must be at least 7 years old.",
+        "keywords": ["age limit", "students", "minimum age", "7 years old", "children"]
+      },
+      {
+        "question": "Can we bring our own equipment?",
+        "answer": "Yes, you may bring your own instruments or gear.",
+        "keywords": ["own equipment", "bring instruments", "personal gear", "own instruments"]
+      },
+      {
+        "question": "Is parking available?",
+        "answer": "Yes. We have parking space for 2–3 cars.",
+        "keywords": ["parking", "cars", "parking space", "vehicle"]
+      },
+      {
+        "question": "Do you take photos or videos of the bands?",
+        "answer": "Yes, we take photos, audio, and videos for promotional purposes. Please let us know if you do not consent to this.",
+        "keywords": ["photos", "videos", "promotional", "consent", "documentation"]
+      },
+      {
+        "question": "What are your modes of payment?",
+        "answer": "GCash: 0995-835-7547\nAccount Name: Raymund M.",
+        "keywords": ["payment", "gcash", "pay", "modes of payment", "how to pay"]
+      },
+      {
+        "question": "Saan matatagpuan ang studio?",
+        "answer": "Nakatayo kami sa 2nd Filmont, Sto. Domingo Street, Mayapa, Calamba, Laguna. Maaari mo rin kaming makita sa Google Maps para sa eksaktong lokasyon ng pin.",
+        "keywords": ["lokasyon", "address", "saan", "hanap", "studio", "calamba", "laguna", "mayapa", "matatagpuan"]
+      },
+      {
+        "question": "Libre ba ang paggamit ng kagamitan sa studio?",
+        "answer": "Oo, libre ang lahat ng kagamitan maliban sa keyboard, na may karagdagang bayad na ₱50 para sa buong sesyon.",
+        "keywords": ["kagamitan", "libre", "bayad", "keyboard", "fee", "singil", "presyo", "karagdagan"]
+      },
+      {
+        "question": "Anong mga kagamitan ang available sa studio?",
+        "answer": "Nagbibigay kami ng kumpletong setup para sa banda, kasama ang drums, amplifier, mikropono, speaker, at marami pa.",
+        "keywords": ["kagamitan", "instrumento", "drums", "amplifier", "mikropono", "speaker", "available", "setup", "banda"]
+      },
+      {
+        "question": "Ilang tao ang pinapayagang pumasok sa loob ng studio?",
+        "answer": "Pinapayagan namin ang maximum na 8 tao, maging miyembro man sila ng banda o bisita.",
+        "keywords": ["kapasidad", "tao", "maximum", "limitasyon", "banda", "bisita", "ilang", "pinapayagan"]
+      },
+      {
+        "question": "Mababalik ba ang bayad sa reserbasyon kung kanselahin ko?",
+        "answer": "Hindi. Mawawala ang bayad sa reserbasyon kung kanselahin mo ang iyong booking.",
+        "keywords": ["refund", "kansel", "kansela", "reserbasyon", "bayad", "mawawala", "balik", "pera"]
+      },
+      {
+        "question": "Paano kung mahuli tayo?",
+        "answer": "Hindi namin inaayos ang oras ng sesyon para sa mga huling dumating. Mangyaring maglaan ng karagdagang oras para sa posibleng trapiko o masamang kondisyon ng panahon.",
+        "keywords": ["huli", "late", "delay", "oras", "sesyon", "trapiko", "panahon", "kondisyon"]
+      },
+      {
+        "question": "Magkano ang bayad sa ensayo?",
+        "answer": "• ₱230 – 1 oras\n• ₱400 – 2 oras\n• ₱600 – 3 oras\n• ₱800 – 4 na oras",
+        "keywords": ["ensayo", "bayad", "presyo", "rate", "oras", "sesyon", "practice", "rehearsal"]
+      },
+      {
+        "question": "Magkano ang bayad para sa live recording session?",
+        "answer": "₱1500 bawat oras na may 2–3 kanta bawat oras (batay sa pagkonsumo).",
+        "keywords": ["recording", "live", "bayad", "presyo", "sesyon", "kanta", "oras", "pagkonsumo"]
+      },
+      {
+        "question": "Nagpapaupa ba kayo ng mga instrumento para sa mga kaganapan sa labas ng studio?",
+        "answer": "Oo. Ang aming buong kagamitan para sa banda ay nagkakahalaga ng ₱4,500 (hindi kasama ang transportasyon). Maaari rin kaming magrenta ng mga partikular na instrumento kapag hiniling.",
+        "keywords": ["paupa", "renta", "instrumento", "kaganapan", "labas", "kagamitan", "banda", "transportasyon"]
+      },
+      {
+        "question": "Nag-aalok ba kayo ng mga aralin sa musika?",
+        "answer": "Oo. Nag-aalok kami ng:\n🎙️ Aralin sa Boses\n🥁 Aralin sa Tambol\n🎸 Aralin sa Gitara\n🪕 Aralin sa Ukulele\n🎸 Mga Aral sa Bass Guitar\n🎹 Aralin sa Keyboard",
+        "keywords": ["aralin", "musika", "boses", "tambol", "gitara", "ukulele", "bass", "keyboard", "pagkatuto", "pagtuturo"]
+      },
+      {
+        "question": "Magkano ang bayad sa aralin?",
+        "answer": "• ₱850 bawat sesyon para sa indibidwal\n• ₱4,000 para sa 5-oras na pakete ng sesyon\n• ₱7,800 para sa isang 10-oras na pakete ng sesyon (batay sa pagkonsumo, may diskwentong rate)",
+        "keywords": ["aralin", "bayad", "presyo", "indibidwal", "pakete", "sesyon", "diskwento"]
+      },
+      {
+        "question": "May limitasyon ba sa edad para sa mga mag-aaral?",
+        "answer": "Oo. Ang mga mag-aaral ay dapat hindi bababa sa 7 taong gulang.",
+        "keywords": ["edad", "limitasyon", "mag-aaral", "minimum", "taon", "gulang", "bata"]
+      },
+      {
+        "question": "Maaari ba kaming magdala ng sarili naming kagamitan?",
+        "answer": "Oo, maaari kang magdala ng sarili mong instrumento o kagamitan.",
+        "keywords": ["dalhin", "sarili", "kagamitan", "instrumento", "personal", "gear"]
+      },
+      {
+        "question": "May paradahan ba?",
+        "answer": "Oo. Mayroon kaming paradahan para sa 2–3 kotse.",
+        "keywords": ["paradahan", "kotse", "espasyo", "available", "sasakyan", "parking"]
+      },
+      {
+        "question": "Kumukuha ka ba ng mga larawan o video ng mga banda?",
+        "answer": "Oo, kumukuha kami ng mga larawan, audio, at video para sa mga layuning pang-promosyon. Pakisabi po sa amin kung hindi kayo pumapayag dito.",
+        "keywords": ["larawan", "video", "promosyon", "pahintulot", "audio", "recording", "banda"]
+      },
+      {
+        "question": "Ano-ano ang inyong paraan ng pagbabayad?",
+        "answer": "GCash: 0995-835-7547\nPangalan ng Account: Raymund M.",
+        "keywords": ["bayad", "gcash", "paraan", "magbayad", "account", "raymund", "pagbabayad"]
+      }
+    ]
+  }
+}

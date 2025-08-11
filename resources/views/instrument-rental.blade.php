@@ -1014,8 +1014,8 @@
       const form = document.getElementById('rentalForm');
 
       // Available instruments data
-      const availableInstruments = @json($availableInstruments);
-      const dailyRates = @json($dailyRates);
+      const availableInstruments = @json($availableInstruments ?? []);
+      const dailyRates = @json($dailyRates ?? []);
 
       // Update instruments when type changes
       instrumentTypeSelect.addEventListener('change', function() {
@@ -1191,8 +1191,8 @@
         const returnLocation = document.querySelector('select[name="return_location"]').value;
         
         // Get instrument names
-        const instrumentTypes = @json($instrumentTypes);
-        const availableInstruments = @json($availableInstruments);
+        const instrumentTypes = @json($instrumentTypes ?? []);
+        const availableInstruments = @json($availableInstruments ?? []);
         
         // Calculate prices
         const fullPackage = document.getElementById('full_package').checked;
@@ -1240,4 +1240,4 @@
   </script>
   <script src="{{ asset('js/page-transitions.js') }}"></script>
 </body>
-</html> 
+</html>

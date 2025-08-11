@@ -1,10 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
-<div class="admin-container">
-    <div class="admin-header">
-        <h1>🎸 Instrument Rentals Management</h1>
-        <p>Manage all instrument rental requests and their status</p>
+<div class="admin-content">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2 class="page-title">🎸 Instrument Rentals Management</h2>
+        <div class="header-actions">
+            <span class="welcome-text">Manage all instrument rental requests and their status</span>
+        </div>
     </div>
 
     @if(session('success'))

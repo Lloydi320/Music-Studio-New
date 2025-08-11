@@ -52,7 +52,8 @@ class BookingController extends Controller
         
         foreach ($existingBookings as $existingBooking) {
             $existingStartTime = trim(explode('-', $existingBooking->time_slot)[0]);
-            $existingStart = Carbon::createFromFormat('Y-m-d g:i A', $existingBooking->date . ' ' . $existingStartTime);
+            $existingDateOnly = explode(' ', $existingBooking->date)[0]; // Extract just the date part
+            $existingStart = Carbon::createFromFormat('Y-m-d g:i A', $existingDateOnly . ' ' . $existingStartTime);
             $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
             
             // Check if there's any overlap
@@ -64,11 +65,17 @@ class BookingController extends Controller
             }
         }
     
+        // Calculate pricing (₱250 per hour)
+        $hourlyRate = 250.00;
+        $totalAmount = $hourlyRate * $duration;
+        
         $booking = Booking::create([
             'user_id' => Auth::id(),
             'date' => $request->date,
             'time_slot' => $request->time_slot,
             'duration' => $duration,
+            'price' => $hourlyRate,
+            'total_amount' => $totalAmount,
             'status' => 'pending',
         ]);
     

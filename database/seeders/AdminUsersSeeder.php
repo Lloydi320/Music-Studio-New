@@ -44,8 +44,8 @@ class AdminUsersSeeder extends Seeder
         // Create additional sample admin users for demonstration
         $sampleAdmins = [
             [
-                'name' => 'Super Admin',
-                'email' => 'superadmin@musicstudio.com',
+                'name' => 'Lemon Hub Studio Admin',
+                'email' => 'lemonhubstudioweb@gmail.com',
                 'role' => 'super_admin',
                 'permissions' => json_encode([
                     'manage_bookings',
@@ -59,7 +59,7 @@ class AdminUsersSeeder extends Seeder
                 ]),
                 'is_active' => true,
                 'created_by' => 'system',
-                'notes' => 'System super administrator with full access'
+                'notes' => 'Main Lemon Hub Studio administrator with full access'
             ],
             [
                 'name' => 'Calendar Admin',

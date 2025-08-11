@@ -339,6 +339,72 @@
       position: relative !important;
       bottom: auto !important;
     }
+
+    /* Contact Popup Styles */
+    .contact-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .contact-card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .close-contact {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .close-contact:hover {
+      color: #000;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      gap: 15px;
+    }
+
+    .contact-row .icon {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .contact-row .yellow {
+      color: #ffd700;
+      font-weight: bold;
+    }
+
+    .contact-row a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .contact-row a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body class="booking-page">
@@ -557,6 +623,40 @@
     </div>
   </div>
 
+  <!-- Contact Popup -->
+  <div id="contactPopup" class="contact-popup">
+    <div class="contact-card">
+      <button class="close-contact" id="closeContact">&times;</button>
+      <h2>Contact Us</h2>
+      <p>Feel free to drop us a message</p>
+
+      <div class="contact-row">
+        <img src="{{ asset('images/facebook-icon.png') }}" alt="Facebook" class="icon" />
+        <div>
+          <strong>Facebook</strong><br />
+          <span class="yellow">Lemon Hub Studio</span><br />
+          <a href="https://www.facebook.com/lemonhubstudio" target="_blank">https://www.facebook.com/lemonhubstudio</a>
+        </div>
+      </div>
+
+      <div class="contact-row">
+        <img src="{{ asset('images/email-icon.png') }}" alt="Email" class="icon" />
+        <div>
+          <strong>Email</strong><br />
+          <span class="yellow">lemonhubstudio@gmail.com</span>
+        </div>
+      </div>
+
+      <div class="contact-row">
+        <img src="{{ asset('images/tiktok-icon.png') }}" alt="TikTok" class="icon" />
+        <div>
+          <strong>TikTok</strong><br />
+          <span class="yellow">@lemonhubstudio</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Add spacing before footer -->
   <div style="height: 50px; margin-top: 30px;"></div>
 
@@ -597,4 +697,4 @@
     });
   </script>
 </body>
-</html> 
+</html>

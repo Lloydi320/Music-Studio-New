@@ -157,7 +157,8 @@ class GoogleCalendarService
 
         // Parse booking time
         $startTime = trim(explode('-', $booking->time_slot)[0]);
-        $startDateTime = Carbon::createFromFormat('Y-m-d H:i A', $booking->date . ' ' . $startTime);
+        $dateOnly = explode(' ', $booking->date)[0]; // Extract just the date part
+        $startDateTime = Carbon::createFromFormat('Y-m-d g:i A', $dateOnly . ' ' . $startTime);
         $endDateTime = $startDateTime->copy()->addHours((int) $booking->duration);
 
         // Create event
@@ -239,7 +240,8 @@ class GoogleCalendarService
 
         // Parse booking time
         $startTime = trim(explode('-', $booking->time_slot)[0]);
-        $startDateTime = Carbon::createFromFormat('Y-m-d H:i A', $booking->date . ' ' . $startTime);
+        $dateOnly = explode(' ', $booking->date)[0]; // Extract just the date part
+        $startDateTime = Carbon::createFromFormat('Y-m-d g:i A', $dateOnly . ' ' . $startTime);
         $endDateTime = $startDateTime->copy()->addHours((int) $booking->duration);
 
         // Get existing event
