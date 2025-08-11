@@ -32,7 +32,7 @@ class ActivityLog extends Model
         
         return self::create([
             'user_name' => $user ? $user->name : 'Guest',
-            'user_role' => $user && $user->isAdmin() ? 'Admin' : 'Customer',
+            'user_role' => $user && $user->role === 'admin' ? 'Admin' : 'Customer',
             'description' => $description,
             'ip_address' => Request::ip(),
             'user_agent' => Request::userAgent(),
