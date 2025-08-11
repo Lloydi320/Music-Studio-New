@@ -140,6 +140,91 @@
             font-size: 0.9rem;
         }
         
+        /* Simple Dropdown Styles */
+        .dropdown-nav {
+            position: relative;
+        }
+        
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        
+        .dropdown-toggle:hover {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .dropdown-toggle.active {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .dropdown-arrow {
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+        
+        .dropdown-arrow.open {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            min-width: 200px;
+            background: #6c757d;
+            border-left: 3px solid #ffc107;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .dropdown-menu a {
+            padding: 0.5rem 1rem 0.5rem 2.5rem;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #5a6268;
+        }
+        
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-menu a:hover {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .dropdown-menu a.active {
+            background: #ffc107;
+            color: #000;
+        }
+        
         /* Main Content */
         .main-content {
             margin-left: 200px;
@@ -1417,23 +1502,27 @@
                     Dashboard
                 </a>
             </li>
-            <li>
-                <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
-                    <i class="fas fa-calendar-check"></i>
-                    Bookings
+            <li class="dropdown-nav">
+                <a href="#" class="dropdown-toggle {{ request()->routeIs('admin.bookings', 'admin.instrument-bookings', 'admin.music-lesson-bookings') ? 'active' : '' }}" onclick="toggleDropdown(event)">
+                    <div>
+                        <i class="fas fa-calendar-check"></i>
+                        Bookings
+                    </div>
                 </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.instrument-bookings') }}" class="{{ request()->routeIs('admin.instrument-bookings') ? 'active' : '' }}">
-                    <i class="fas fa-guitar"></i>
-                    Instrument Bookings
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.music-lesson-bookings') }}" class="{{ request()->routeIs('admin.music-lesson-bookings') ? 'active' : '' }}">
-                    <i class="fas fa-music"></i>
-                    Music Lesson Bookings
-                </a>
+                <div class="dropdown-menu">
+                    <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-alt"></i>
+                        Studio Rental
+                    </a>
+                    <a href="{{ route('admin.instrument-bookings') }}" class="{{ request()->routeIs('admin.instrument-bookings') ? 'active' : '' }}">
+                        <i class="fas fa-guitar"></i>
+                        Instrumental
+                    </a>
+                    <a href="{{ route('admin.music-lesson-bookings') }}" class="{{ request()->routeIs('admin.music-lesson-bookings') ? 'active' : '' }}">
+                        <i class="fas fa-music"></i>
+                        Music Lesson
+                    </a>
+                </div>
             </li>
             <li>
                 <a href="{{ route('admin.calendar') }}" class="{{ request()->routeIs('admin.calendar') ? 'active' : '' }}">
@@ -1513,37 +1602,48 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Dropdown Toggle Script -->
     <script>
-        function toggleAdminDropdown() {
-            const dropdown = document.getElementById('adminDropdown');
-            const adminDropdown = document.querySelector('.admin-dropdown');
+        function toggleDropdown(event) {
+            event.preventDefault();
             
-            if (dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
-                adminDropdown.classList.remove('active');
-            } else {
-                dropdown.classList.add('show');
-                adminDropdown.classList.add('active');
-            }
+            const dropdownToggle = event.currentTarget;
+            const dropdownMenu = dropdownToggle.nextElementSibling;
+            const dropdownArrow = dropdownToggle.querySelector('.dropdown-arrow');
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                if (menu !== dropdownMenu) {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.querySelector('.dropdown-arrow').classList.remove('open');
+                }
+            });
+            
+            // Toggle current dropdown
+            dropdownMenu.classList.toggle('show');
+            dropdownArrow.classList.toggle('open');
         }
         
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
-            const adminDropdown = document.querySelector('.admin-dropdown');
-            const dropdown = document.getElementById('adminDropdown');
-            
-            if (!adminDropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
-                adminDropdown.classList.remove('active');
+            if (!event.target.closest('.dropdown-nav')) {
+                document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.querySelector('.dropdown-arrow').classList.remove('open');
+                });
             }
         });
         
-        // Prevent dropdown from closing when clicking inside it
-        document.getElementById('adminDropdown').addEventListener('click', function(event) {
-            event.stopPropagation();
+        // Keep dropdown open if current page is one of the booking pages
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeDropdown = document.querySelector('.dropdown-toggle.active');
+            if (activeDropdown) {
+                const dropdownMenu = activeDropdown.nextElementSibling;
+                const dropdownArrow = activeDropdown.querySelector('.dropdown-arrow');
+                dropdownMenu.classList.add('show');
+                dropdownArrow.classList.add('open');
+            }
         });
     </script>
-    
-    @yield('scripts')
 </body>
 </html>

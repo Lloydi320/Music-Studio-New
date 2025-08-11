@@ -155,27 +155,55 @@ class GoogleCalendarService
         $this->setTokenForUser($admin);
         $service = new Calendar($this->client);
 
-        // Parse booking time
-        $startTime = trim(explode('-', $booking->time_slot)[0]);
-        $dateOnly = explode(' ', $booking->date)[0]; // Extract just the date part
-        $startDateTime = Carbon::createFromFormat('Y-m-d g:i A', $dateOnly . ' ' . $startTime);
-        $endDateTime = $startDateTime->copy()->addHours((int) $booking->duration);
+        try {
+            // Parse booking time - time_slot format: "08:00 AM - 11:00 AM"
+            $startTime = trim(explode('-', $booking->time_slot)[0]);
+            
+            // Create Carbon instance from booking date and start time with proper timezone
+            $bookingDate = Carbon::parse($booking->date, config('app.timezone', 'Asia/Manila'));
+            $dateTimeString = $bookingDate->format('Y-m-d') . ' ' . $startTime;
+            $startDateTime = Carbon::createFromFormat('Y-m-d g:i A', $dateTimeString, config('app.timezone', 'Asia/Manila'));
+            
+            if (!$startDateTime) {
+                throw new \Exception("Failed to parse datetime: {$dateTimeString}");
+            }
+            
+            $endDateTime = $startDateTime->copy()->addHours((int) $booking->duration);
+            
+            Log::info('Parsed booking datetime successfully', [
+                'booking_id' => $booking->id,
+                'original_date' => $booking->date,
+                'original_time_slot' => $booking->time_slot,
+                'parsed_start' => $startDateTime->toIso8601String(),
+                'parsed_end' => $endDateTime->toIso8601String()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to parse booking datetime', [
+                'booking_id' => $booking->id,
+                'date' => $booking->date,
+                'time_slot' => $booking->time_slot,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
 
         // Create event
+        $serviceTypeLabel = ucwords(str_replace('_', ' ', $booking->service_type));
         $event = new Event([
-            'summary' => 'Studio Session - ' . $booking->user->name,
+            'summary' => "{$serviceTypeLabel} - {$booking->user->name}",
             'description' => "Booking Reference: {$booking->reference}\n" .
+                           "Service Type: {$serviceTypeLabel}\n" .
                            "Client: {$booking->user->name}\n" .
                            "Email: {$booking->user->email}\n" .
                            "Duration: {$booking->duration} hour(s)\n" .
                            "Status: {$booking->status}",
             'start' => new EventDateTime([
                 'dateTime' => $startDateTime->toIso8601String(),
-                'timeZone' => config('app.timezone', 'UTC'),
+                'timeZone' => config('app.timezone', 'Asia/Manila'),
             ]),
             'end' => new EventDateTime([
                 'dateTime' => $endDateTime->toIso8601String(),
-                'timeZone' => config('app.timezone', 'UTC'),
+                'timeZone' => config('app.timezone', 'Asia/Manila'),
             ]),
             'attendees' => [
                 ['email' => $booking->user->email, 'displayName' => $booking->user->name]
@@ -238,18 +266,46 @@ class GoogleCalendarService
         $this->setTokenForUser($admin);
         $service = new Calendar($this->client);
 
-        // Parse booking time
-        $startTime = trim(explode('-', $booking->time_slot)[0]);
-        $dateOnly = explode(' ', $booking->date)[0]; // Extract just the date part
-        $startDateTime = Carbon::createFromFormat('Y-m-d g:i A', $dateOnly . ' ' . $startTime);
-        $endDateTime = $startDateTime->copy()->addHours((int) $booking->duration);
+        try {
+            // Parse booking time - time_slot format: "08:00 AM - 11:00 AM"
+            $startTime = trim(explode('-', $booking->time_slot)[0]);
+            
+            // Create Carbon instance from booking date and start time with proper timezone
+            $bookingDate = Carbon::parse($booking->date, config('app.timezone', 'Asia/Manila'));
+            $dateTimeString = $bookingDate->format('Y-m-d') . ' ' . $startTime;
+            $startDateTime = Carbon::createFromFormat('Y-m-d g:i A', $dateTimeString, config('app.timezone', 'Asia/Manila'));
+            
+            if (!$startDateTime) {
+                throw new \Exception("Failed to parse datetime: {$dateTimeString}");
+            }
+            
+            $endDateTime = $startDateTime->copy()->addHours((int) $booking->duration);
+            
+            Log::info('Parsed booking datetime for update successfully', [
+                'booking_id' => $booking->id,
+                'original_date' => $booking->date,
+                'original_time_slot' => $booking->time_slot,
+                'parsed_start' => $startDateTime->toIso8601String(),
+                'parsed_end' => $endDateTime->toIso8601String()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to parse booking datetime for update', [
+                'booking_id' => $booking->id,
+                'date' => $booking->date,
+                'time_slot' => $booking->time_slot,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
 
         // Get existing event
         $event = $service->events->get($admin->google_calendar_id, $booking->google_event_id);
 
         // Update event details
-        $event->setSummary('Studio Session - ' . $booking->user->name);
+        $serviceTypeLabel = ucwords(str_replace('_', ' ', $booking->service_type));
+        $event->setSummary("{$serviceTypeLabel} - {$booking->user->name}");
         $event->setDescription("Booking Reference: {$booking->reference}\n" .
+                              "Service Type: {$serviceTypeLabel}\n" .
                               "Client: {$booking->user->name}\n" .
                               "Email: {$booking->user->email}\n" .
                               "Duration: {$booking->duration} hour(s)\n" .
@@ -257,12 +313,12 @@ class GoogleCalendarService
 
         $event->setStart(new EventDateTime([
             'dateTime' => $startDateTime->toIso8601String(),
-            'timeZone' => config('app.timezone', 'UTC'),
+            'timeZone' => config('app.timezone', 'Asia/Manila'),
         ]));
 
         $event->setEnd(new EventDateTime([
             'dateTime' => $endDateTime->toIso8601String(),
-            'timeZone' => config('app.timezone', 'UTC'),
+            'timeZone' => config('app.timezone', 'Asia/Manila'),
         ]));
 
         $service->events->update($admin->google_calendar_id, $booking->google_event_id, $event);
@@ -394,7 +450,7 @@ class GoogleCalendarService
                     'end' => $endDateTime,
                     'duration' => $endDateTime->diffInHours($startDateTime),
                     'attendees' => $this->formatAttendees($event->getAttendees()),
-                    'is_studio_booking' => strpos($event->getSummary() ?: '', 'Studio Session') !== false,
+                    'is_studio_booking' => $this->isStudioBookingEvent($event->getSummary() ?: ''),
                     'location' => $event->getLocation() ?: '',
                     'status' => $event->getStatus() ?: 'confirmed'
                 ];
@@ -405,6 +461,29 @@ class GoogleCalendarService
             Log::error('Failed to fetch calendar events: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /**
+     * Check if an event is a studio booking based on its title
+     */
+    private function isStudioBookingEvent($summary)
+    {
+        $studioKeywords = [
+            'Recording Session',
+            'Mixing Session', 
+            'Mastering Session',
+            'Instrument Rental',
+            'Studio Session',
+            'Music Studio'
+        ];
+        
+        foreach ($studioKeywords as $keyword) {
+            if (strpos($summary, $keyword) !== false) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**

@@ -67,6 +67,18 @@
               <p class="selected-date" id="selectedDateLabel"></p>
             </div>
             <div class="time-side">
+              <!-- Service Type dropdown -->
+              <label for="serviceTypeSelect" style="display:block; margin: 10px 0 5px;">Service Type:</label>
+              <select id="serviceTypeSelect">
+                <option value="studio_rental" selected>Studio Rental</option>
+                <option value="recording_session">Recording Session</option>
+                <option value="music_lesson">Music Lesson</option>
+                <option value="band_practice">Band Practice</option>
+                <option value="audio_production">Audio Production</option>
+                <option value="instrument_rental">Instrument Rental</option>
+                <option value="other">Other Services</option>
+              </select>
+              
               <!-- Duration dropdown -->
               <label for="durationSelect" style="display:block; margin: 10px 0 5px;">Choose Duration:</label>
               <select id="durationSelect">
@@ -86,6 +98,7 @@
                 <input type="hidden" name="date" id="bookingDate">
                 <input type="hidden" name="time_slot" id="bookingTimeSlot">
                 <input type="hidden" name="duration" id="bookingDuration">
+                <input type="hidden" name="service_type" id="bookingServiceType">
                 <button type="submit" class="book-btn">Confirm Booking</button>
               </form>
             </div>

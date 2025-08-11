@@ -12,6 +12,7 @@ use App\Services\GoogleCalendarService;
 use App\Models\User;
 use App\Models\Booking;
 use App\Models\InstrumentRental;
+use App\Models\ActivityLog;
 
 class AdminController extends Controller
 {
@@ -42,6 +43,9 @@ class AdminController extends Controller
         if (!Auth::check() || !$user->isAdmin()) {
             abort(403, 'Access denied. Admin access required.');
         }
+        
+        // Log admin dashboard access
+        ActivityLog::logAdmin('Admin accessed dashboard', ActivityLog::ACTION_ADMIN_ACCESS);
         $totalBookings = Booking::whereIn('status', ['pending', 'confirmed'])->count();
         $pendingBookings = Booking::where('status', 'pending')->count();
         $confirmedBookings = Booking::where('status', 'confirmed')->count();
@@ -65,29 +69,28 @@ class AdminController extends Controller
             ->get();
 
         // Studio Analytics Data - Connected to Real Services
-        $totalServices = $confirmedBookings + $activeRentals; // Total active services
-        $lostServices = $cancelledBookingsCount + ($totalRentals - $activeRentals); // Lost services
+        $confirmedAndActiveRentals = InstrumentRental::whereIn('status', ['confirmed', 'active'])->count();
+        $totalServices = $confirmedBookings + $confirmedAndActiveRentals; // Total active services
+        $lostServices = $cancelledBookingsCount + ($totalRentals - $confirmedAndActiveRentals); // Lost services
         $serviceEfficiency = $totalServices > 0 ? round(($totalServices / ($totalServices + $lostServices)) * 100, 2) : 0;
         $efficiencyChange = -0.73; // Can be calculated from historical data
         
-        // Revenue calculation based on estimated service distribution
-        // Since service_type column doesn't exist, we'll use estimated distribution
-        $estimatedRecordingBookings = round($confirmedBookings * 0.4); // 40% recording sessions
-        $estimatedStudioRentals = round($confirmedBookings * 0.3); // 30% studio rentals
-        $estimatedLessons = round($confirmedBookings * 0.2); // 20% music lessons
-        $estimatedOtherServices = $confirmedBookings - ($estimatedRecordingBookings + $estimatedStudioRentals + $estimatedLessons);
+        // Get service type analytics from the unified booking system
+        $serviceTypeAnalytics = Booking::getServiceTypeAnalytics();
         
-        $estimatedRevenue = ($estimatedRecordingBookings * 1000) + ($estimatedStudioRentals * 250) + ($estimatedLessons * 500) + ($activeRentals * 300);
+        // Calculate total revenue from all confirmed bookings
+        $totalBookingRevenue = Booking::where('status', 'confirmed')->sum('total_amount') ?? 0;
+        $totalRentalRevenue = InstrumentRental::whereIn('status', ['confirmed', 'active'])->sum('total_amount') ?? 0;
+        $estimatedRevenue = $totalBookingRevenue + $totalRentalRevenue;
         $operatingCosts = $totalBookings * 200; // Estimated operating costs per booking
         
-        // Services by type (estimated distribution)
-        $servicesByType = [
-            'Recording Sessions' => $estimatedRecordingBookings,
-            'Studio Rentals' => $estimatedStudioRentals,
-            'Music Lessons' => $estimatedLessons,
-            'Instrument Rentals' => $activeRentals, // Real rental data
-            'Other Services' => max(0, $estimatedOtherServices)
-        ];
+        // Services by type (real data from service_type field)
+        $servicesByType = [];
+        foreach ($serviceTypeAnalytics as $key => $data) {
+            $servicesByType[$data['label']] = $data['confirmed'];
+        }
+        // Add instrument rentals as separate service (include both confirmed and active)
+        $servicesByType['Instrument Rentals'] = $confirmedAndActiveRentals;
         
         // Staff allocation by function
         $staffByFunction = [
@@ -108,9 +111,13 @@ class AdminController extends Controller
             $monthlyBookings = Booking::whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
+            $monthlyRentals = InstrumentRental::whereIn('status', ['confirmed', 'active'])
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
             $monthlyData[$date->format('M')] = [
-                'cost' => $monthlyBookings * 500,
-                'revenue' => $monthlyBookings * 1200
+                'cost' => ($monthlyBookings + $monthlyRentals) * 500,
+                'revenue' => ($monthlyBookings * 1200) + ($monthlyRentals * 300)
             ];
         }
         
@@ -125,78 +132,63 @@ class AdminController extends Controller
         $salesData = array_values(array_column($monthlyData, 'revenue'));
         $bookingCounts = [];
         
-        // Get booking counts for each month
+        // Get booking counts for each month (including instrument rentals)
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $bookingCounts[] = Booking::whereYear('created_at', $date->year)
+            $monthlyBookings = Booking::whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
+            $monthlyRentals = InstrumentRental::whereIn('status', ['confirmed', 'active'])
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+            $bookingCounts[] = $monthlyBookings + $monthlyRentals;
         }
         
-        // Top customers data
-        $topCustomers = DB::table('bookings')
-            ->join('users', 'bookings.user_id', '=', 'users.id')
-            ->select('users.name', 'users.email', 
-                DB::raw('COUNT(bookings.id) as booking_count'),
-                DB::raw('SUM(COALESCE(bookings.price, 1000)) as total_spent'))
-            ->whereIn('bookings.status', ['confirmed', 'completed'])
+        // Top customers data (including both bookings and instrument rentals)
+        $topCustomers = DB::table('users')
+            ->leftJoin('bookings', function($join) {
+                $join->on('users.id', '=', 'bookings.user_id')
+                     ->whereIn('bookings.status', ['confirmed', 'completed']);
+            })
+            ->leftJoin('instrument_rentals', function($join) {
+                $join->on('users.id', '=', 'instrument_rentals.user_id')
+                     ->whereIn('instrument_rentals.status', ['confirmed', 'active']);
+            })
+            ->select('users.name', 'users.email',
+                DB::raw('COUNT(DISTINCT bookings.id) as booking_count'),
+                DB::raw('COUNT(DISTINCT instrument_rentals.id) as rental_count'),
+                DB::raw('(COALESCE(SUM(DISTINCT bookings.price), 0) + COALESCE(SUM(DISTINCT instrument_rentals.total_amount), 0)) as total_spent'))
             ->groupBy('users.id', 'users.name', 'users.email')
+            ->havingRaw('(booking_count > 0 OR rental_count > 0)')
             ->orderBy('total_spent', 'desc')
             ->limit(10)
             ->get();
 
-        // Users per service data for bar chart
-        $usersPerService = [
-            'Recording Sessions' => DB::table('bookings')
+        // Users per service data for bar chart (using real service_type data)
+        $usersPerService = [];
+        foreach (Booking::getServiceTypes() as $key => $label) {
+            $usersPerService[$label] = DB::table('bookings')
                 ->join('users', 'bookings.user_id', '=', 'users.id')
                 ->where('bookings.status', 'confirmed')
-                ->where('bookings.duration', '>=', 240) // 4+ hours for recording
+                ->where('bookings.service_type', $key)
                 ->distinct('users.id')
-                ->count(),
-            'Music Lessons' => DB::table('bookings')
-                ->join('users', 'bookings.user_id', '=', 'users.id')
-                ->where('bookings.status', 'confirmed')
-                ->where('bookings.duration', '<=', 120) // 2 hours or less for lessons
-                ->whereIn('bookings.time_slot', ['10:00', '14:00']) // Common lesson times
-                ->distinct('users.id')
-                ->count(),
-            'Band Practice' => DB::table('bookings')
-                ->join('users', 'bookings.user_id', '=', 'users.id')
-                ->where('bookings.status', 'confirmed')
-                ->where('bookings.duration', 180) // 3 hours for band practice
-                ->distinct('users.id')
-                ->count(),
-            'Studio Rentals' => DB::table('bookings')
-                ->join('users', 'bookings.user_id', '=', 'users.id')
-                ->where('bookings.status', 'confirmed')
-                ->whereNotIn('bookings.duration', [120, 180, 240]) // Other durations
-                ->distinct('users.id')
-                ->count(),
-            'Instrument Rentals' => DB::table('instrument_rentals')
-                 ->join('users', 'instrument_rentals.user_id', '=', 'users.id')
-                 ->where('instrument_rentals.status', 'active')
-                 ->distinct('users.id')
-                 ->count()
-         ];
+                ->count();
+        }
+        // Add instrument rentals (include both confirmed and active)
+        $usersPerService['Instrument Rentals'] = DB::table('instrument_rentals')
+             ->join('users', 'instrument_rentals.user_id', '=', 'users.id')
+             ->whereIn('instrument_rentals.status', ['confirmed', 'active'])
+             ->distinct('users.id')
+             ->count();
 
-        // Services distribution for pie chart (Lemon Hub Studio services)
-        $servicesDistribution = [
-            'Recording Sessions' => Booking::where('status', 'confirmed')
-                ->where('duration', '>=', 240)
-                ->count(),
-            'Music Lessons' => Booking::where('status', 'confirmed')
-                ->where('duration', '<=', 120)
-                ->whereIn('time_slot', ['10:00', '14:00'])
-                ->count(),
-            'Band Practice' => Booking::where('status', 'confirmed')
-                ->where('duration', 180)
-                ->count(),
-            'Studio Rentals' => Booking::where('status', 'confirmed')
-                ->whereNotIn('duration', [120, 180, 240])
-                ->count(),
-            'Instrument Rentals' => InstrumentRental::where('status', 'active')->count(),
-            'Audio Production' => round($confirmedBookings * 0.15), // 15% estimated
-        ];
+        // Services distribution for pie chart (using real service_type data)
+        $servicesDistribution = [];
+        foreach ($serviceTypeAnalytics as $key => $data) {
+            $servicesDistribution[$data['label']] = $data['confirmed'];
+        }
+        // Add instrument rentals as separate service (include both confirmed and active)
+        $servicesDistribution['Instrument Rentals'] = InstrumentRental::whereIn('status', ['confirmed', 'active'])->count();
 
         return view('admin.dashboard', compact(
             'totalRevenue',
@@ -208,7 +200,14 @@ class AdminController extends Controller
             'bookingCounts',
             'topCustomers',
             'usersPerService',
-            'servicesDistribution'
+            'servicesDistribution',
+            'serviceTypeAnalytics',
+            'totalBookings',
+            'pendingBookings',
+            'confirmedBookings',
+            'totalRentals',
+            'activeRentals',
+            'pendingRentals'
         ));
     }
 
@@ -603,30 +602,39 @@ class AdminController extends Controller
             ->get();
 
         // Simple service categorization
+        $confirmedAndActiveRentals = InstrumentRental::whereIn('status', ['confirmed', 'active'])->count();
         $serviceCategories = [
             'Studio Bookings' => $confirmedBookings->count(),
-            'Instrument Rentals' => $activeRentals->count(),
+            'Instrument Rentals' => $confirmedAndActiveRentals,
             'Pending Services' => $pendingBookings->count() + $pendingRentals->count()
         ];
 
         // Simple revenue calculation
         $revenueByService = [
             'Studio Bookings' => $confirmedBookings->count() * 800, // Average booking price
-            'Instrument Rentals' => $activeRentals->count() * 300, // Average rental price
+            'Instrument Rentals' => $confirmedAndActiveRentals * 300, // Average rental price
             'Pending Services' => 0
         ];
         
         $totalRevenue = array_sum($revenueByService);
 
-        // Top customers (simple version)
-        $topCustomers = DB::table('bookings')
-            ->join('users', 'bookings.user_id', '=', 'users.id')
-            ->select('users.name', 'users.email', 
-                DB::raw('COUNT(bookings.id) as booking_count'),
-                DB::raw('COUNT(bookings.id) * 800 as total_spent'))
-            ->where('bookings.status', 'confirmed')
+        // Top customers (including both bookings and instrument rentals)
+        $topCustomers = DB::table('users')
+            ->leftJoin('bookings', function($join) {
+                $join->on('users.id', '=', 'bookings.user_id')
+                     ->where('bookings.status', 'confirmed');
+            })
+            ->leftJoin('instrument_rentals', function($join) {
+                $join->on('users.id', '=', 'instrument_rentals.user_id')
+                     ->whereIn('instrument_rentals.status', ['confirmed', 'active']);
+            })
+            ->select('users.name', 'users.email',
+                DB::raw('COUNT(DISTINCT bookings.id) as booking_count'),
+                DB::raw('COUNT(DISTINCT instrument_rentals.id) as rental_count'),
+                DB::raw('(COUNT(DISTINCT bookings.id) * 800 + COUNT(DISTINCT instrument_rentals.id) * 300) as total_spent'))
             ->groupBy('users.id', 'users.name', 'users.email')
-            ->orderBy('booking_count', 'desc')
+            ->havingRaw('(booking_count > 0 OR rental_count > 0)')
+            ->orderBy('total_spent', 'desc')
             ->limit(10)
             ->get();
 
@@ -747,6 +755,9 @@ class AdminController extends Controller
         }
 
         $booking = Booking::with('user')->findOrFail($id);
+        
+        // Log booking view
+        ActivityLog::logAdmin("Admin viewed booking details: {$booking->reference}", ActivityLog::ACTION_ADMIN_ACCESS);
         
         return view('admin.booking-details', compact('user', 'booking'));
     }
@@ -914,9 +925,18 @@ class AdminController extends Controller
                 }
             }
             
-            // Store booking details for success message
+            // Store booking details for success message and logging
             $bookingReference = $booking->reference;
             $clientName = $booking->user->name ?? 'Unknown';
+            $bookingData = $booking->toArray();
+            
+            // Log booking deletion before deleting
+            ActivityLog::logBooking(
+                ActivityLog::ACTION_BOOKING_DELETED,
+                $booking,
+                $bookingData,
+                null
+            );
             
             // Delete the booking from database
             $booking->delete();
@@ -950,27 +970,47 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Only pending bookings can be approved.');
             }
             
+            // Store old values for logging
+            $oldValues = $booking->toArray();
+            
             // Update booking status to confirmed
             $booking->update(['status' => 'confirmed']);
             
+            // Log booking approval
+            ActivityLog::logBooking(
+                ActivityLog::ACTION_BOOKING_APPROVED,
+                $booking,
+                $oldValues,
+                $booking->fresh()->toArray()
+            );
+            
             // Create Google Calendar event for approved booking
+            $calendarSyncMessage = '';
             if ($this->calendarService) {
                 try {
-                    $this->calendarService->createBookingEvent($booking);
-                    Log::info('Google Calendar event created for approved booking', [
-                        'booking_id' => $booking->id,
-                        'reference' => $booking->reference
-                    ]);
+                    $result = $this->calendarService->createBookingEvent($booking);
+                    if ($result) {
+                        $calendarSyncMessage = ' Google Calendar event has been automatically created.';
+                        Log::info('Google Calendar event created for approved booking', [
+                            'booking_id' => $booking->id,
+                            'reference' => $booking->reference
+                        ]);
+                    } else {
+                        $calendarSyncMessage = ' Warning: Google Calendar event creation failed.';
+                    }
                 } catch (\Exception $e) {
+                    $calendarSyncMessage = ' Warning: Google Calendar sync failed - ' . $e->getMessage();
                     Log::warning('Failed to create Google Calendar event for approved booking', [
                         'booking_id' => $booking->id,
                         'error' => $e->getMessage()
                     ]);
                     // Continue with approval even if calendar creation fails
                 }
+            } else {
+                $calendarSyncMessage = ' Note: Google Calendar service is not available.';
             }
             
-            return redirect()->back()->with('success', "Booking {$booking->reference} for {$booking->user->name} has been approved and confirmed.");
+            return redirect()->back()->with('success', "Booking {$booking->reference} for {$booking->user->name} has been approved and confirmed.{$calendarSyncMessage}");
         } catch (\Exception $e) {
             Log::error('Failed to approve booking', [
                 'booking_id' => $id,
@@ -999,8 +1039,19 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Only pending bookings can be rejected.');
             }
             
+            // Store old values for logging
+            $oldValues = $booking->toArray();
+            
             // Update booking status to cancelled
             $booking->update(['status' => 'cancelled']);
+            
+            // Log booking rejection
+            ActivityLog::logBooking(
+                ActivityLog::ACTION_BOOKING_REJECTED,
+                $booking,
+                $oldValues,
+                $booking->fresh()->toArray()
+            );
             
             Log::info('Booking rejected by admin', [
                 'booking_id' => $booking->id,
@@ -1126,6 +1177,14 @@ class AdminController extends Controller
         // Apply filters
         if ($request->filled('user')) {
             $query->where('user_name', 'like', '%' . $request->user . '%');
+        }
+
+        if ($request->filled('action_type')) {
+            $query->where('action_type', $request->action_type);
+        }
+
+        if ($request->filled('severity_level')) {
+            $query->where('severity_level', $request->severity_level);
         }
 
         if ($request->filled('from_date')) {

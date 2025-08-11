@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const slotsContainer = document.querySelector(".slots");
   const durationSelect = document.getElementById("durationSelect");
   const selectedDurationLabel = document.getElementById("selectedDurationLabel");
+  const serviceTypeSelect = document.getElementById("serviceTypeSelect");
+  const serviceTypeLabel = document.getElementById("serviceType");
 
   const today = new Date();
   let selectedYear = today.getFullYear();
@@ -281,6 +283,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Service type change handler
+  if (serviceTypeSelect && serviceTypeLabel) {
+    serviceTypeSelect.addEventListener("change", () => {
+      const selectedOption = serviceTypeSelect.options[serviceTypeSelect.selectedIndex];
+      serviceTypeLabel.textContent = selectedOption.text;
+    });
+  }
+
   // Duration change handler
   if (durationSelect) {
     durationSelect.addEventListener("change", () => {
@@ -419,6 +429,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (bookingSummary && bookingSummaryContent) {
         // Populate the booking summary content
         bookingSummaryContent.innerHTML = `
+          <strong>Service:</strong> <span id="confirmServiceType">${serviceTypeSelect.options[serviceTypeSelect.selectedIndex].text}</span><br>
           <strong>Date:</strong> <span id="confirmDate">${selectedDate}</span><br>
           <strong>Time Slot:</strong> <span id="confirmTimeSlot">${selectedTimeSlot}</span><br>
           <strong>Duration:</strong> <span id="confirmDuration">${durationSelect.options[durationSelect.selectedIndex].text}</span>
@@ -437,6 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById('bookingDate').value = dateISO;
       document.getElementById('bookingTimeSlot').value = selectedTimeSlot;
       document.getElementById('bookingDuration').value = durationSelect.value;
+      document.getElementById('bookingServiceType').value = serviceTypeSelect.value;
       document.getElementById('confirmDate').textContent = selectedDate;
       document.getElementById('confirmTimeSlot').textContent = selectedTimeSlot;
       document.getElementById('confirmDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;

@@ -625,12 +625,7 @@ WHERE is_admin = 1;</code>
         </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="navigation">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
-            ← Back to Dashboard
-        </a>
-    </div>
+
 </div>
 
 <script>

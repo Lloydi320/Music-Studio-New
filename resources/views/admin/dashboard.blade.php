@@ -614,7 +614,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 borderRadius: 8
             }]
         },
-        options: chartDefaults
+        options: Object.assign({}, chartDefaults, {
+            onClick: function(event, elements) {
+                if (elements.length > 0) {
+                    const elementIndex = elements[0].index;
+                    const label = this.data.labels[elementIndex];
+                    const value = this.data.datasets[0].data[elementIndex];
+                    
+                    // Show detailed information
+                    alert(`Service: ${label}\nUsers: ${value}\n\nClick OK to view user details for this service.`);
+                    
+                    // Optional: Navigate to detailed view
+                    // window.location.href = `/admin/users?service=${encodeURIComponent(label)}`;
+                }
+            },
+            onHover: function(event, elements) {
+                event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            }
+        })
      });
 
      // Services Distribution Pie Chart
@@ -663,6 +680,22 @@ document.addEventListener('DOMContentLoaded', function() {
                          }
                      }
                  }
+             },
+             onClick: function(event, elements) {
+                 if (elements.length > 0) {
+                     const elementIndex = elements[0].index;
+                     const label = this.data.labels[elementIndex];
+                     const value = this.data.datasets[0].data[elementIndex];
+                     
+                     // Show detailed information in a modal or alert
+                     alert(`Service: ${label}\nBookings: ${value}\n\nClick OK to view detailed analytics for this service.`);
+                     
+                     // Optional: Navigate to detailed view
+                     // window.location.href = `/admin/analytics?service=${encodeURIComponent(label)}`;
+                 }
+             },
+             onHover: function(event, elements) {
+                 event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
              }
          }
      });

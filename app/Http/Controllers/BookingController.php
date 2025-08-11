@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Booking;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -32,6 +33,7 @@ class BookingController extends Controller
             'date' => 'required|date',
             'time_slot' => 'required|string',
             'duration' => 'required|integer|min:1|max:8',
+            'service_type' => 'required|string|in:studio_rental,recording_session,music_lesson,band_practice,audio_production,instrument_rental,other',
         ]);
     
         // Parse the time slot to get start and end times
@@ -42,7 +44,8 @@ class BookingController extends Controller
         $startTime = trim(explode('-', $timeSlot)[0]);
         
         // Calculate the new booking's start and end times
-        $newStartTime = Carbon::createFromFormat('Y-m-d g:i A', $request->date . ' ' . $startTime);
+        $bookingDate = Carbon::parse($request->date);
+        $newStartTime = Carbon::createFromFormat('Y-m-d g:i A', $bookingDate->format('Y-m-d') . ' ' . $startTime, config('app.timezone', 'Asia/Manila'));
         $newEndTime = $newStartTime->copy()->addHours($duration);
         
         // Check for overlapping bookings
@@ -52,8 +55,8 @@ class BookingController extends Controller
         
         foreach ($existingBookings as $existingBooking) {
             $existingStartTime = trim(explode('-', $existingBooking->time_slot)[0]);
-            $existingDateOnly = explode(' ', $existingBooking->date)[0]; // Extract just the date part
-            $existingStart = Carbon::createFromFormat('Y-m-d g:i A', $existingDateOnly . ' ' . $existingStartTime);
+            $existingBookingDate = Carbon::parse($existingBooking->date);
+            $existingStart = Carbon::createFromFormat('Y-m-d g:i A', $existingBookingDate->format('Y-m-d') . ' ' . $existingStartTime, config('app.timezone', 'Asia/Manila'));
             $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
             
             // Check if there's any overlap
@@ -76,8 +79,17 @@ class BookingController extends Controller
             'duration' => $duration,
             'price' => $hourlyRate,
             'total_amount' => $totalAmount,
+            'service_type' => $request->service_type,
             'status' => 'pending',
         ]);
+
+        // Log booking creation
+        ActivityLog::logBooking(
+            ActivityLog::ACTION_BOOKING_CREATED,
+            $booking,
+            null,
+            $booking->toArray()
+        );
     
         // Remove this section - don't create calendar event immediately
         // Google Calendar event will be created only when booking is approved
@@ -133,7 +145,7 @@ class BookingController extends Controller
             $startTime = trim(explode('-', $booking->time_slot)[0]);
             
             // Calculate the actual end time based on duration
-            $startDateTime = Carbon::createFromFormat('h:i A', $startTime);
+            $startDateTime = Carbon::createFromFormat('h:i A', $startTime, config('app.timezone', 'Asia/Manila'));
             $endDateTime = $startDateTime->copy()->addHours($booking->duration);
             
             // Format the actual occupied time range
@@ -169,7 +181,7 @@ class BookingController extends Controller
         $startTime = trim(explode('-', $timeSlot)[0]);
         
         // Calculate the new booking's start and end times
-        $newStartTime = Carbon::createFromFormat('h:i A', $startTime);
+        $newStartTime = Carbon::createFromFormat('h:i A', $startTime, config('app.timezone', 'Asia/Manila'));
         $newEndTime = $newStartTime->copy()->addHours($duration);
         
         // Check for overlapping bookings on the same date (pending and confirmed bookings)
@@ -180,7 +192,7 @@ class BookingController extends Controller
         foreach ($overlappingBookings as $existingBooking) {
             // Parse existing booking's time slot
             $existingStartTime = trim(explode('-', $existingBooking->time_slot)[0]);
-            $existingStart = Carbon::createFromFormat('h:i A', $existingStartTime);
+            $existingStart = Carbon::createFromFormat('h:i A', $existingStartTime, config('app.timezone', 'Asia/Manila'));
             $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
             
             // Check for overlap
@@ -225,7 +237,16 @@ class BookingController extends Controller
             return response()->json(['error' => 'Booking not found or unauthorized'], 404);
         }
         
+        $oldValues = $booking->toArray();
         $booking->update(['status' => 'cancelled']);
+        
+        // Log booking cancellation
+        ActivityLog::logBooking(
+            ActivityLog::ACTION_BOOKING_CANCELLED,
+            $booking,
+            $oldValues,
+            $booking->fresh()->toArray()
+        );
         
         return response()->json([
             'success' => true,
@@ -245,7 +266,22 @@ class BookingController extends Controller
             return response()->json(['error' => 'Booking not found'], 404);
         }
         
+        $oldValues = $booking->toArray();
         $booking->update(['status' => $request->status]);
+        
+        // Log booking status update
+        $action = match($request->status) {
+            'confirmed' => ActivityLog::ACTION_BOOKING_APPROVED,
+            'cancelled' => ActivityLog::ACTION_BOOKING_CANCELLED,
+            default => ActivityLog::ACTION_BOOKING_UPDATED
+        };
+        
+        ActivityLog::logBooking(
+            $action,
+            $booking,
+            $oldValues,
+            $booking->fresh()->toArray()
+        );
         
         return response()->json([
             'success' => true,

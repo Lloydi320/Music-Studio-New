@@ -47,6 +47,27 @@
                         </select>
                     </div>
                     <div class="filter-group">
+                        <label for="action_type">Action Type</label>
+                        <select name="action_type" id="action_type" class="form-select">
+                            <option value="">All Actions</option>
+                            @foreach(\App\Models\ActivityLog::distinct()->whereNotNull('action_type')->pluck('action_type') as $actionType)
+                                <option value="{{ $actionType }}" {{ request('action_type') == $actionType ? 'selected' : '' }}>
+                                    {{ ucfirst(str_replace('_', ' ', $actionType)) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="severity_level">Severity</label>
+                        <select name="severity_level" id="severity_level" class="form-select">
+                            <option value="">All Levels</option>
+                            <option value="low" {{ request('severity_level') == 'low' ? 'selected' : '' }}>Low</option>
+                            <option value="medium" {{ request('severity_level') == 'medium' ? 'selected' : '' }}>Medium</option>
+                            <option value="high" {{ request('severity_level') == 'high' ? 'selected' : '' }}>High</option>
+                            <option value="critical" {{ request('severity_level') == 'critical' ? 'selected' : '' }}>Critical</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
                         <label for="from_date">From Date</label>
                         <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="form-input">
                     </div>
@@ -80,14 +101,16 @@
                             <tr>
                                 <th>Date & Time</th>
                                 <th>User</th>
-                                <th>Role</th>
+                                <th>Action Type</th>
+                                <th>Severity</th>
                                 <th>Description</th>
+                                <th>Resource</th>
                                 <th>IP Address</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($activityLogs as $log)
-                                <tr>
+                                <tr class="log-row {{ $log->severity_level ?? 'low' }}">
                                     <td>
                                         <div class="timestamp">
                                             {{ $log->created_at->format('M d, Y H:i A') }}
@@ -96,20 +119,64 @@
                                     <td>
                                         <div class="user-info">
                                             <span class="user-name">{{ $log->user_name }}</span>
+                                            <span class="role-badge {{ strtolower($log->user_role) }}">
+                                                {{ $log->user_role }}
+                                            </span>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="role-badge {{ strtolower($log->user_role) }}">
-                                            {{ $log->user_role }}
+                                        <span class="action-badge">
+                                            {{ $log->action_type_display ?? 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="severity-badge {{ $log->severity_level ?? 'low' }}">
+                                            {{ ucfirst($log->severity_level ?? 'low') }}
                                         </span>
                                     </td>
                                     <td>
                                         <div class="description">
                                             {{ $log->description }}
+                                            @if($log->old_values || $log->new_values)
+                                                <button class="btn-details" onclick="toggleDetails({{ $log->id }})">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M19 9L12 16L5 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                </button>
+                                            @endif
                                         </div>
+                                        @if($log->old_values || $log->new_values)
+                                            <div class="details-panel" id="details-{{ $log->id }}" style="display: none;">
+                                                @if($log->old_values)
+                                                    <div class="change-info">
+                                                        <strong>Before:</strong>
+                                                        <pre>{{ json_encode($log->old_values, JSON_PRETTY_PRINT) }}</pre>
+                                                    </div>
+                                                @endif
+                                                @if($log->new_values)
+                                                    <div class="change-info">
+                                                        <strong>After:</strong>
+                                                        <pre>{{ json_encode($log->new_values, JSON_PRETTY_PRINT) }}</pre>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($log->resource_type && $log->resource_id)
+                                            <div class="resource-info">
+                                                <span class="resource-type">{{ $log->resource_type }}</span>
+                                                <span class="resource-id">#{{ $log->resource_id }}</span>
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <span class="ip-address">{{ $log->ip_address }}</span>
+                                        @if($log->session_id)
+                                            <div class="session-id">Session: {{ substr($log->session_id, 0, 8) }}...</div>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -410,6 +477,7 @@
     box-shadow: var(--shadow-sm);
     border: 2px solid transparent;
     transition: all 0.3s ease;
+    margin-left: 8px;
 }
 
 .role-badge:hover {
@@ -427,6 +495,133 @@
     background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
     color: #16a34a;
     border-color: #86efac;
+}
+
+.action-badge {
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.severity-badge {
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.severity-badge.low {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.severity-badge.medium {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.severity-badge.high {
+    background-color: #fed7aa;
+    color: #c2410c;
+}
+
+.severity-badge.critical {
+    background-color: #fecaca;
+    color: #dc2626;
+}
+
+.log-row.critical {
+    border-left: 4px solid #dc2626;
+}
+
+.log-row.high {
+    border-left: 4px solid #f59e0b;
+}
+
+.log-row.medium {
+    border-left: 4px solid #eab308;
+}
+
+.log-row.low {
+    border-left: 4px solid #10b981;
+}
+
+.resource-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.resource-type {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+}
+
+.resource-id {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.session-id {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.btn-details {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    margin-left: 8px;
+    color: #6b7280;
+    transition: color 0.2s;
+}
+
+.btn-details:hover {
+    color: #374151;
+}
+
+.details-panel {
+    margin-top: 8px;
+    padding: 12px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.change-info {
+    margin-bottom: 8px;
+}
+
+.change-info:last-child {
+    margin-bottom: 0;
+}
+
+.change-info strong {
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.change-info pre {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.text-muted {
+    color: #9ca3af;
 }
 
 .description {
@@ -603,6 +798,20 @@ function exportLogs() {
     const params = new URLSearchParams(window.location.search);
     params.set('export', 'csv');
     window.location.href = '{{ route("admin.activity-logs") }}?' + params.toString();
+}
+
+function toggleDetails(logId) {
+    const detailsPanel = document.getElementById('details-' + logId);
+    const button = event.target.closest('.btn-details');
+    const icon = button.querySelector('svg');
+    
+    if (detailsPanel.style.display === 'none' || detailsPanel.style.display === '') {
+        detailsPanel.style.display = 'block';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        detailsPanel.style.display = 'none';
+        icon.style.transform = 'rotate(0deg)';
+    }
 }
 </script>
 @endsection
