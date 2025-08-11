@@ -1,125 +1,213 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Google Calendar Integration')
 
 @section('content')
-<div class="calendar-integration">
+<div class="admin-content">
+    <!-- Page Header -->
     <div class="calendar-header">
-        <h1>Google Calendar Integration</h1>
-        <p>Sync your studio bookings with Google Calendar for better schedule management.</p>
+        <div class="header-content">
+            <div class="header-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="#4285f4" stroke-width="2" fill="#e8f0fe"/>
+                    <line x1="16" y1="2" x2="16" y2="6" stroke="#4285f4" stroke-width="2"/>
+                    <line x1="8" y1="2" x2="8" y2="6" stroke="#4285f4" stroke-width="2"/>
+                    <line x1="3" y1="10" x2="21" y2="10" stroke="#4285f4" stroke-width="2"/>
+                </svg>
+            </div>
+            <div class="header-text">
+                <h1>Google Calendar Integration</h1>
+                <p>Sync your studio bookings automatically for easier schedule management.</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="toggle-theme-btn" onclick="toggleTheme()">Toggle theme</button>
+            <a href="https://calendar.google.com" target="_blank" class="open-calendar-btn">Open Calendar</a>
+        </div>
     </div>
 
     <!-- Connection Status -->
-    <div class="connection-status">
+    <div class="calendar-main">
         @if($user->hasGoogleCalendarAccess())
-            <div class="status-card connected">
-                <div class="status-icon">✓</div>
-                <div class="status-content">
-                    <h3>Google Calendar Connected</h3>
+            <div class="connection-card connected">
+                <div class="connection-status">
+                    <div class="status-indicator connected"></div>
+                    <h2>Google Calendar Connected</h2>
                     <p>Your bookings are automatically synced to Google Calendar.</p>
-                    <div class="calendar-info">
-                        <strong>Calendar ID:</strong> 
-                        <code>{{ Str::limit($user->google_calendar_id, 40, '...') }}</code>
+                </div>
+                <div class="calendar-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Calendar ID:</span>
+                        <code class="calendar-id">{{ Str::limit($user->google_calendar_id, 40, '...') }}</code>
+                    </div>
+                    @php
+                        $lastSync = \Carbon\Carbon::now()->subMinutes(2);
+                    @endphp
+                    <div class="detail-item">
+                        <span class="detail-label">Last sync:</span>
+                        <span class="sync-time">{{ $lastSync->diffForHumans() }}</span>
                     </div>
                 </div>
-                <div class="status-actions">
+                <div class="connection-actions">
                     <form method="POST" action="{{ route('admin.calendar.disconnect') }}" 
                           onsubmit="return confirm('Are you sure you want to disconnect Google Calendar?')">
                         @csrf
-                        <button type="submit" class="btn btn-danger">Disconnect</button>
+                        <button type="submit" class="disconnect-btn">Disconnect</button>
                     </form>
                 </div>
             </div>
         @else
-            <div class="status-card disconnected">
-                <div class="status-icon">✗</div>
-                <div class="status-content">
-                    <h3>Google Calendar Not Connected</h3>
+            <div class="connection-card disconnected">
+                <div class="connection-status">
+                    <div class="status-indicator disconnected"></div>
+                    <h2>Google Calendar Not Connected</h2>
                     <p>Connect your Google Calendar to automatically sync studio bookings.</p>
-                    <ul class="benefits">
-                        <li>Automatic event creation for new bookings</li>
-                        <li>Email and push notifications</li>
-                        <li>Easy schedule management</li>
-                        <li>Client information in calendar events</li>
-                    </ul>
                 </div>
-                <div class="status-actions">
-                    <a href="{{ route('admin.calendar.connect') }}" class="btn btn-primary">
-                        <i class="icon-google"></i> Connect Google Calendar
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <span class="benefit-icon">📅</span>
+                        <span>Automatic event creation for new bookings</span>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">🔔</span>
+                        <span>Email and push notifications</span>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">⚡</span>
+                        <span>Easy schedule management</span>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">👥</span>
+                        <span>Client information in calendar events</span>
+                    </div>
+                </div>
+                <div class="connection-actions">
+                    <a href="{{ route('admin.calendar.connect') }}" class="connect-btn">
+                        Connect Google Calendar
                     </a>
                 </div>
             </div>
         @endif
-    </div>
 
     @if($user->hasGoogleCalendarAccess())
-    <!-- Sync Actions -->
-    <div class="sync-actions">
-        <h2>Sync Management</h2>
-        <div class="sync-card">
-            <div class="sync-info">
-                <h3>Sync Existing Bookings</h3>
-                <p>Sync all confirmed bookings that haven't been added to Google Calendar yet.</p>
+    <!-- Sync Actions and Quick Actions -->
+    <div class="actions-grid">
+        <!-- Sync Existing Bookings -->
+        <div class="action-card sync-card">
+            <div class="card-icon">
+                <div class="sync-icon">✓</div>
+            </div>
+            <div class="card-content">
+                <h3>All bookings are synced</h3>
+                <p>All confirmed bookings have been synced to Google Calendar.</p>
                 @php
-                    $unsyncedCount = \App\Models\Booking::where('status', 'confirmed')
-                                                      ->whereNull('google_event_id')
-                                                      ->count();
+                    $pendingBookings = \App\Models\Booking::where('status', 'confirmed')
+                        ->whereNull('google_event_id')
+                        ->count();
                 @endphp
-                <div class="sync-stats">
-                    <strong>{{ $unsyncedCount }}</strong> bookings need syncing
+                <div class="sync-status">
+                    <span class="status-badge synced">{{ $pendingBookings }} bookings need syncing</span>
                 </div>
             </div>
-            <div class="sync-actions-buttons">
-                @if($unsyncedCount > 0)
-                    <form method="POST" action="{{ route('admin.calendar.sync') }}" 
-                          onsubmit="return confirm('Sync {{ $unsyncedCount }} bookings to Google Calendar?')">
-                        @csrf
-                        <button type="submit" class="btn btn-success">
-                            <i class="icon-sync"></i> Sync {{ $unsyncedCount }} Bookings
-                        </button>
-                    </form>
-                @else
-                    <div class="all-synced">
-                        <span class="sync-complete">✓ All bookings are synced</span>
-                    </div>
-                @endif
+            <div class="card-actions">
+                <form method="POST" action="{{ route('admin.calendar.sync-all') }}">
+                    @csrf
+                    <button type="submit" class="sync-btn" 
+                            {{ $pendingBookings === 0 ? 'disabled' : '' }}>
+                        Sync Now
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="action-card quick-actions-card">
+            <div class="card-header">
+                <h3>Quick Actions</h3>
+                <span class="shortcuts-label">Shortcuts</span>
+            </div>
+            <div class="quick-actions-list">
+                <a href="{{ route('admin.bookings.create') }}" class="quick-action">
+                    <span class="action-icon">📝</span>
+                    <span>New Booking</span>
+                </a>
+                <a href="{{ route('admin.bookings') }}" class="quick-action">
+                    <span class="action-icon">📋</span>
+                    <span>Open Bookings</span>
+                </a>
+                <a href="#" class="quick-action" onclick="exportCalendar()">
+                    <span class="action-icon">📤</span>
+                    <span>Export</span>
+                </a>
+                <a href="#" class="quick-action" onclick="openSettings()">
+                    <span class="action-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
             </div>
         </div>
     </div>
 
     <!-- Unified Calendar View -->
     <div class="calendar-view">
-        <h2>📅 Calendar Overview</h2>
+        <div class="overview-header">
+            <h2>Calendar Overview</h2>
+            <div class="overview-meta">
+                <span class="overview-subtitle">Upcoming Events (Next 4 Weeks)</span>
+                <div class="view-controls">
+                    <span class="view-label">View:</span>
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="grid">Grid</button>
+                        <button class="view-btn" data-view="list">List</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         @if($user->hasGoogleCalendarAccess() && count($upcomingEvents) > 0)
             <div class="calendar-section">
                 <h3>🔮 Upcoming Events (Next 4 Weeks)</h3>
-                <div class="events-grid">
+                <div class="events-grid" id="events-grid">
                     @foreach($upcomingEvents as $event)
                     <div class="event-card {{ $event['is_studio_booking'] ? 'studio-event' : 'other-event' }}">
-                        <div class="event-time">
-                            <div class="event-date">{{ $event['start']->format('M d') }}</div>
-                            <div class="event-hour">{{ $event['start']->format('g:i A') }}</div>
+                        <div class="event-header">
+                            <div class="event-date-time">
+                                <div class="event-date">
+                                    {{ $event['start']->format('M j') }} • 
+                                    {{ $event['start']->format('H:i') }}
+                                </div>
+                                <div class="event-duration">
+                                    {{ $event['start']->format('g:i A') }}
+                                </div>
+                            </div>
+                            <div class="event-type-badge {{ $event['is_studio_booking'] ? 'studio' : 'other' }}">
+                                {{ $event['is_studio_booking'] ? 'Studio' : 'Other' }}
+                            </div>
                         </div>
-                        <div class="event-details">
-                            <div class="event-title">{{ $event['title'] }}</div>
-                            <div class="event-duration">{{ $event['duration'] }}h duration</div>
+                        <div class="event-content">
+                            <h4 class="event-title">{{ $event['title'] }}</h4>
                             @if($event['attendees'])
-                                <div class="event-attendees">
-                                    👥 {{ count($event['attendees']) }} attendee(s)
+                                <div class="event-client">
+                                    <span class="client-icon">👤</span>
+                                    <span>{{ count($event['attendees']) }} attendee(s)</span>
                                 </div>
                             @endif
                             @if($event['location'])
-                                <div class="event-location">📍 {{ $event['location'] }}</div>
+                                <div class="event-location">
+                                    <span class="location-icon">📍</span>
+                                    <span>{{ $event['location'] }}</span>
+                                </div>
                             @endif
+                            <div class="event-meta">
+                                <span class="event-duration-text">
+                                    {{ $event['duration'] }}h duration
+                                </span>
+                            </div>
                         </div>
-                        <div class="event-type">
-                            @if($event['is_studio_booking'])
-                                <span class="type-badge studio">🎵 Studio</span>
-                            @else
-                                <span class="type-badge other">📅 Other</span>
-                            @endif
-                        </div>
+                        @if($event['is_studio_booking'])
+                            <div class="event-actions">
+                                <a href="#" class="event-view-btn">View Details</a>
+                            </div>
+                        @endif
                     </div>
                     @endforeach
                 </div>
@@ -235,44 +323,217 @@
 </div>
 
 <style>
-.calendar-integration {
-    max-width: 800px;
+/* Google Calendar UI Styles */
+.admin-content {
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 24px;
+    background: #f8f9fa;
+    min-height: 100vh;
 }
 
+/* Header Styles */
 .calendar-header {
-    text-align: center;
-    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding: 24px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.calendar-header h1 {
-    color: #333;
-    margin-bottom: 10px;
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
-.calendar-header p {
-    color: #666;
+.header-icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+.header-text h1 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 4px 0;
+}
+
+.header-text p {
+    font-size: 14px;
+    color: #5f6368;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.toggle-theme-btn, .open-calendar-btn {
+    padding: 8px 16px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    background: white;
+    color: #1a73e8;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.open-calendar-btn {
+    background: #1a73e8;
+    color: white;
+    border-color: #1a73e8;
+}
+
+.toggle-theme-btn:hover {
+    background: #f8f9fa;
+}
+
+.open-calendar-btn:hover {
+    background: #1557b0;
+}
+
+/* Connection Card Styles */
+.calendar-main {
+    margin-bottom: 24px;
+}
+
+.connection-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-indicator.connected {
+    background: #34a853;
+}
+
+.status-indicator.disconnected {
+    background: #ea4335;
+}
+
+.connection-status h2 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0;
+}
+
+.connection-status p {
+    color: #5f6368;
+    font-size: 14px;
+    margin: 4px 0 0 0;
+}
+
+.calendar-details {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #5f6368;
+    min-width: 80px;
+}
+
+.calendar-id {
+    background: #e8f0fe;
+    color: #1a73e8;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.sync-time {
+    color: #34a853;
+    font-weight: 500;
+}
+
+.benefits-list {
+    margin: 20px 0;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: #5f6368;
+}
+
+.benefit-icon {
     font-size: 16px;
 }
 
-.status-card {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    padding: 30px;
-    margin-bottom: 30px;
+.connection-actions {
     display: flex;
-    align-items: center;
-    gap: 20px;
+    gap: 12px;
 }
 
-.status-card.connected {
-    border-left: 5px solid #27ae60;
+.connect-btn {
+    background: #1a73e8;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
 }
 
-.status-card.disconnected {
-    border-left: 5px solid #e74c3c;
+.connect-btn:hover {
+    background: #1557b0;
+}
+
+.disconnect-btn {
+    background: #ea4335;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.disconnect-btn:hover {
+    background: #d33b2c;
 }
 
 .status-icon {
@@ -349,12 +610,212 @@
 .btn-secondary { background: #95a5a6; color: white; }
 .btn-secondary:hover { background: #7f8c8d; }
 
-.sync-actions, .calendar-view, .instructions {
+/* Actions Grid */
+.actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.action-card {
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 25px;
-    margin-bottom: 25px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 24px;
+}
+
+.sync-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: #e8f5e8;
+    border-radius: 50%;
+    margin-bottom: 16px;
+}
+
+.sync-icon {
+    font-size: 24px;
+    color: #34a853;
+}
+
+.card-content h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 8px 0;
+}
+
+.card-content p {
+    color: #5f6368;
+    font-size: 14px;
+    margin: 0 0 12px 0;
+}
+
+.sync-status {
+    margin-bottom: 16px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.synced {
+    background: #e8f5e8;
+    color: #137333;
+}
+
+.sync-btn {
+    background: #1a73e8;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.sync-btn:hover:not(:disabled) {
+    background: #1557b0;
+}
+
+.sync-btn:disabled {
+    background: #dadce0;
+    color: #5f6368;
+    cursor: not-allowed;
+}
+
+.quick-actions-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.card-header h3 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0;
+}
+
+.shortcuts-label {
+    font-size: 12px;
+    color: #5f6368;
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.quick-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #5f6368;
+    transition: background 0.2s;
+}
+
+.quick-action:hover {
+    background: #f8f9fa;
+    color: #202124;
+}
+
+.action-icon {
+    font-size: 16px;
+}
+
+/* Calendar View */
+.calendar-view, .instructions {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.overview-header h2 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0;
+}
+
+.overview-meta {
+    text-align: right;
+}
+
+.overview-subtitle {
+    display: block;
+    font-size: 14px;
+    color: #5f6368;
+    margin-bottom: 8px;
+}
+
+.view-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.view-label {
+    font-size: 14px;
+    color: #5f6368;
+}
+
+.view-toggle {
+    display: flex;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.view-btn {
+    padding: 6px 12px;
+    border: none;
+    background: white;
+    color: #5f6368;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.view-btn.active {
+    background: #1a73e8;
+    color: white;
+}
+
+.view-btn:hover:not(.active) {
+    background: #f8f9fa;
 }
 
 .sync-card {
@@ -478,36 +939,133 @@
     margin-bottom: 30px;
 }
 
+/* Calendar Section Styles */
+.calendar-section {
+    margin-bottom: 32px;
+}
+
+.calendar-section h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 16px 0;
+}
+
 .events-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
 }
 
 .event-card {
-    background: #f8f9fa;
+    background: white;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 15px;
-    border-left: 4px solid #ddd;
-    display: flex;
-    gap: 15px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    padding: 16px;
+    transition: all 0.2s;
+    position: relative;
 }
 
 .event-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: #dadce0;
 }
 
 .event-card.studio-event {
-    border-left-color: #e74c3c;
-    background: linear-gradient(135deg, #fff5f5 0%, #f8f9fa 100%);
+    border-left: 4px solid #ea4335;
 }
 
 .event-card.other-event {
-    border-left-color: #3498db;
-    background: linear-gradient(135deg, #f0f8ff 0%, #f8f9fa 100%);
+    border-left: 4px solid #1a73e8;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.event-date-time {
+    flex: 1;
+}
+
+.event-date {
+    font-size: 14px;
+    font-weight: 500;
+    color: #202124;
+    margin-bottom: 2px;
+}
+
+.event-duration {
+    font-size: 12px;
+    color: #5f6368;
+}
+
+.event-type-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.event-type-badge.studio {
+    background: #fce8e6;
+    color: #d93025;
+}
+
+.event-type-badge.other {
+    background: #e8f0fe;
+    color: #1a73e8;
+}
+
+.event-content {
+    margin-bottom: 12px;
+}
+
+.event-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #202124;
+    margin: 0 0 8px 0;
+}
+
+.event-client, .event-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #5f6368;
+    margin-bottom: 4px;
+}
+
+.client-icon, .location-icon {
+    font-size: 12px;
+}
+
+.event-meta {
+    font-size: 12px;
+    color: #5f6368;
+}
+
+.event-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.event-view-btn {
+    color: #1a73e8;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.event-view-btn:hover {
+    background: #f8f9fa;
 }
 
 .event-time {
@@ -694,20 +1252,35 @@
     margin-top: 30px;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
-    .status-card {
+    .admin-content {
+        padding: 16px;
+    }
+    
+    .calendar-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .header-content {
         flex-direction: column;
         text-align: center;
     }
     
-    .sync-card {
-        flex-direction: column;
-        text-align: center;
+    .actions-grid {
+        grid-template-columns: 1fr;
     }
     
-    .activity-item {
+    .overview-header {
         flex-direction: column;
-        text-align: center;
+        gap: 16px;
+        text-align: left;
+    }
+    
+    .overview-meta {
+        text-align: left;
     }
     
     .events-grid {
@@ -716,29 +1289,94 @@
     
     .comparison-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .event-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
-    
-    .event-time {
-        min-width: auto;
+        gap: 16px;
     }
     
     .calendar-stats {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
     
     .booking-item {
         flex-direction: column;
-        text-align: center;
+        align-items: flex-start;
         gap: 8px;
+    }
+    
+    .connection-actions {
+        flex-direction: column;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
     }
 }
 </style>
+
+<script>
+// Theme toggle functionality
+function toggleTheme() {
+    const body = document.body;
+    const isDark = body.classList.contains('dark-theme');
+    
+    if (isDark) {
+        body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+    } else {
+        body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+// Load saved theme
+document.addEventListener('DOMContentLoaded', function() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    }
+});
+
+// View toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const viewButtons = document.querySelectorAll('.view-btn');
+    const eventsGrid = document.getElementById('events-grid');
+    
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            viewButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const view = this.dataset.view;
+            if (eventsGrid) {
+                if (view === 'list') {
+                    eventsGrid.style.gridTemplateColumns = '1fr';
+                    eventsGrid.style.gap = '8px';
+                } else {
+                    eventsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+                    eventsGrid.style.gap = '16px';
+                }
+            }
+        });
+    });
+});
+
+// Quick action functions
+function exportCalendar() {
+    alert('Export functionality would be implemented here');
+}
+
+function openSettings() {
+    alert('Settings panel would open here');
+}
+
+// Auto-refresh calendar data every 5 minutes
+setInterval(function() {
+    // This would typically make an AJAX call to refresh calendar data
+    console.log('Auto-refreshing calendar data...');
+}, 300000);
+</script>
+
 @endsection

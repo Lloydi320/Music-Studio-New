@@ -156,6 +156,7 @@
             @auth
             <ul class="navbar-nav">
                 <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                <li><a href="{{ route('admin.bookings') }}">Bookings</a></li>
                 <li><a href="{{ route('admin.calendar') }}">Calendar</a></li>
                 <li><a href="{{ route('home') }}">Main Site</a></li>
                 
@@ -230,9 +231,13 @@
         });
     </script>
 
-    <!-- Elfsight AI Chatbot Widget -->
+    <!-- Elfsight AI Chatbot | Untitled AI Chatbot -->
      <script src="https://static.elfsight.com/platform/platform.js" async></script>
-     <div class="elfsight-app-69dfc65a-ea8b-4259-9e37-def017e1c03f" data-elfsight-app-lazy id="draggable-chatbot"></div>
+     <div class="elfsight-app-96cc4395-da06-450f-9191-5bc6e30fa5f7" data-elfsight-app-lazy id="draggable-chatbot"></div>
+     
+
+     
+
 
      <!-- Draggable Chatbot Circle Styles -->
      <style>

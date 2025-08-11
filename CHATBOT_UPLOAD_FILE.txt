@@ -1,0 +1,146 @@
+ELFSIGHT AI CHATBOT TRAINING DATA FOR LEMON HUB STUDIO
+=====================================================
+
+Widget ID: 8126d948-90e0-4f43-b92d-523c11148e8a
+Business: Lemon Hub Studio
+Type: Music Studio
+Date: January 2025
+
+=====================================================
+TRAINING INSTRUCTIONS
+=====================================================
+
+Always match user questions to the most relevant FAQ. If user mentions rates, price, cost, fee, money, expensive, cheap, or affordable - use rates FAQ. If user mentions services, offer, provide, available, what do you do - use services FAQ. If user mentions equipment, gear, instruments, tools, microphone, speakers - use equipment FAQ. If user mentions book, booking, schedule, appointment, reserve, contact - use booking FAQ. If user mentions reschedule, change, cancel, modify, move - use rescheduling FAQ.
+
+=====================================================
+Q&A PAIRS (10 TOTAL)
+=====================================================
+
+Q1: rates
+A1: Our rates depend on the service:
+- Recording: P1,000/hour
+- Studio rental: P250/hour
+
+Q2: What are your rates?
+A2: Our rates depend on the service:
+- Recording: P1,000/hour
+- Studio rental: P250/hour
+
+Q3: What services do you offer?
+A3: We offer instrument and studio rental, studio recording, and music lesson. If you need help with instruments or vocals, we've got studio support available too—just let us know!
+
+Q4: price
+A4: Our rates depend on the service:
+- Recording: P1,000/hour
+- Studio rental: P250/hour
+
+Q5: cost
+A5: Our rates depend on the service:
+- Recording: P1,000/hour
+- Studio rental: P250/hour
+
+Q6: services
+A6: We offer instrument and studio rental, studio recording, and music lesson. If you need help with instruments or vocals, we've got studio support available too—just let us know!
+
+Q7: What equipment do you use?
+A7: We have professional studio equipment for all your recording and music needs. Do you want the complete list of gear? Ask ahead!
+
+Q8: book
+A8: Booking's super simple! You can:
+- Use the online booking system on our website
+- Call or text us directly
+- Please send us an email with your preferred time, date, and activity.
+We'll send you a confirmation and payment details as soon as we finalize everything you need.
+
+Q9: How do I book a session?
+A9: Booking's super simple! You can:
+- Use the online booking system on our website
+- Call or text us directly
+- Please send us an email with your preferred time, date, and activity.
+We'll send you a confirmation and payment details as soon as we finalize everything you need.
+
+Q10: How do I reschedule my session?
+A10: You can reschedule by contacting us through any of our available channels. We'll let you know once the new slot is confirmed!
+
+=====================================================
+BUSINESS INFORMATION
+=====================================================
+
+Business Name: Lemon Hub Studio
+Business Type: Music Studio
+Description: Professional music studio offering lessons, recording, and instrument rentals
+
+=====================================================
+GREETING MESSAGES
+=====================================================
+
+Welcome Message: Hello! Welcome to Lemon Hub Studio! How can I help you today?
+
+Fallback Message: I'm here to help with any questions about our music studio services. What would you like to know?
+
+=====================================================
+QUICK REPLIES
+=====================================================
+
+1. What services do you offer?
+2. What are your rates?
+3. How do I book a session?
+4. What equipment do you use?
+5. How do I reschedule?
+
+=====================================================
+SINGLE-WORD TRIGGERS (IMPORTANT)
+=====================================================
+
+These single words should trigger specific responses:
+- "rates" → Show pricing information
+- "price" → Show pricing information
+- "cost" → Show pricing information
+- "services" → Show services list
+- "book" → Show booking information
+
+=====================================================
+UPLOAD INSTRUCTIONS
+=====================================================
+
+1. Login to Elfsight dashboard: https://dash.elfsight.com/login
+2. Find your AI Chatbot widget (ID: 8126d948-90e0-4f43-b92d-523c11148e8a)
+3. DELETE all existing training data first!
+4. Copy the "Training Instructions" section above
+5. Add all 10 Q&A pairs one by one
+6. Set business information
+7. Set greeting messages
+8. Add quick replies
+9. Save and publish
+10. Wait 15 minutes for changes to take effect
+11. Test with "rates" to verify it works
+
+=====================================================
+EXPECTED RESULTS
+=====================================================
+
+When customers type:
+- "rates" → Should show pricing: Recording P1,000/hour, Studio rental P250/hour
+- "services" → Should show services list
+- "book" → Should show booking instructions
+- "price" or "cost" → Should show pricing information
+
+=====================================================
+TROUBLESHOOTING
+=====================================================
+
+If chatbot doesn't work:
+1. Verify all 10 Q&A pairs are added correctly
+2. Check training instructions are copied exactly
+3. Wait full 15 minutes after publishing
+4. Clear browser cache and try again
+5. Contact Elfsight support: support@elfsight.com
+
+=====================================================
+END OF FILE
+=====================================================
+
+This file contains everything needed to set up your Lemon Hub Studio AI chatbot.
+Your customers will get instant, professional responses 24/7!
+
+Happy music making! 🎵

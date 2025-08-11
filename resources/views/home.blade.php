@@ -633,9 +633,9 @@
     });
   </script>
 
-  <!-- Elfsight AI Chatbot Widget -->
+  <!-- Elfsight AI Chatbot | Untitled AI Chatbot -->
   <script src="https://static.elfsight.com/platform/platform.js" async></script>
-  <div class="elfsight-app-69dfc65a-ea8b-4259-9e37-def017e1c03f" data-elfsight-app-lazy id="draggable-chatbot"></div>
+  <div class="elfsight-app-96cc4395-da06-450f-9191-5bc6e30fa5f7" data-elfsight-app-lazy id="draggable-chatbot"></div>
 
   <!-- Draggable Chatbot Circle Styles -->
   <style>
@@ -712,7 +712,7 @@
       // Method 2: Force complete widget reset
       setTimeout(function() {
         try {
-          const chatbotElement = document.querySelector('.elfsight-app-69dfc65a-ea8b-4259-9e37-def017e1c03f');
+          const chatbotElement = document.querySelector('.elfsight-app-96cc4395-da06-450f-9191-5bc6e30fa5f7');
           if (chatbotElement) {
             // Store parent for reinsertion
             const parent = chatbotElement.parentNode;
@@ -724,7 +724,7 @@
             // Wait a moment then recreate
             setTimeout(function() {
               const newChatbot = document.createElement('div');
-              newChatbot.className = 'elfsight-app-69dfc65a-ea8b-4259-9e37-def017e1c03f';
+              newChatbot.className = 'elfsight-app-96cc4395-da06-450f-9191-5bc6e30fa5f7';
               newChatbot.setAttribute('data-elfsight-app-lazy', '');
               newChatbot.setAttribute('id', 'draggable-chatbot');
               

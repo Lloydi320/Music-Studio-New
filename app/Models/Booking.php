@@ -15,6 +15,8 @@ class Booking extends Model
         'date',
         'time_slot',
         'duration',
+        'price',
+        'total_amount',
         'reference',
         'status',
         'google_event_id',

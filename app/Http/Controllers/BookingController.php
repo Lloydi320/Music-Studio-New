@@ -65,11 +65,17 @@ class BookingController extends Controller
             }
         }
     
+        // Calculate pricing (₱250 per hour)
+        $hourlyRate = 250.00;
+        $totalAmount = $hourlyRate * $duration;
+        
         $booking = Booking::create([
             'user_id' => Auth::id(),
             'date' => $request->date,
             'time_slot' => $request->time_slot,
             'duration' => $duration,
+            'price' => $hourlyRate,
+            'total_amount' => $totalAmount,
             'status' => 'pending',
         ]);
     

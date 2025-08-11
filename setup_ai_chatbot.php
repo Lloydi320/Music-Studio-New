@@ -33,24 +33,36 @@ echo "   - Click 'Create Widget' or 'Get Started'\n";
 echo "   - Sign up for free account\n\n";
 
 echo "2. 🤖 CONFIGURE YOUR CHATBOT:\n";
-echo "   Business Name: {$config['business_details']['name']}\n";
-echo "   Industry: {$config['business_details']['industry']}\n";
-echo "   Website URL: {$config['business_details']['website_url']}\n";
-echo "   Greeting: {$config['greeting_message']}\n\n";
+echo "   Business Name: {$config['business_info']['name']}\n";
+echo "   Business Type: {$config['business_info']['type']}\n";
+echo "   Description: {$config['business_info']['description']}\n";
+echo "   Welcome Message: {$config['greeting_messages']['welcome']}\n";
+echo "   Fallback Message: {$config['greeting_messages']['fallback']}\n\n";
 
 echo "3. 📚 TRAINING DATA (Copy & Paste into Elfsight):\n";
 echo "   ================================================\n\n";
 
-foreach ($config['training_data']['qa_pairs'] as $index => $qa) {
-    echo "   Q" . ($index + 1) . ": {$qa['question']}\n";
-    echo "   A" . ($index + 1) . ": {$qa['answer']}\n\n";
+// Display training instructions
+if (isset($config['training_data']['instructions'])) {
+    echo "📋 TRAINING INSTRUCTIONS:\n";
+    echo "   " . $config['training_data']['instructions'] . "\n\n";
 }
 
-echo "4. 🎨 APPEARANCE SETTINGS:\n";
-echo "   Primary Color: {$config['appearance']['primary_color']}\n";
-echo "   Position: {$config['appearance']['position']}\n";
-echo "   Size: {$config['appearance']['size']}\n";
-echo "   Animation: {$config['appearance']['animation']}\n\n";
+foreach ($config['training_data']['qa_pairs'] as $index => $qa) {
+    echo "   Q" . ($index + 1) . ": {$qa['question']}\n";
+    echo "   A" . ($index + 1) . ": {$qa['answer']}\n";
+    if (isset($qa['keywords'])) {
+        echo "   Keywords: " . implode(', ', $qa['keywords']) . "\n";
+        echo "   (Keywords help the AI recognize when users are asking about this topic)\n";
+    }
+    echo "\n";
+}
+
+echo "4. 🎨 APPEARANCE SETTINGS (Configure in Elfsight Dashboard):\n";
+echo "   - Choose your preferred primary color\n";
+echo "   - Set chatbot position (bottom-right recommended)\n";
+echo "   - Select appropriate size (medium recommended)\n";
+echo "   - Enable smooth animations\n\n";
 
 echo "5. ⚙️ QUICK REPLIES (Add these to your chatbot):\n";
 foreach ($config['quick_replies'] as $index => $reply) {
@@ -59,15 +71,17 @@ foreach ($config['quick_replies'] as $index => $reply) {
 echo "\n";
 
 echo "6. 🔧 ADDITIONAL INSTRUCTIONS:\n";
-foreach ($config['training_data']['additional_instructions'] as $instruction) {
-    echo "   - $instruction\n";
-}
+echo "   - Always be friendly and professional\n";
+echo "   - Provide accurate information about studio services\n";
+echo "   - Direct complex queries to human staff\n";
+echo "   - Encourage bookings through available channels\n";
 echo "\n";
 
-echo "7. 📧 SETTINGS TO ENABLE:\n";
-echo "   - Email Transcripts: " . ($config['settings']['email_transcripts'] ? 'Yes' : 'No') . "\n";
-echo "   - Language: {$config['settings']['language']}\n";
-echo "   - Timezone: {$config['settings']['timezone']}\n\n";
+echo "7. 📧 RECOMMENDED SETTINGS:\n";
+echo "   - Enable Email Transcripts: Yes\n";
+echo "   - Language: English\n";
+echo "   - Timezone: Your local timezone\n";
+echo "   - Enable offline messages\n\n";
 
 echo "8. 🚀 FINAL STEPS:\n";
 echo "   - After configuring in Elfsight, copy your Widget ID\n";
@@ -85,7 +99,9 @@ echo "====================\n";
 
 if (file_exists($homeFile)) {
     $homeContent = file_get_contents($homeFile);
-    if (strpos($homeContent, 'elfsight-app-ai-chatbot') !== false) {
+    if (strpos($homeContent, 'elfsight-app-8126d948-90e0-4f43-b92d-523c11148e8a') !== false) {
+        echo "✅ Home page: Widget code found (ID: 8126d948-90e0-4f43-b92d-523c11148e8a)\n";
+    } elseif (strpos($homeContent, 'elfsight-app-ai-chatbot') !== false) {
         echo "✅ Home page: Widget code found\n";
         if (strpos($homeContent, 'YOUR_WIDGET_ID_HERE') !== false) {
             echo "⚠️  Home page: Widget ID needs to be replaced\n";
@@ -101,7 +117,9 @@ if (file_exists($homeFile)) {
 
 if (file_exists($layoutFile)) {
     $layoutContent = file_get_contents($layoutFile);
-    if (strpos($layoutContent, 'elfsight-app-ai-chatbot') !== false) {
+    if (strpos($layoutContent, 'elfsight-app-8126d948-90e0-4f43-b92d-523c11148e8a') !== false) {
+        echo "✅ Layout file: Widget code found (ID: 8126d948-90e0-4f43-b92d-523c11148e8a)\n";
+    } elseif (strpos($layoutContent, 'elfsight-app-ai-chatbot') !== false) {
         echo "✅ Layout file: Widget code found\n";
         if (strpos($layoutContent, 'YOUR_WIDGET_ID_HERE') !== false) {
             echo "⚠️  Layout file: Widget ID needs to be replaced\n";

@@ -152,11 +152,12 @@
   document.addEventListener('DOMContentLoaded', function() {
     if (window.location.hash === '#bottom-of-services') {
       // Check if user is authenticated
-      @if(!Auth::check())
+      var isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
+      if (!isAuthenticated) {
         // Redirect to login if not authenticated
         window.location.href = '/auth/google';
         return;
-      @endif
+      }
       
     setTimeout(function() {
         const element = document.getElementById('bottom-of-services');
@@ -165,9 +166,9 @@
             behavior: 'smooth', 
             block: 'start' 
           });
-      }
+        }
       }, 500);
-  }
+    }
   });
 </script>
 </body>

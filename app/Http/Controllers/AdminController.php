@@ -57,18 +57,158 @@ class AdminController extends Controller
         $activeRentals = InstrumentRental::where('status', 'active')->count();
         $recentRentals = InstrumentRental::with('user')->latest()->take(10)->get();
         
+        // Get admin users data for dashboard
+        $admins = User::where('is_admin', true)->get();
+        $adminUsers = DB::table('admin_users')
+            ->where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Studio Analytics Data - Connected to Real Services
+        $totalServices = $confirmedBookings + $activeRentals; // Total active services
+        $lostServices = $cancelledBookingsCount + ($totalRentals - $activeRentals); // Lost services
+        $serviceEfficiency = $totalServices > 0 ? round(($totalServices / ($totalServices + $lostServices)) * 100, 2) : 0;
+        $efficiencyChange = -0.73; // Can be calculated from historical data
+        
+        // Revenue calculation based on estimated service distribution
+        // Since service_type column doesn't exist, we'll use estimated distribution
+        $estimatedRecordingBookings = round($confirmedBookings * 0.4); // 40% recording sessions
+        $estimatedStudioRentals = round($confirmedBookings * 0.3); // 30% studio rentals
+        $estimatedLessons = round($confirmedBookings * 0.2); // 20% music lessons
+        $estimatedOtherServices = $confirmedBookings - ($estimatedRecordingBookings + $estimatedStudioRentals + $estimatedLessons);
+        
+        $estimatedRevenue = ($estimatedRecordingBookings * 1000) + ($estimatedStudioRentals * 250) + ($estimatedLessons * 500) + ($activeRentals * 300);
+        $operatingCosts = $totalBookings * 200; // Estimated operating costs per booking
+        
+        // Services by type (estimated distribution)
+        $servicesByType = [
+            'Recording Sessions' => $estimatedRecordingBookings,
+            'Studio Rentals' => $estimatedStudioRentals,
+            'Music Lessons' => $estimatedLessons,
+            'Instrument Rentals' => $activeRentals, // Real rental data
+            'Other Services' => max(0, $estimatedOtherServices)
+        ];
+        
+        // Staff allocation by function
+        $staffByFunction = [
+            'Sound Engineers' => 35.0,
+            'Music Instructors' => 28.5,
+            'Studio Assistants' => 20.0,
+            'Equipment Technicians' => 16.5
+        ];
+        
+        // Studio utilization rates
+        $studioAUtilization = 85.20; // Main recording studio
+        $studioBUtilization = 72.40; // Practice/lesson rooms
+        
+        // Monthly cost vs revenue data (last 12 months)
+        $monthlyData = [];
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $monthlyBookings = Booking::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+            $monthlyData[$date->format('M')] = [
+                'cost' => $monthlyBookings * 500,
+                'revenue' => $monthlyBookings * 1200
+            ];
+        }
+        
+        // Analytics data for the dashboard
+        $totalRevenue = $estimatedRevenue;
+        $thisMonthRevenue = $monthlyData[now()->format('M')]['revenue'] ?? 0;
+        $lastMonthRevenue = $monthlyData[now()->subMonth()->format('M')]['revenue'] ?? 0;
+        $averageBookingValue = $totalBookings > 0 ? round($totalRevenue / $totalBookings, 2) : 0;
+        
+        // Monthly data for charts
+        $months = array_keys($monthlyData);
+        $salesData = array_values(array_column($monthlyData, 'revenue'));
+        $bookingCounts = [];
+        
+        // Get booking counts for each month
+        for ($i = 11; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $bookingCounts[] = Booking::whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+        }
+        
+        // Top customers data
+        $topCustomers = DB::table('bookings')
+            ->join('users', 'bookings.user_id', '=', 'users.id')
+            ->select('users.name', 'users.email', 
+                DB::raw('COUNT(bookings.id) as booking_count'),
+                DB::raw('SUM(COALESCE(bookings.price, 1000)) as total_spent'))
+            ->whereIn('bookings.status', ['confirmed', 'completed'])
+            ->groupBy('users.id', 'users.name', 'users.email')
+            ->orderBy('total_spent', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Users per service data for bar chart
+        $usersPerService = [
+            'Recording Sessions' => DB::table('bookings')
+                ->join('users', 'bookings.user_id', '=', 'users.id')
+                ->where('bookings.status', 'confirmed')
+                ->where('bookings.duration', '>=', 240) // 4+ hours for recording
+                ->distinct('users.id')
+                ->count(),
+            'Music Lessons' => DB::table('bookings')
+                ->join('users', 'bookings.user_id', '=', 'users.id')
+                ->where('bookings.status', 'confirmed')
+                ->where('bookings.duration', '<=', 120) // 2 hours or less for lessons
+                ->whereIn('bookings.time_slot', ['10:00', '14:00']) // Common lesson times
+                ->distinct('users.id')
+                ->count(),
+            'Band Practice' => DB::table('bookings')
+                ->join('users', 'bookings.user_id', '=', 'users.id')
+                ->where('bookings.status', 'confirmed')
+                ->where('bookings.duration', 180) // 3 hours for band practice
+                ->distinct('users.id')
+                ->count(),
+            'Studio Rentals' => DB::table('bookings')
+                ->join('users', 'bookings.user_id', '=', 'users.id')
+                ->where('bookings.status', 'confirmed')
+                ->whereNotIn('bookings.duration', [120, 180, 240]) // Other durations
+                ->distinct('users.id')
+                ->count(),
+            'Instrument Rentals' => DB::table('instrument_rentals')
+                 ->join('users', 'instrument_rentals.user_id', '=', 'users.id')
+                 ->where('instrument_rentals.status', 'active')
+                 ->distinct('users.id')
+                 ->count()
+         ];
+
+        // Services distribution for pie chart (Lemon Hub Studio services)
+        $servicesDistribution = [
+            'Recording Sessions' => Booking::where('status', 'confirmed')
+                ->where('duration', '>=', 240)
+                ->count(),
+            'Music Lessons' => Booking::where('status', 'confirmed')
+                ->where('duration', '<=', 120)
+                ->whereIn('time_slot', ['10:00', '14:00'])
+                ->count(),
+            'Band Practice' => Booking::where('status', 'confirmed')
+                ->where('duration', 180)
+                ->count(),
+            'Studio Rentals' => Booking::where('status', 'confirmed')
+                ->whereNotIn('duration', [120, 180, 240])
+                ->count(),
+            'Instrument Rentals' => InstrumentRental::where('status', 'active')->count(),
+            'Audio Production' => round($confirmedBookings * 0.15), // 15% estimated
+        ];
+
         return view('admin.dashboard', compact(
-            'user', 
-            'totalBookings', 
-            'pendingBookings', 
-            'confirmedBookings', 
-            'recentBookings',
-            'cancelledBookings',
-            'cancelledBookingsCount',
-            'totalRentals',
-            'pendingRentals',
-            'activeRentals',
-            'recentRentals'
+            'totalRevenue',
+            'thisMonthRevenue', 
+            'lastMonthRevenue',
+            'averageBookingValue',
+            'months',
+            'salesData',
+            'bookingCounts',
+            'topCustomers',
+            'usersPerService',
+            'servicesDistribution'
         ));
     }
 
@@ -247,6 +387,14 @@ class AdminController extends Controller
      */
     public function makeAdmin(Request $request)
     {
+        // Check if current user is a super admin
+        $currentUser = Auth::user();
+        $currentAdminUser = DB::table('admin_users')->where('email', $currentUser->email)->first();
+        
+        if (!$currentAdminUser || $currentAdminUser->role !== 'super_admin') {
+            return redirect()->back()->with('error', 'Only super admins can add new administrators.');
+        }
+
         $request->validate([
             'email' => 'required|email|exists:users,email'
         ]);
@@ -254,7 +402,29 @@ class AdminController extends Controller
         try {
             $user = User::where('email', $request->email)->first();
             if ($user) {
+                // Check if user is already an admin
+                if ($user->is_admin) {
+                    return redirect()->back()->with('error', 'User is already an admin.');
+                }
+                
                 $user->update(['is_admin' => true]);
+                
+                // Also add to admin_users table with default admin role
+                DB::table('admin_users')->updateOrInsert(
+                    ['email' => $user->email],
+                    [
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'role' => 'admin',
+                        'permissions' => json_encode(['manage_bookings', 'view_dashboard', 'manage_calendar']),
+                        'is_active' => true,
+                        'created_by' => $currentUser->email,
+                        'notes' => 'Added by super admin via admin panel',
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]
+                );
+                
                 return redirect()->back()->with('success', "User {$user->name} is now an admin.");
             } else {
                 return redirect()->back()->with('error', 'User not found.');
@@ -269,6 +439,14 @@ class AdminController extends Controller
      */
     public function removeAdmin(Request $request)
     {
+        // Check if current user is a super admin
+        $currentUser = Auth::user();
+        $currentAdminUser = DB::table('admin_users')->where('email', $currentUser->email)->first();
+        
+        if (!$currentAdminUser || $currentAdminUser->role !== 'super_admin') {
+            return redirect()->back()->with('error', 'Only super admins can remove administrators.');
+        }
+
         // Handle both regular users and admin_users only records
         if ($request->has('admin_email')) {
             $request->validate([
@@ -384,6 +562,193 @@ class AdminController extends Controller
             'unsyncedBookings',
             'totalCalendarEvents'
         ));
+    }
+
+    /**
+     * Show analytics dashboard with service statistics
+     */
+    public function analytics()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        // Get recent bookings and rentals
+        $confirmedBookings = Booking::with('user')
+            ->where('status', 'confirmed')
+            ->latest()
+            ->get();
+            
+        $pendingBookings = Booking::with('user')
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+            
+        $cancelledBookings = Booking::with('user')
+            ->where('status', 'cancelled')
+            ->latest()
+            ->get();
+
+        $activeRentals = InstrumentRental::with('user')
+            ->where('status', 'active')
+            ->latest()
+            ->get();
+            
+        $pendingRentals = InstrumentRental::with('user')
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        // Simple service categorization
+        $serviceCategories = [
+            'Studio Bookings' => $confirmedBookings->count(),
+            'Instrument Rentals' => $activeRentals->count(),
+            'Pending Services' => $pendingBookings->count() + $pendingRentals->count()
+        ];
+
+        // Simple revenue calculation
+        $revenueByService = [
+            'Studio Bookings' => $confirmedBookings->count() * 800, // Average booking price
+            'Instrument Rentals' => $activeRentals->count() * 300, // Average rental price
+            'Pending Services' => 0
+        ];
+        
+        $totalRevenue = array_sum($revenueByService);
+
+        // Top customers (simple version)
+        $topCustomers = DB::table('bookings')
+            ->join('users', 'bookings.user_id', '=', 'users.id')
+            ->select('users.name', 'users.email', 
+                DB::raw('COUNT(bookings.id) as booking_count'),
+                DB::raw('COUNT(bookings.id) * 800 as total_spent'))
+            ->where('bookings.status', 'confirmed')
+            ->groupBy('users.id', 'users.name', 'users.email')
+            ->orderBy('booking_count', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('admin.analytics', compact(
+            'user',
+            'serviceCategories',
+            'revenueByService',
+            'totalRevenue',
+            'topCustomers',
+            'confirmedBookings',
+            'pendingBookings',
+            'cancelledBookings',
+            'activeRentals',
+            'pendingRentals'
+        ));
+    }
+
+    /**
+     * Show bookings management page
+     */
+    public function bookings(Request $request)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        // Get filter parameters
+        $status = $request->get('status', 'all');
+        $search = $request->get('search', '');
+        $dateFilter = $request->get('date_filter', 'all');
+
+        // Build query
+        $query = Booking::with(['user'])
+            ->orderBy('date', 'desc')
+            ->orderBy('time_slot', 'desc');
+
+        // Apply status filter
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('user', function($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', '%' . $search . '%')
+                             ->orWhere('email', 'like', '%' . $search . '%');
+                })
+                ->orWhere('service_type', 'like', '%' . $search . '%')
+                ->orWhere('notes', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Apply date filter
+        if ($dateFilter !== 'all') {
+            switch ($dateFilter) {
+                case 'today':
+                    $query->whereDate('date', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('date', now()->month)
+                          ->whereYear('date', now()->year);
+                    break;
+            }
+        }
+
+        $bookings = $query->paginate(15);
+
+        // Get counts for status badges
+        $statusCounts = [
+            'all' => Booking::count(),
+            'pending' => Booking::where('status', 'pending')->count(),
+            'confirmed' => Booking::where('status', 'confirmed')->count(),
+            'rejected' => Booking::where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.bookings', compact(
+            'user',
+            'bookings',
+            'statusCounts',
+            'status',
+            'search',
+            'dateFilter'
+        ));
+    }
+
+    /**
+     * Show create booking form
+     */
+    public function createBooking()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        return redirect()->route('booking')->with('info', 'Use the main booking form to create new bookings.');
+    }
+
+    /**
+     * Show individual booking details
+     */
+    public function showBooking($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $booking = Booking::with('user')->findOrFail($id);
+        
+        return view('admin.booking-details', compact('user', 'booking'));
     }
 
     /**
@@ -727,5 +1092,125 @@ class AdminController extends Controller
             ]);
             return redirect()->back()->with('error', 'Failed to reject rental: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Show admin users management page
+     */
+    public function users()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        return view('admin.users');
+    }
+
+    /**
+     * Show activity logs / audit trail
+     */
+    public function activityLogs(Request $request)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $query = \App\Models\ActivityLog::query();
+
+        // Apply filters
+        if ($request->filled('user')) {
+            $query->where('user_name', 'like', '%' . $request->user . '%');
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        // Get paginated results
+        $activityLogs = $query->orderBy('created_at', 'desc')->paginate(50);
+        $totalRecords = \App\Models\ActivityLog::count();
+
+        return view('admin.activity-logs', compact('activityLogs', 'totalRecords'));
+    }
+
+    public function instrumentBookings(Request $request)
+    {
+        $query = InstrumentRental::with('user')
+            ->orderBy('created_at', 'desc');
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('instrument_type')) {
+            $query->where('instrument_type', $request->instrument_type);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('rental_start_date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('rental_end_date', '<=', $request->date_to);
+        }
+
+        $instrumentRentals = $query->paginate(20);
+        $totalRentals = InstrumentRental::count();
+        
+        // Get unique instrument types for filter
+        $instrumentTypes = InstrumentRental::distinct('instrument_type')
+            ->pluck('instrument_type')
+            ->filter()
+            ->sort()
+            ->values();
+
+        return view('admin.instrument-bookings', compact('instrumentRentals', 'totalRentals', 'instrumentTypes'));
+    }
+
+    public function musicLessonBookings(Request $request)
+    {
+        // Filter bookings that are likely music lessons (duration <= 120 minutes)
+        $query = Booking::with('user')
+            ->where('duration', '<=', 120)
+            ->whereIn('time_slot', ['10:00', '14:00', '16:00', '18:00']) // Common lesson times
+            ->orderBy('created_at', 'desc');
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('user')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->user . '%')
+                  ->orWhere('email', 'like', '%' . $request->user . '%');
+            });
+        }
+
+        $musicLessonBookings = $query->paginate(20);
+        $totalLessons = Booking::where('duration', '<=', 120)
+            ->whereIn('time_slot', ['10:00', '14:00', '16:00', '18:00'])
+            ->count();
+
+        return view('admin.music-lesson-bookings', compact('musicLessonBookings', 'totalLessons'));
     }
 }
