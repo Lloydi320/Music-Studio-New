@@ -33,10 +33,12 @@
       border-radius: 20px;
       width: 95%;
       max-width: 1200px;
-      max-height: 90vh;
+      max-height: 85vh;
       overflow-y: auto;
+      overflow-x: hidden;
       display: flex;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      scroll-behavior: smooth;
     }
 
     .modal-left {
@@ -44,6 +46,8 @@
       padding: 25px;
       background: #f8f9fa;
       border-radius: 20px 0 0 20px;
+      overflow-y: auto;
+      max-height: 85vh;
     }
 
     .modal-center {
@@ -52,6 +56,8 @@
       background: white;
       border-left: 1px solid #e9ecef;
       border-right: 1px solid #e9ecef;
+      overflow-y: auto;
+      max-height: 85vh;
     }
 
     .modal-right {
@@ -60,8 +66,11 @@
       background: white;
       border-radius: 0 20px 20px 0;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      overflow-y: auto;
+      max-height: 85vh;
+      padding-top: 15px;
     }
 
     .modal-header {
@@ -307,7 +316,8 @@
       .modal-content {
         flex-direction: column;
         width: 95%;
-        max-height: 95vh;
+        max-height: 90vh;
+        overflow-y: auto;
       }
 
       .modal-left,
@@ -316,6 +326,8 @@
         border-radius: 0;
         padding: 20px;
         border: none;
+        max-height: none;
+        overflow-y: visible;
       }
 
       .modal-left {
@@ -329,6 +341,8 @@
 
       .modal-right {
         border-radius: 0 0 20px 20px;
+        align-items: flex-start;
+        padding-top: 10px;
       }
 
       .gcash-container {
@@ -338,6 +352,230 @@
       .modal-buttons {
         flex-direction: column;
       }
+
+      .gcash-qr img {
+        width: 200px;
+        height: 200px;
+      }
+
+      .modal-title {
+        font-size: 20px;
+      }
+    }
+
+    /* Extra small devices (phones, 480px and down) */
+    @media (max-width: 480px) {
+      .modal-container {
+        padding: 3px;
+      }
+
+      .modal-content {
+        width: 99%;
+        max-height: 95vh;
+        border-radius: 15px;
+        overflow-y: auto;
+      }
+
+      .modal-left,
+      .modal-center,
+      .modal-right {
+        padding: 12px;
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .modal-left {
+        border-radius: 15px 15px 0 0;
+      }
+
+      .modal-right {
+        border-radius: 0 0 15px 15px;
+        align-items: flex-start;
+        padding-top: 8px;
+      }
+
+      .modal-title {
+        font-size: 18px;
+      }
+
+      .modal-subtitle {
+        font-size: 12px;
+      }
+
+      .form-label {
+        font-size: 13px;
+        margin-bottom: 4px;
+      }
+
+      .form-input {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+
+      .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        margin-bottom: 8px;
+        padding: 6px 0;
+      }
+
+      .detail-label,
+      .detail-value {
+        font-size: 13px;
+      }
+
+      .gcash-qr {
+        padding: 6px;
+        margin: 8px auto;
+      }
+
+      .gcash-qr img {
+        width: 140px;
+        height: 140px;
+      }
+
+      .gcash-merchant {
+        font-size: 16px;
+        margin: 8px 0;
+      }
+
+      .gcash-amount {
+        font-size: 22px;
+        margin-top: 10px;
+      }
+
+      .gcash-details {
+        font-size: 11px;
+        margin-top: 8px;
+      }
+
+      .btn-cancel,
+      .btn-confirm {
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+
+      .studio-image-modal {
+        height: 130px;
+      }
+
+      .booking-details {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      .warning-message {
+        padding: 6px 8px;
+        font-size: 11px;
+        margin-bottom: 8px;
+      }
+
+      .error-message {
+        padding: 6px 8px;
+        font-size: 11px;
+        margin-top: 4px;
+      }
+    }
+
+    /* High zoom levels and very small screens */
+    @media (max-width: 360px), (min-resolution: 2dppx) {
+      .modal-container {
+        padding: 2px;
+      }
+
+      .modal-content {
+        width: 99%;
+        max-height: 99vh;
+        border-radius: 10px;
+      }
+
+      .modal-left,
+      .modal-center,
+      .modal-right {
+        padding: 10px;
+      }
+
+      .gcash-qr img {
+        width: 120px;
+        height: 120px;
+      }
+
+      .form-input {
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+
+      .btn-cancel,
+      .btn-confirm {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+    }
+
+    /* Auto-hide footer styles */
+    .booking-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1;
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(100%);
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    /* Create a larger hover trigger area */
+    .booking-footer::before {
+      content: '';
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    /* Show footer when hovering over the trigger area */
+    .booking-footer::before:hover + .booking-footer,
+    .booking-footer:hover {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Alternative approach using parent hover */
+    body:hover .booking-footer {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(100%);
+      pointer-events: none;
+    }
+
+    /* Show footer when mouse is near bottom */
+    .footer-trigger {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .footer-trigger:hover ~ .booking-footer {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+      pointer-events: auto !important;
     }
   </style>
 </head>
@@ -515,26 +753,54 @@
           <div class="form-group">
             <label class="form-label" for="bandName">Band Name *</label>
             <input type="text" id="bandName" name="band_name" class="form-input" required>
+            @error('band_name')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
           </div>
           
           <div class="form-group">
             <label class="form-label" for="email">Email *</label>
             <input type="email" id="email" name="email" class="form-input" required>
+            @error('email')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
           </div>
           
           <div class="form-group">
             <label class="form-label" for="contactNumber">Contact Number *</label>
             <input type="tel" id="contactNumber" name="contact_number" class="form-input" required>
+            @error('contact_number')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
           </div>
           
           <div class="form-group">
             <label class="form-label" for="referenceCode">Reference Code (4 digits) *</label>
             <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
+            @error('reference_code')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
           </div>
           
           <div class="form-group">
             <label class="form-label" for="uploadPicture">Upload Picture</label>
             <input type="file" id="uploadPicture" name="upload_picture" class="file-input" accept="image/*">
+            <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ffeaa7; font-size: 0.85rem;">
+              ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
+            </div>
+            @error('upload_picture')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
           </div>
           
           <div class="policy-section">
@@ -549,6 +815,11 @@
             <label class="checkbox-label" for="agreeTerms">
               I agree to <a href="#">User Agreement</a> and <a href="#">Privacy Policy</a>
             </label>
+            @error('agree_terms')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
           </div>
           
           <div class="modal-buttons">
@@ -586,6 +857,9 @@
 <!-- Success and error messages will be handled in the booking summary container -->
 
 <!-- Removed the form from the bottom. It will only show in the modal after clicking Next. -->
+
+<!-- Footer trigger area -->
+<div class="footer-trigger"></div>
 
 <!-- Footer -->
 <footer class="booking-footer">

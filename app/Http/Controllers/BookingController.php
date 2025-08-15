@@ -29,6 +29,14 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
+        // Check if reference code already exists
+        if ($request->reference_code) {
+            $existingBooking = Booking::where('reference_code', $request->reference_code)->first();
+            if ($existingBooking) {
+                return back()->with('error', 'Reference number "' . $request->reference_code . '" already exists. Please use a different reference number from GCash 4-digits last number to proceed booking.');
+            }
+        }
+
         $request->validate([
             'date' => 'required|date',
             'time_slot' => 'required|string',
@@ -36,8 +44,8 @@ class BookingController extends Controller
             'service_type' => 'required|string|in:studio_rental,recording_session,music_lesson,band_practice,audio_production,instrument_rental,other',
             'band_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
-            'contact_number' => 'nullable|string|max:20',
-            'reference_code' => 'nullable|string|size:4',
+            'contact_number' => 'nullable|string|size:11|regex:/^[0-9]{11}$/',
+            'reference_code' => 'nullable|string|size:4|unique:bookings,reference_code',
             'upload_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
     
