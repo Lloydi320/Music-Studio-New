@@ -34,6 +34,9 @@ class BookingController extends Controller
             'time_slot' => 'required|string',
             'duration' => 'required|integer|min:1|max:8',
             'service_type' => 'required|string|in:studio_rental,recording_session,music_lesson,band_practice,audio_production,instrument_rental,other',
+            'band_name' => 'nullable|string|max:255',
+            'contact_number' => 'nullable|string|max:20',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
     
         // Parse the time slot to get start and end times
@@ -68,6 +71,14 @@ class BookingController extends Controller
             }
         }
     
+        // Handle image upload
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('booking_images', $imageName, 'public');
+        }
+
         // Calculate pricing (₱250 per hour)
         $hourlyRate = 250.00;
         $totalAmount = $hourlyRate * $duration;
@@ -80,6 +91,9 @@ class BookingController extends Controller
             'price' => $hourlyRate,
             'total_amount' => $totalAmount,
             'service_type' => $request->service_type,
+            'band_name' => $request->band_name,
+            'contact_number' => $request->contact_number,
+            'image_path' => $imagePath,
             'status' => 'pending',
         ]);
 

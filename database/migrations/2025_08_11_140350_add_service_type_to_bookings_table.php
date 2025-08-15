@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->string('service_type')->default('studio_rental')->after('status');
-            $table->index('service_type');
+            if (!Schema::hasColumn('bookings', 'service_type')) {
+                $table->string('service_type')->default('studio_rental')->after('status');
+                $table->index('service_type');
+            }
         });
     }
 

@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->string('cancellation_reason')->nullable();
-            $table->timestamp('cancelled_at')->nullable();
+            if (!Schema::hasColumn('bookings', 'cancellation_reason')) {
+                $table->string('cancellation_reason')->nullable();
+            }
+            if (!Schema::hasColumn('bookings', 'cancelled_at')) {
+                $table->timestamp('cancelled_at')->nullable();
+            }
         });
     }
 

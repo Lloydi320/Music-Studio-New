@@ -21,6 +21,10 @@ class Booking extends Model
         'status',
         'service_type',
         'google_event_id',
+        'band_name',
+        'contact_number',
+        'reference_code',
+        'image_path',
     ];
 
     protected $casts = [
@@ -37,6 +41,10 @@ class Booking extends Model
             'time_slot' => 'required|string',
             'duration' => 'required|integer|min:1|max:8',
             'status' => 'in:pending,confirmed,cancelled,rejected',
+            'band_name' => 'nullable|string|max:255',
+            'contact_number' => 'nullable|string|max:20',
+            'reference_code' => 'nullable|string|size:4|unique:bookings,reference_code',
+            'image_path' => 'nullable|string|max:500',
         ];
     }
 
@@ -48,6 +56,10 @@ class Booking extends Model
             'time_slot' => 'sometimes|string',
             'duration' => 'sometimes|integer|min:1|max:8',
             'status' => 'sometimes|in:pending,confirmed,cancelled,rejected',
+            'band_name' => 'sometimes|nullable|string|max:255',
+            'contact_number' => 'sometimes|nullable|string|max:20',
+            'reference_code' => 'sometimes|nullable|string|size:4|unique:bookings,reference_code,' . $id,
+            'image_path' => 'sometimes|nullable|string|max:500',
         ];
     }
 
@@ -59,12 +71,25 @@ class Booking extends Model
             if (empty($booking->reference)) {
                 $booking->reference = 'BK' . strtoupper(Str::random(8));
             }
+            if (empty($booking->reference_code)) {
+                $booking->reference_code = self::generateReferenceCode();
+            }
         });
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Generate unique 4-digit reference code
+    public static function generateReferenceCode()
+    {
+        do {
+            $code = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        } while (self::where('reference_code', $code)->exists());
+        
+        return $code;
     }
 
     // Service type constants

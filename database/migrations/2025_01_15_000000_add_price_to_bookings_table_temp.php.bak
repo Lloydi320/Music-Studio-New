@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            if (!Schema::hasColumn('bookings', 'google_event_id')) {
-                $table->string('google_event_id')->nullable();
-            }
+            $table->decimal('price', 8, 2)->default(250.00)->after('duration'); // ₱250/hour default
+            $table->decimal('total_amount', 8, 2)->nullable()->after('price');
         });
     }
 
@@ -24,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->dropColumn('google_event_id');
+            $table->dropColumn(['price', 'total_amount']);
         });
     }
 };

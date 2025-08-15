@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->decimal('price', 8, 2)->default(250.00)->after('duration'); // ₱250/hour default
-            $table->decimal('total_amount', 8, 2)->nullable()->after('price');
+            if (!Schema::hasColumn('bookings', 'price')) {
+                $table->decimal('price', 8, 2)->default(250.00)->after('duration'); // ₱250/hour default
+            }
+            if (!Schema::hasColumn('bookings', 'total_amount')) {
+                $table->decimal('total_amount', 8, 2)->nullable()->after('price');
+            }
         });
     }
 

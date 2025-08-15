@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->integer('duration')->default(1)->after('time_slot');
+            if (!Schema::hasColumn('bookings', 'duration')) {
+                $table->integer('duration')->default(1)->after('time_slot');
+            }
         });
     }
 

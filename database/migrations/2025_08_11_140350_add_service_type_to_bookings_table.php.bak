@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            if (!Schema::hasColumn('bookings', 'google_event_id')) {
-                $table->string('google_event_id')->nullable();
-            }
+            $table->string('service_type')->default('studio_rental')->after('status');
+            $table->index('service_type');
         });
     }
 
@@ -24,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->dropColumn('google_event_id');
+            $table->dropIndex(['service_type']);
+            $table->dropColumn('service_type');
         });
     }
 };

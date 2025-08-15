@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            if (!Schema::hasColumn('bookings', 'google_event_id')) {
-                $table->string('google_event_id')->nullable();
-            }
+            $table->string('cancellation_reason')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
         });
     }
 
@@ -24,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
-            $table->dropColumn('google_event_id');
+            $table->dropColumn(['cancellation_reason', 'cancelled_at']);
         });
     }
 };

@@ -6,6 +6,48 @@
   <title>Book a Studio</title>
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
+  <style>
+    .booking-form-fields {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+    
+    .form-input:hover {
+      border-color: #adb5bd;
+    }
+    
+    .form-group label {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .form-group small {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    @media (max-width: 768px) {
+      .booking-form-fields {
+        margin: 15px 0;
+        padding: 15px;
+      }
+      
+      .form-group {
+        margin-bottom: 15px;
+      }
+    }
+  </style>
 </head>
 <body class="booking-page">
 
@@ -93,13 +135,35 @@
               </select>
               <div class="slots scrollable-time-slots"></div>
               <button class="next-btn" id="nextBtn">Next</button>
-              <form id="bookingForm" action="{{ route('booking.store') }}" method="POST" style="display:none;">
+              <form id="bookingForm" action="{{ route('booking.store') }}" method="POST" enctype="multipart/form-data" style="display:none;">
                 @csrf
                 <input type="hidden" name="date" id="bookingDate">
                 <input type="hidden" name="time_slot" id="bookingTimeSlot">
                 <input type="hidden" name="duration" id="bookingDuration">
                 <input type="hidden" name="service_type" id="bookingServiceType">
-                <button type="submit" class="book-btn">Confirm Booking</button>
+                
+                <!-- Additional Booking Information -->
+                <div class="booking-form-fields">
+                  <h3 style="margin: 20px 0 15px; color: #333; font-size: 1.2em;">Additional Information</h3>
+                  
+                  <div class="form-group">
+                    <label for="band_name" style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Band/Artist Name (Optional)</label>
+                    <input type="text" name="band_name" id="band_name" class="form-input" placeholder="Enter your band or artist name" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="contact_number" style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Contact Number (Optional)</label>
+                    <input type="tel" name="contact_number" id="contact_number" class="form-input" placeholder="Enter your contact number" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="image" style="display: block; margin-bottom: 5px; font-weight: 600; color: #555;">Upload Image (Optional)</label>
+                    <input type="file" name="image" id="image" accept="image/*" class="form-input" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;">
+                    <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">Accepted formats: JPG, PNG, GIF (Max: 2MB)</small>
+                  </div>
+                </div>
+                
+                <button type="submit" class="book-btn" style="margin-top: 20px;">Confirm Booking</button>
               </form>
             </div>
           </div>
