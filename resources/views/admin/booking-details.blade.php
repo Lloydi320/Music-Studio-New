@@ -485,6 +485,13 @@
             </div>
             @endif
             
+            @if($booking->email)
+            <div class="detail-row">
+                <span class="detail-label">Contact Email</span>
+                <span class="detail-value">📧 {{ $booking->email }}</span>
+            </div>
+            @endif
+            
             @if($booking->contact_number)
             <div class="detail-row">
                 <span class="detail-label">Contact Number</span>

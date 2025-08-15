@@ -35,8 +35,10 @@ class BookingController extends Controller
             'duration' => 'required|integer|min:1|max:8',
             'service_type' => 'required|string|in:studio_rental,recording_session,music_lesson,band_practice,audio_production,instrument_rental,other',
             'band_name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
             'contact_number' => 'nullable|string|max:20',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'reference_code' => 'nullable|string|size:4',
+            'upload_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
     
         // Parse the time slot to get start and end times
@@ -73,8 +75,8 @@ class BookingController extends Controller
     
         // Handle image upload
         $imagePath = null;
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
+        if ($request->hasFile('upload_picture')) {
+            $image = $request->file('upload_picture');
             $imageName = time() . '_' . $image->getClientOriginalName();
             $imagePath = $image->storeAs('booking_images', $imageName, 'public');
         }
@@ -92,7 +94,9 @@ class BookingController extends Controller
             'total_amount' => $totalAmount,
             'service_type' => $request->service_type,
             'band_name' => $request->band_name,
+            'email' => $request->email,
             'contact_number' => $request->contact_number,
+            'reference_code' => $request->reference_code,
             'image_path' => $imagePath,
             'status' => 'pending',
         ]);

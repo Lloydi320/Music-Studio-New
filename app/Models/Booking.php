@@ -22,6 +22,7 @@ class Booking extends Model
         'service_type',
         'google_event_id',
         'band_name',
+        'email',
         'contact_number',
         'reference_code',
         'image_path',

@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
-      console.log('Next button clicked!');    
+      console.log('Next button clicked!');
       
       // Get selected date, time slot, and duration
       const selectedDate = document.getElementById('selectedDateLabel').textContent;
@@ -402,14 +402,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (enabledBtn) selectedTimeSlot = enabledBtn.textContent;
       }
       
-      console.log('Selected date:', selectedDate);
-      console.log('Selected time slot:', selectedTimeSlot);
-      console.log('Duration select element:', durationSelect);
-      
       if (!selectedDate || !selectedTimeSlot) {
         alert('Please select a date and time slot.');
         return;
       }
+      
       // Parse date to YYYY-MM-DD
       const dateParts = selectedDate.match(/\w+, (\w+) (\d+), (\d+)/);
       if (!dateParts) return alert('Invalid date format.');
@@ -419,83 +416,48 @@ document.addEventListener("DOMContentLoaded", function () {
       const year = dateParts[3];
       const dateISO = `${year}-${month}-${day}`;
       
-      console.log('Date ISO:', dateISO);
-      
-      // Show booking summary in the booking form (right column)
-      const bookingSummary = document.getElementById('bookingSummary');
-      const bookingSummaryContent = document.getElementById('bookingSummaryContent');
-      console.log('Booking summary element:', bookingSummary);
-      
-      if (bookingSummary && bookingSummaryContent) {
-        // Populate the booking summary content
-        bookingSummaryContent.innerHTML = `
-          <strong>Service:</strong> <span id="confirmServiceType">${serviceTypeSelect.options[serviceTypeSelect.selectedIndex].text}</span><br>
-          <strong>Date:</strong> <span id="confirmDate">${selectedDate}</span><br>
-          <strong>Time Slot:</strong> <span id="confirmTimeSlot">${selectedTimeSlot}</span><br>
-          <strong>Duration:</strong> <span id="confirmDuration">${durationSelect.options[durationSelect.selectedIndex].text}</span>
-        `;
+      // Show the studio rental modal
+      const modal = document.getElementById('studioRentalModal');
+      if (modal) {
+        modal.style.display = 'block';
         
-        // Remove empty class and add normal styling
-        bookingSummary.classList.remove('empty');
-        bookingSummary.classList.remove('confirmed');
+        // Populate modal with booking details
+        document.getElementById('modalSelectedDate').textContent = selectedDate;
+        document.getElementById('modalSelectedTime').textContent = selectedTimeSlot;
+        document.getElementById('modalSelectedDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;
+        document.getElementById('modalDurationLabel').textContent = durationSelect.options[durationSelect.selectedIndex].text;
         
-        console.log('Booking summary should now be visible in the form');
-      } else {
-        console.error('Booking summary element not found');
-      }
-      
-      // Set form values
-      document.getElementById('bookingDate').value = dateISO;
-      document.getElementById('bookingTimeSlot').value = selectedTimeSlot;
-      document.getElementById('bookingDuration').value = durationSelect.value;
-      document.getElementById('bookingServiceType').value = serviceTypeSelect.value;
-      document.getElementById('confirmDate').textContent = selectedDate;
-      document.getElementById('confirmTimeSlot').textContent = selectedTimeSlot;
-      document.getElementById('confirmDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;
-      
-      // Log the form data being sent to backend
-      console.log('Form data being sent to backend:');
-      console.log('- Date:', dateISO);
-      console.log('- Time Slot:', selectedTimeSlot);
-      console.log('- Duration:', durationSelect.value);
-      console.log('- CSRF Token:', document.querySelector('input[name="_token"]').value);
-      
-      // Hide Next button and show Confirm Booking button
-      // BUT keep the date highlight and selected date text visible
-      nextBtn.style.display = 'none';
-      const bookingForm = document.getElementById('bookingForm');
-      console.log('Booking form element:', bookingForm);
-      if (bookingForm) {
-        bookingForm.style.display = 'block';
-        console.log('Booking form display set to:', bookingForm.style.display);
-      }
-      
-      // Ensure the selected date stays highlighted and text remains visible
-      // The date highlight and text should NOT be affected by clicking Next
-      const selectedCell = document.querySelector('.calendar-cell.selected');
-      console.log('Selected cell after Next click:', selectedCell);
-      console.log('Selected cell classes:', selectedCell ? selectedCell.className : 'no cell found');
-      console.log('Selected date label text:', document.getElementById('selectedDateLabel').textContent);
-      
-      // Force the date to stay highlighted if it exists
-      if (selectedCell && !selectedCell.classList.contains('selected')) {
-        selectedCell.classList.add('selected');
-        console.log('Re-added selected class to date cell');
-      }
-      
-      // Ensure the selected date text stays visible
-      const selectedDateLabel = document.getElementById('selectedDateLabel');
-      if (selectedDateLabel && selectedDateLabel.textContent) {
-        console.log('Selected date label is visible with text:', selectedDateLabel.textContent);
-        console.log('Selected date label display style:', selectedDateLabel.style.display);
-        console.log('Selected date label visibility:', selectedDateLabel.style.visibility);
+        // Calculate and display price (₱100 per hour)
+        const duration = parseInt(durationSelect.value);
+        const totalPrice = duration * 100;
+        document.getElementById('modalTotalPrice').textContent = `₱${totalPrice}.00`;
+        document.querySelector('.gcash-amount').textContent = `₱ ${totalPrice}.00`;
         
-        // Force the text to stay visible
-        selectedDateLabel.style.display = 'block';
-        selectedDateLabel.style.visibility = 'visible';
-        console.log('Forced selected date label to stay visible');
-      } else {
-        console.log('Selected date label is missing or empty');
+        // Set hidden form values
+        document.getElementById('modalBookingDate').value = dateISO;
+        document.getElementById('modalBookingTimeSlot').value = selectedTimeSlot;
+        document.getElementById('modalBookingDuration').value = durationSelect.value;
+        document.getElementById('modalBookingServiceType').value = serviceTypeSelect.value;
+        document.getElementById('modalBookingPrice').value = totalPrice;
+      }
+    });
+  }
+
+  // Modal close functionality
+  const modal = document.getElementById('studioRentalModal');
+  const cancelBtn = document.getElementById('cancelModal');
+  
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      modal.style.display = 'none';
+    });
+  }
+  
+  // Close modal when clicking outside of it
+  if (modal) {
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        modal.style.display = 'none';
       }
     });
   }
