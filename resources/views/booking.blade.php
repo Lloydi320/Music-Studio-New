@@ -631,7 +631,10 @@
       <div class="booking-right">
         <div class="calendar-section">
           <div class="calendar-header">
-            <select id="monthDropdown"></select>
+            <div class="date-selectors">
+              <select id="monthDropdown" class="month-select"></select>
+              <select id="yearDropdown" class="year-select"></select>
+            </div>
           </div>
           <div class="calendar-time-layout">
             <div class="calendar-side">
@@ -639,20 +642,8 @@
               <p class="selected-date" id="selectedDateLabel"></p>
             </div>
             <div class="time-side">
-              <!-- Service Type dropdown -->
-              <label for="serviceTypeSelect" style="display:block; margin: 10px 0 5px;">Service Type:</label>
-              <select id="serviceTypeSelect">
-                <option value="studio_rental" selected>Studio Rental</option>
-                <option value="recording_session">Recording Session</option>
-                <option value="music_lesson">Music Lesson</option>
-                <option value="band_practice">Band Practice</option>
-                <option value="audio_production">Audio Production</option>
-                <option value="instrument_rental">Instrument Rental</option>
-                <option value="other">Other Services</option>
-              </select>
-              
               <!-- Duration dropdown -->
-              <label for="durationSelect" style="display:block; margin: 10px 0 5px;">Choose Duration:</label>
+              <label for="durationSelect" class="form-label">⏰ Choose Duration</label>
               <select id="durationSelect">
                 <option value="1" selected>1 hour</option>
                 <option value="2">2 hours</option>
@@ -677,19 +668,19 @@
           </div>
           <div class="booking-summary" id="bookingSummary">
             <div id="bookingSummaryContent">
-              <!-- Content will be populated by JavaScript -->
+              @if(session('success'))
+                <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb;">
+                  {{ session('success') }}
+                </div>
+              @else
+                <!-- Default placeholder content -->
+                Select a date and time to see booking details
+              @endif
             </div>
             <div id="bookingConfirmationMessage" style="display:none;">
               <strong>Your booking has been confirmed!</strong>
             </div>
           </div>
-          
-          <!-- Success and Error Messages -->
-          @if(session('success'))
-            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb;">
-              {{ session('success') }}
-            </div>
-          @endif
           
           @if(session('error'))
             <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #f5c6cb;">
@@ -747,7 +738,6 @@
           <input type="hidden" name="date" id="modalBookingDate">
           <input type="hidden" name="time_slot" id="modalBookingTimeSlot">
           <input type="hidden" name="duration" id="modalBookingDuration">
-          <input type="hidden" name="service_type" id="modalBookingServiceType">
           <input type="hidden" name="price" id="modalBookingPrice">
           
           <div class="form-group">
@@ -772,7 +762,7 @@
           
           <div class="form-group">
             <label class="form-label" for="contactNumber">Contact Number *</label>
-            <input type="tel" id="contactNumber" name="contact_number" class="form-input" required>
+            <input type="tel" id="contactNumber" name="contact_number" class="form-input" maxlength="11" required>
             @error('contact_number')
               <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
                 {{ $message }}

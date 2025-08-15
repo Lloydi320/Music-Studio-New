@@ -41,7 +41,7 @@ class BookingController extends Controller
             'date' => 'required|date',
             'time_slot' => 'required|string',
             'duration' => 'required|integer|min:1|max:8',
-            'service_type' => 'required|string|in:studio_rental,recording_session,music_lesson,band_practice,audio_production,instrument_rental,other',
+
             'band_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'contact_number' => 'nullable|string|size:11|regex:/^[0-9]{11}$/',
@@ -100,7 +100,7 @@ class BookingController extends Controller
             'duration' => $duration,
             'price' => $hourlyRate,
             'total_amount' => $totalAmount,
-            'service_type' => $request->service_type,
+            'service_type' => 'studio_rental', // Default service type
             'band_name' => $request->band_name,
             'email' => $request->email,
             'contact_number' => $request->contact_number,

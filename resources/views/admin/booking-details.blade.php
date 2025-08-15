@@ -511,7 +511,7 @@
             
             <div class="detail-row">
                 <span class="detail-label">Time Slot</span>
-                <span class="detail-value">{{ $booking->start_time }} - {{ $booking->end_time }}</span>
+                <span class="detail-value">{{ $booking->time_slot }}</span>
             </div>
             
             <div class="detail-row">

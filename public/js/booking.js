@@ -2,11 +2,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const calendar = document.getElementById("calendar");
   const selectedDateLabel = document.getElementById("selectedDateLabel");
   const monthDropdown = document.getElementById("monthDropdown");
+  const yearDropdown = document.getElementById("yearDropdown");
   const slotsContainer = document.querySelector(".slots");
   const durationSelect = document.getElementById("durationSelect");
   const selectedDurationLabel = document.getElementById("selectedDurationLabel");
-  const serviceTypeSelect = document.getElementById("serviceTypeSelect");
-  const serviceTypeLabel = document.getElementById("serviceType");
+
 
   const today = new Date();
   let selectedYear = today.getFullYear();
@@ -64,13 +64,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Add year and month navigation
   function renderMonthDropdown(year, month) {
+    // Populate month dropdown
     monthDropdown.innerHTML = "";
     for (let m = 0; m < 12; m++) {
       const option = document.createElement("option");
       option.value = m;
-      option.textContent = `${monthNames[m]} ${year}`;
+      option.textContent = monthNames[m];
       if (m === month) option.selected = true;
       monthDropdown.appendChild(option);
+    }
+  }
+
+  function renderYearDropdown(currentYear) {
+    // Populate year dropdown (current year + next 2 years)
+    yearDropdown.innerHTML = "";
+    for (let y = currentYear; y <= currentYear + 2; y++) {
+      const option = document.createElement("option");
+      option.value = y;
+      option.textContent = y;
+      if (y === currentYear) option.selected = true;
+      yearDropdown.appendChild(option);
     }
   }
 
@@ -283,14 +296,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Service type change handler
-  if (serviceTypeSelect && serviceTypeLabel) {
-    serviceTypeSelect.addEventListener("change", () => {
-      const selectedOption = serviceTypeSelect.options[serviceTypeSelect.selectedIndex];
-      serviceTypeLabel.textContent = selectedOption.text;
-    });
-  }
-
   // Duration change handler
   if (durationSelect) {
     durationSelect.addEventListener("change", () => {
@@ -383,8 +388,23 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedMonth--;
       }
       renderMonthDropdown(selectedYear, selectedMonth);
+      renderYearDropdown(selectedYear);
       renderCalendar(selectedYear, selectedMonth);
     });
+    
+    if (nextMonthBtn) {
+      nextMonthBtn.addEventListener("click", function () {
+        if (selectedMonth === 11) {
+          selectedMonth = 0;
+          selectedYear++;
+        } else {
+          selectedMonth++;
+        }
+        renderMonthDropdown(selectedYear, selectedMonth);
+        renderYearDropdown(selectedYear);
+        renderCalendar(selectedYear, selectedMonth);
+      });
+    }
   }
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
@@ -437,7 +457,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('modalBookingDate').value = dateISO;
         document.getElementById('modalBookingTimeSlot').value = selectedTimeSlot;
         document.getElementById('modalBookingDuration').value = durationSelect.value;
-        document.getElementById('modalBookingServiceType').value = serviceTypeSelect.value;
         document.getElementById('modalBookingPrice').value = totalPrice;
       }
     });
@@ -467,8 +486,15 @@ document.addEventListener("DOMContentLoaded", function () {
     renderCalendar(selectedYear, selectedMonth);
   });
 
+  // Year dropdown event listener
+  yearDropdown.addEventListener("change", function () {
+    selectedYear = parseInt(this.value);
+    renderCalendar(selectedYear, selectedMonth);
+  });
+
   // Initial render
   renderMonthDropdown(selectedYear, selectedMonth);
+  renderYearDropdown(selectedYear);
   renderCalendar(selectedYear, selectedMonth);
   
 
@@ -572,7 +598,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize booking summary as empty
   const bookingSummary = document.getElementById('bookingSummary');
   if (bookingSummary) {
-    bookingSummary.classList.add('empty');
     const bookingSummaryContent = document.getElementById('bookingSummaryContent');
     if (bookingSummaryContent) {
       bookingSummaryContent.innerHTML = 'Select a date and time to see booking details';

@@ -29,9 +29,9 @@
         
         /* Top Header */
         .top-header {
-            background: #e9ecef;
+            background: #FFD700;
             padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid #FFD700;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -50,15 +50,20 @@
         }
         
         .logo {
+            background-color: #000;
             width: 40px;
             height: 40px;
-            background: #ffc107;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            color: #000;
+            overflow: hidden;
+        }
+        
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .brand-text {
@@ -1449,7 +1454,7 @@
     <div class="top-header">
         <div class="logo-section">
             <div class="logo">
-                🍋
+                <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo">
             </div>
             <div>
                 <div class="brand-text">LEMON</div>

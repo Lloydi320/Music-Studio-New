@@ -5,30 +5,32 @@
 @section('content')
 <style>
     :root {
-        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --gradient-warning: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        --gradient-danger: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.1);
-        --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
+        --gradient-primary: linear-gradient(135deg, #3a3a3a 0%, #2c2c2c 100%);
+        --gradient-secondary: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+        --gradient-success: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+        --gradient-warning: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+        --gradient-danger: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.3);
+        --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.4);
     }
 
     .admin-content {
         padding: 2rem;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
         min-height: 100vh;
+        color: #e0e0e0;
     }
 
     .page-header {
         background: var(--gradient-primary);
-        color: white;
+        color: #ffc107;
         padding: 2rem;
         border-radius: 20px;
         margin-bottom: 2rem;
         box-shadow: var(--shadow-soft);
         position: relative;
         overflow: hidden;
+        border: 2px solid #ffc107;
     }
 
     .page-header::before {
@@ -51,9 +53,10 @@
         font-size: 2.5rem;
         font-weight: 700;
         margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         position: relative;
         z-index: 1;
+        color: #ffc107;
     }
 
     .stats-overview {
@@ -64,13 +67,14 @@
     }
 
     .stat-card {
-        background: white;
+        background: #4a4a4a;
         padding: 1.5rem;
         border-radius: 15px;
         box-shadow: var(--shadow-soft);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        border: 1px solid #555;
     }
 
     .stat-card::before {
@@ -80,7 +84,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: var(--gradient-primary);
+        background: var(--gradient-warning);
     }
 
     .stat-card:hover {
@@ -91,14 +95,15 @@
     .stat-number {
         font-size: 2rem;
         font-weight: 700;
-        background: var(--gradient-primary);
+        background: var(--gradient-warning);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        color: #ffc107;
     }
 
     .stat-label {
-        color: #666;
+        color: #e0e0e0;
         font-weight: 500;
         margin-top: 0.5rem;
     }
@@ -602,7 +607,7 @@
                                 <td>
                                     <div class="booking-dates">
                                         <div class="date-time">{{ \Carbon\Carbon::parse($booking->date)->format('M d, Y') }}</div>
-                                        <div class="time-slot">{{ $booking->start_time }} - {{ $booking->end_time }}</div>
+                                        <div class="time-slot">{{ $booking->time_slot }}</div>
                                     </div>
                                 </td>
                                 <td>
