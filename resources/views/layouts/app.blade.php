@@ -24,14 +24,17 @@
         .navbar {
             background: #2c3e50;
             color: white;
-            padding: 1rem 0;
+            padding: 0.75rem 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
         
         .navbar-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+            max-width: 100%;
+            margin: 0;
+            padding: 0 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -89,8 +92,8 @@
         }
         
         .main-content {
-            min-height: calc(100vh - 70px);
-            padding: 2rem 0;
+            min-height: calc(100vh - 60px);
+            padding: 1rem 0;
         }
         
         .alert {
@@ -133,14 +136,33 @@
         }
         
         @media (max-width: 768px) {
+            .navbar {
+                padding: 0.5rem 0;
+            }
+            
             .navbar-content {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 0.5rem;
+                padding: 0 10px;
             }
             
             .navbar-nav {
-                flex-direction: column;
-                gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+            
+            .user-info {
+                gap: 0.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .main-content {
+                padding: 0.5rem 0;
             }
         }
     </style>

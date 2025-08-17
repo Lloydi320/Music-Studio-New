@@ -1,6 +1,69 @@
 @extends('layouts.admin')
 
 @section('content')
+<style>
+    :root {
+        --gradient-primary: linear-gradient(135deg, #3a3a3a 0%, #2c2c2c 100%);
+        --gradient-secondary: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+        --gradient-success: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+        --gradient-warning: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+        --gradient-danger: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.3);
+        --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .admin-content {
+        padding: 2rem;
+        background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+        min-height: 100vh;
+        color: #e0e0e0;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        color: #1a1a1a;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+        border: 2px solid #FFD700;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        position: relative;
+        z-index: 1;
+    }
+
+    .welcome-text {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+</style>
+
 <div class="admin-content">
     <!-- Page Header -->
     <div class="page-header">
@@ -171,86 +234,99 @@
     </div>
 </div>
 
-<style>
-.admin-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-}
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
 
-.admin-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-}
+    .stat-card {
+        background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: var(--shadow-soft);
+        text-align: center;
+        border: 2px solid #FFD700;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
 
-.admin-header h1 {
-    margin: 0;
-    font-size: 2.5em;
-    font-weight: bold;
-}
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    }
 
-.admin-header p {
-    margin: 10px 0 0 0;
-    font-size: 1.1em;
-    opacity: 0.9;
-}
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-hover);
+        border-color: #FFA500;
+    }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
+    .stat-card h3 {
+        margin: 0 0 1rem 0;
+        color: #e0e0e0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
 
-.stat-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    text-align: center;
-}
+    .stat-number {
+        margin: 0;
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
 
-.stat-card h3 {
-    margin: 0 0 10px 0;
-    color: #666;
-    font-size: 1em;
-}
+    .rentals-table {
+        background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+        border-radius: 15px;
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        border: 2px solid #FFD700;
+    }
 
-.stat-number {
-    margin: 0;
-    font-size: 2em;
-    font-weight: bold;
-    color: #667eea;
-}
+    .rentals-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-.rentals-table {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    overflow: hidden;
-}
+    .rentals-table th,
+    .rentals-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+        color: #e0e0e0;
+    }
 
-.rentals-table table {
-    width: 100%;
-    border-collapse: collapse;
-}
+    .rentals-table th {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        font-weight: 700;
+        color: #1a1a1a;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
 
-.rentals-table th,
-.rentals-table td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
+    .rentals-table tbody tr {
+        transition: all 0.3s ease;
+    }
 
-.rentals-table th {
-    background: #f8f9fa;
-    font-weight: bold;
-    color: #333;
-}
+    .rentals-table tbody tr:hover {
+        background: rgba(255, 215, 0, 0.05);
+        transform: scale(1.01);
+    }
 
 .status-badge {
     padding: 4px 8px;
@@ -261,29 +337,29 @@
 }
 
 .status-pending {
-    background: #fff3cd;
-    color: #856404;
-}
+        background: #3a3a00;
+        color: #ffff99;
+    }
 
 .status-confirmed {
-    background: #d1ecf1;
-    color: #0c5460;
-}
+        background: #1a3a3a;
+        color: #66cccc;
+    }
 
 .status-active {
-    background: #d4edda;
-    color: #155724;
-}
+        background: #1a3a1a;
+        color: #66cc66;
+    }
 
 .status-returned {
-    background: #e2e3e5;
-    color: #383d41;
-}
+        background: #3a3a3a;
+        color: #cccccc;
+    }
 
 .status-cancelled {
-    background: #f8d7da;
-    color: #721c24;
-}
+        background: #3a1a1a;
+        color: #ff6666;
+    }
 
 .transportation-badge {
     padding: 4px 8px;
@@ -294,14 +370,14 @@
 }
 
 .transportation-badge.delivery {
-    background: #d1ecf1;
-    color: #0c5460;
-}
+        background: #1a3a3a;
+        color: #66cccc;
+    }
 
 .transportation-badge.self {
-    background: #e2e3e5;
-    color: #383d41;
-}
+        background: #3a3a3a;
+        color: #cccccc;
+    }
 
 .event-details {
     font-size: 0.8em;
@@ -312,22 +388,22 @@
 }
 
 .consent-badge {
-    background: #d4edda;
-    color: #155724;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-size: 0.7em;
-    font-weight: bold;
-}
+        background: #1a3a1a;
+        color: #66cc66;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 0.7em;
+        font-weight: bold;
+    }
 
 .no-consent-badge {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-size: 0.7em;
-    font-weight: bold;
-}
+        background: #3a1a1a;
+        color: #ff6666;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 0.7em;
+        font-weight: bold;
+    }
 
 /* Add to existing <style> section */
 .btn {
@@ -366,24 +442,26 @@
 }
 
 .status-select {
-    padding: 4px 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 12px;
-}
+        padding: 4px 8px;
+        border: 1px solid #3a3a3a;
+        border-radius: 4px;
+        font-size: 12px;
+        background: #2a2a2a;
+        color: #e0e0e0;
+    }
 
 .rental-notes {
-    background: #f8f9fa;
-    font-style: italic;
-    color: #666;
-}
+        background: #2a2a2a;
+        font-style: italic;
+        color: #b0b0b0;
+    }
 
 .no-data {
-    text-align: center;
-    color: #666;
-    font-style: italic;
-    padding: 40px;
-}
+        text-align: center;
+        color: #b0b0b0;
+        font-style: italic;
+        padding: 40px;
+    }
 
 .alert {
     padding: 15px;
@@ -393,16 +471,16 @@
 }
 
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
+        background-color: #1a3a1a;
+        color: #66cc66;
+        border: 1px solid #2a4a2a;
+    }
 
 .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
+        background-color: #3a1a1a;
+        color: #ff6666;
+        border: 1px solid #4a2a2a;
+    }
 
 .pagination {
     margin-top: 20px;

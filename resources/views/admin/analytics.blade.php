@@ -125,6 +125,9 @@
 <style>
 .dashboard-container {
     padding: 20px;
+    background: #1a1a1a;
+    min-height: 100vh;
+    color: #ffffff;
 }
 
 .page-header {
@@ -132,14 +135,17 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #e9ecef;
+    padding: 20px;
+    background: #2d2d2d;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    border: 1px solid #444;
 }
 
 .page-title {
     font-size: 2rem;
     font-weight: 600;
-    color: #333;
+    color: #ffd700;
     margin: 0;
 }
 
@@ -150,96 +156,144 @@
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
 
 .stat-card {
-    background: white;
+    background: #2d2d2d;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     text-align: center;
+    border: 1px solid #444;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,215,0,0.2);
 }
 
 .stat-number {
     font-size: 2rem;
     font-weight: bold;
-    color: #ffc107;
+    color: #ffd700;
     margin-bottom: 5px;
 }
 
 .stat-label {
-    color: #666;
+    color: #cccccc;
     font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .report-section {
-    background: white;
+    background: #2d2d2d;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     margin-bottom: 30px;
+    border: 1px solid #444;
 }
 
 .report-section h2 {
     font-size: 1.3rem;
     font-weight: 600;
-    color: #333;
+    color: #ffd700;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 2px solid #ffd700;
 }
 
 .table {
     margin-bottom: 0;
+    background: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .table th {
-    background: #f8f9fa;
+    background: #333333;
     font-weight: 600;
-    color: #495057;
-    border-bottom: 2px solid #dee2e6;
+    color: #ffd700;
+    border-bottom: 2px solid #444;
+    padding: 12px;
+    text-align: left;
 }
 
 .table td {
     vertical-align: middle;
+    color: #ffffff;
+    border-bottom: 1px solid #444;
+    padding: 12px;
+    text-align: left;
+    background: transparent;
+}
+
+.table tbody tr {
+    background: #2d2d2d;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+    background: #2a2a2a;
+}
+
+.table-striped tbody tr:hover {
+    background: #3a3a3a;
+}
+
+.table tbody tr td {
+    background: inherit;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    border-radius: 8px;
 }
 
 .btn {
-    padding: 8px 16px;
-    border-radius: 4px;
+    padding: 10px 20px;
+    border-radius: 20px;
     border: none;
     font-weight: 500;
     text-decoration: none;
     display: inline-block;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .btn-primary {
-    background: #ffc107;
-    color: #000;
+    background: #ffd700;
+    color: #1a1a1a;
+}
+
+.btn-primary:hover {
+    background: #ffed4e;
+    box-shadow: 0 4px 16px rgba(255,215,0,0.4);
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+    background: #555;
+    color: #ffffff;
 }
 
-.btn:hover {
-    opacity: 0.9;
+.btn-secondary:hover {
+    background: #666;
+    box-shadow: 0 4px 16px rgba(85,85,85,0.4);
 }
 
 .badge {
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 16px;
     font-size: 12px;
     font-weight: bold;
 }
 
 .bg-success {
-    background: #28a745;
+    background: #34a853;
     color: white;
 }
 </style>

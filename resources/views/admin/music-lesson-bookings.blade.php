@@ -188,9 +188,9 @@
     }
 
     .btn-secondary {
-        background: #f8f9fa;
-        color: #666;
-        border: 2px solid #e1e5e9;
+        background: #2a2a2a;
+        color: #b0b0b0;
+        border: 2px solid #3a3a3a;
     }
 
     .btn:hover {
@@ -199,16 +199,17 @@
     }
 
     .lessons-table-card {
-        background: white;
+        background: #2a2a2a;
         border-radius: 20px;
         box-shadow: var(--shadow-soft);
         overflow: hidden;
         margin-bottom: 2rem;
+        border: 1px solid #3a3a3a;
     }
 
     .table-header {
         background: var(--gradient-music);
-        color: white;
+        color: #1a1a1a;
         padding: 1.5rem 2rem;
         display: flex;
         justify-content: space-between;
@@ -219,13 +220,15 @@
         font-size: 1.3rem;
         font-weight: 600;
         margin: 0;
+        color: #1a1a1a;
     }
 
     .records-count {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(26, 26, 26, 0.2);
         padding: 0.5rem 1rem;
         border-radius: 20px;
         font-size: 0.9rem;
+        color: #1a1a1a;
     }
 
     .table-responsive {
@@ -238,8 +241,8 @@
     }
 
     .table thead th {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        color: #333;
+        background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+        color: #FFD700;
         font-weight: 600;
         padding: 1rem;
         border: none;
@@ -253,8 +256,10 @@
 
     .table tbody td {
         padding: 1rem;
-        border-bottom: 1px solid #f1f3f4;
+        border-bottom: 1px solid #3a3a3a;
         vertical-align: middle;
+        background: #2a2a2a;
+        color: #e0e0e0;
     }
 
     .table tbody tr {
@@ -262,9 +267,9 @@
     }
 
     .table tbody tr:hover {
-        background: linear-gradient(135deg, #fff5f5 0%, #ffe0e6 100%);
+        background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
         transform: scale(1.01);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(255,215,0,0.1);
     }
 
     .status-badge {
@@ -325,12 +330,12 @@
 
     .user-name {
         font-weight: 600;
-        color: #333;
+        color: #e0e0e0;
         font-size: 0.9rem;
     }
 
     .user-email {
-        color: #666;
+        color: #b0b0b0;
         font-size: 0.8rem;
     }
 
@@ -342,11 +347,11 @@
 
     .lesson-date {
         font-weight: 600;
-        color: #333;
+        color: #e0e0e0;
     }
 
     .lesson-time {
-        color: #666;
+        color: #b0b0b0;
         font-size: 0.85rem;
     }
 

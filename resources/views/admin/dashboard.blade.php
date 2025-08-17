@@ -14,8 +14,13 @@
 
     <!-- Navigation Section -->
     <div class="dashboard-navigation">
-        <h3>Quick Navigation</h3>
-        <div class="nav-buttons">
+        <div class="section-header">
+            <h3>Quick Navigation</h3>
+            <button class="toggle-btn" onclick="toggleSection('navigation')">
+                <span id="navigation-icon">−</span>
+            </button>
+        </div>
+        <div class="nav-buttons" id="navigation-content">
             <a href="{{ route('admin.bookings') }}" class="nav-btn">
                 <i class="fas fa-calendar-check"></i>
                 <span>Bookings</span>
@@ -41,12 +46,12 @@
 
     <!-- Key Metrics -->    
     <div class="dashboard-stats">
-        <div class="dashboard-stat-card">
+        <div class="dashboard-stat-card total-revenue-card">
             <div class="stat-icon">💰</div>
             <div class="stat-number">₱{{ number_format($totalRevenue ?? 0, 2) }}</div>
             <div class="stat-label">Total Revenue</div>
         </div>
-        <div class="dashboard-stat-card">
+        <div class="dashboard-stat-card gold-stat-card">
             <div class="stat-icon">📈</div>
             <div class="stat-number">₱{{ number_format($thisMonthRevenue ?? 0, 2) }}</div>
             <div class="stat-label">This Month</div>
@@ -59,12 +64,12 @@
                 </div>
             @endif
         </div>
-        <div class="dashboard-stat-card">
+        <div class="dashboard-stat-card gold-stat-card">
             <div class="stat-icon">🎯</div>
             <div class="stat-number">₱{{ number_format($averageBookingValue ?? 0, 2) }}</div>
             <div class="stat-label">Average Booking Value</div>
         </div>
-        <div class="dashboard-stat-card">
+        <div class="dashboard-stat-card gold-stat-card">
             <div class="stat-icon">📅</div>
             <div class="stat-number">{{ isset($bookingCounts) ? array_sum($bookingCounts) : 0 }}</div>
             <div class="stat-label">Total Bookings (12 months)</div>
@@ -73,6 +78,13 @@
 
     <!-- Charts Section -->
     <div class="charts-section">
+        <div class="section-header">
+            <h2>📊 Analytics Charts</h2>
+            <button class="toggle-btn" onclick="toggleSection('charts')">
+                <span id="charts-icon">−</span>
+            </button>
+        </div>
+        <div class="charts-content" id="charts-content">
         <div class="chart-container">
             <div class="chart-header">
                 <h2>📊 Monthly Sales Revenue</h2>
@@ -112,12 +124,18 @@
                 <canvas id="servicesDistributionChart" width="400" height="200"></canvas>
             </div>
         </div>
+        </div>
     </div>
 
     <!-- Top Customers -->
     <div class="customers-section">
-        <h2>🏆 Top Customers</h2>
-        <div class="customers-table">
+        <div class="section-header">
+            <h2>🏆 Top Customers</h2>
+            <button class="toggle-btn" onclick="toggleSection('customers')">
+                <span id="customers-icon">−</span>
+            </button>
+        </div>
+        <div class="customers-table" id="customers-content">
             <table>
                 <thead>
                     <tr>
@@ -160,12 +178,14 @@
 
 <style>
 .admin-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 10px;
+    max-width: 100%;
+    margin: 0;
+    padding: 10px 15px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #ffffff;
+    background-color: #1a1a1a;
     min-height: 100vh;
+    color: #e0e0e0;
+    overflow-x: hidden;
 }
 
 .page-header {
@@ -173,45 +193,47 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    padding: 12px 15px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #1a1a1a;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
     border: none;
+    position: relative;
 }
 
 .page-title {
     margin: 0;
-    font-size: 2.5em;
+    font-size: 1.6em;
     font-weight: 700;
     letter-spacing: -0.5px;
-    color: white;
+    color: #1a1a1a;
 }
 
 .welcome-text {
     opacity: 0.9;
     font-size: 1.1em;
     font-weight: 400;
-    color: white;
+    color: #1a1a1a;
 }
 
 .dashboard-navigation {
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background: #2a2a2a;
+    padding: 12px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     margin-bottom: 15px;
-    border: none;
+    border: 1px solid #3a3a3a;
+    position: relative;
 }
 
 .dashboard-navigation h3 {
     margin: 0 0 10px 0;
-    color: #333;
+    color: #FFD700;
     font-size: 1.3em;
     font-weight: 600;
     text-align: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #3a3a3a;
     padding-bottom: 8px;
 }
 
@@ -226,19 +248,19 @@
     flex-direction: column;
     align-items: center;
     padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #1a1a1a;
     text-decoration: none;
     border-radius: 8px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
     border: none;
 }
 
 .nav-btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-    color: white;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    color: #1a1a1a;
     text-decoration: none;
 }
 
@@ -256,28 +278,97 @@
 
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    background-color: #2a2a2a;
 }
 
 .dashboard-stat-card {
-    background: #ffffff;
+    background: #2a2a2a;
     padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid #3a3a3a;
     display: flex;
     flex-direction: column;
     gap: 4px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
     overflow: hidden;
+    text-align: center;
 }
 
 .dashboard-stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.2);
+    border-color: #FFD700;
+    
+}
+
+.total-revenue-card {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+    border: 2px solid #FFD700 !important;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3) !important;
+}
+
+.total-revenue-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 12px 40px rgba(255, 215, 0, 0.5) !important;
+    border-color: #FFED4E !important;
+}
+
+.total-revenue-card .stat-icon {
+    color: #1a1a1a !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.total-revenue-card .stat-number {
+    color: #1a1a1a !important;
+    font-weight: 800 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.total-revenue-card .stat-label {
+    color: #2a2a2a !important;
+    font-weight: 600 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.gold-stat-card {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+    border: 2px solid #FFD700 !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3) !important;
+    transition: all 0.3s ease !important;
+}
+
+.gold-stat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4) !important;
+    border-color: #FFC700 !important;
+}
+
+.gold-stat-card .stat-icon {
+    color: #1a1a1a !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.gold-stat-card .stat-number {
+    color: #1a1a1a !important;
+    font-weight: 800 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.gold-stat-card .stat-label {
+    color: #2a2a2a !important;
+    font-weight: 600 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.gold-stat-card .stat-growth {
+    color: #1a1a1a !important;
+    font-weight: 700 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .stat-icon {
@@ -285,19 +376,20 @@
     opacity: 0.8;
     margin-bottom: 8px;
     align-self: flex-start;
+    color: #FFD700;
 }
 
 .stat-number {
     margin: 0;
     font-size: 2em;
     font-weight: 700;
-    color: #333;
+    color: #e0e0e0;
     line-height: 1.1;
 }
 
 .stat-label {
     margin: 0;
-    color: #666;
+    color: #b0b0b0;
     font-size: 1.1em;
     font-weight: 500;
     text-transform: none;
@@ -319,17 +411,26 @@
 }
 
 .charts-section {
+    background: #2a2a2a;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid #3a3a3a;
+}
+
+.charts-content {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
     gap: 15px;
-    margin-bottom: 20px;
+    margin-top: 15px;
     align-items: stretch;
     justify-items: stretch;
 }
 
 @media (max-width: 1200px) {
-    .charts-section {
+    .charts-content {
         grid-template-columns: 1fr;
         grid-template-rows: auto;
     }
@@ -337,26 +438,38 @@
 
 @media (max-width: 768px) {
     .admin-content {
-        padding: 8px;
+        padding: 5px 10px;
     }
     
     .page-header {
+        flex-direction: column;
+        gap: 10px;
         margin-bottom: 10px;
         padding: 10px;
     }
     
     .page-title {
-        font-size: 2em;
+        font-size: 1.4em;
     }
     
     .dashboard-stats {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 8px;
         margin-bottom: 15px;
     }
     
     .dashboard-stat-card {
-        padding: 12px;
+        padding: 10px;
+    }
+    
+    .nav-buttons {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 8px;
+    }
+    
+    .nav-btn {
+        padding: 8px;
+        font-size: 0.9em;
     }
     
     .charts-section {
@@ -364,8 +477,17 @@
         margin-bottom: 15px;
     }
     
+    .charts-content {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
     .chart-container {
-        padding: 12px;
+        padding: 8px;
+    }
+    
+    .chart-header h2 {
+        font-size: 1.2em;
     }
     
     .chart-wrapper {
@@ -377,19 +499,22 @@
         margin-bottom: 10px;
     }
     
+    .customers-table {
+        font-size: 0.9em;
+    }
+    
     .customers-table th,
     .customers-table td {
         padding: 6px;
-        font-size: 0.9em;
     }
 }
 
 .chart-container {
-    background: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border: none;
+    background: #333333;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid #444444;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -398,26 +523,27 @@
 
 .chart-container:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.2);
+    border-color: #FFD700;
 }
 
 .chart-header {
     margin-bottom: 10px;
     text-align: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #3a3a3a;
     padding-bottom: 8px;
 }
 
 .chart-header h2 {
     margin: 0 0 8px 0;
-    color: #333;
+    color: #FFD700;
     font-size: 1.5em;
     font-weight: 600;
 }
 
 .chart-header p {
     margin: 0;
-    color: #666;
+    color: #b0b0b0;
     font-size: 1em;
     font-weight: 400;
 }
@@ -433,27 +559,28 @@
 }
 
 .customers-section {
-    background: #ffffff;
+    background: #2a2a2a;
     padding: 15px;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    border: 1px solid #3a3a3a;
     margin-bottom: 15px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .customers-section:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.2);
+    border-color: #FFD700;
 }
 
 .customers-section h2 {
     margin: 0 0 10px 0;
-    color: #333;
+    color: #FFD700;
     text-align: center;
     font-size: 1.5em;
     font-weight: 600;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #3a3a3a;
     padding-bottom: 8px;
 }
 
@@ -474,20 +601,21 @@
 .customers-table td {
     padding: 8px;
     text-align: left;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #3a3a3a;
+    color: #e0e0e0;
 }
 
 .customers-table th {
-    background: #f8f9fa;
+    background: #3a3a3a;
     font-weight: 600;
-    color: #333;
+    color: #FFD700;
     font-size: 1em;
     text-transform: none;
     letter-spacing: 0;
 }
 
 .customers-table tr:hover {
-    background: #f8f9fa;
+    background: #3a3a3a;
     transition: background-color 0.3s ease;
 }
 
@@ -505,31 +633,89 @@
     font-size: 0.9em;
     min-width: 36px;
     box-shadow: none;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #3a3a3a;
 }
 
 .rank-1 { 
-    background: #fef3c7; 
-    color: #92400e; 
-    border-color: #fbbf24;
+    background: #2a2a2a; 
+    color: #FFD700; 
+    border-color: #FFD700;
 }
 .rank-2 { 
-    background: #f3f4f6; 
-    color: #374151; 
-    border-color: #d1d5db;
+    background: #2a2a2a; 
+    color: #c0c0c0; 
+    border-color: #c0c0c0;
 }
 .rank-3 { 
-    background: #fed7aa; 
-    color: #9a3412; 
-    border-color: #fb923c;
+    background: #2a2a2a; 
+    color: #cd7f32; 
+    border-color: #cd7f32;
 }
 
 .no-data {
     text-align: center;
-    color: #9ca3af;
+    color: #6b7280;
     font-style: italic;
     padding: 24px 16px;
     font-size: 0.9em;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.section-header h2,
+.section-header h3 {
+    margin: 0;
+    color: #FFD700;
+    font-weight: 600;
+}
+
+.section-header h2 {
+    font-size: 1.5em;
+}
+
+.section-header h3 {
+    font-size: 1.3em;
+}
+
+.toggle-btn {
+    background: #FFD700;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2em;
+    transition: all 0.3s ease;
+    min-width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-btn:hover {
+    background: #FFA500;
+    transform: scale(1.1);
+}
+
+.section-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.section-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
 }
 </style>
 
@@ -540,10 +726,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const chartDefaults = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: { 
+            legend: { 
+                display: false,
+                labels: {
+                    color: '#e0e0e0'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#2a2a2a',
+                titleColor: '#FFD700',
+                bodyColor: '#e0e0e0',
+                borderColor: '#3a3a3a',
+                borderWidth: 1
+            }
+        },
         scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' } },
-            x: { grid: { color: 'rgba(0,0,0,0.1)' } }
+            y: { 
+                beginAtZero: true, 
+                grid: { color: 'rgba(255,255,255,0.1)' },
+                ticks: { color: '#e0e0e0' }
+            },
+            x: { 
+                grid: { color: 'rgba(255,255,255,0.1)' },
+                ticks: { color: '#e0e0e0' }
+            }
         }
     };
 
@@ -555,21 +762,41 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Revenue (\u20B1)',
                 data: @json($salesData ?? []),
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102,126,234,0.1)',
-                borderWidth: 2,
+                borderColor: '#FFD700',
+                backgroundColor: 'rgba(255,215,0,0.1)',
+                borderWidth: 3,
                 tension: 0.4,
                 fill: true
             }]
         },
         options: Object.assign({}, chartDefaults, {
+            plugins: Object.assign({}, chartDefaults.plugins, {
+                legend: Object.assign({}, chartDefaults.plugins.legend, {
+                    display: false
+                })
+            }),
             scales: Object.assign({}, chartDefaults.scales, {
                 y: Object.assign({}, chartDefaults.scales.y, {
-                    ticks: { callback: function(value) { return '\u20B1' + value.toLocaleString(); } }
+                    ticks: { 
+                        callback: function(value) { return '\u20B1' + value.toLocaleString(); },
+                        color: '#e0e0e0'
+                    }
                 })
-            })
+            }),
+            layout: {
+                padding: 10
+            },
+            elements: {
+                point: {
+                    backgroundColor: '#FFD700',
+                    borderColor: '#FFD700'
+                }
+            }
         })
     });
+    
+    // Set canvas background color
+    document.getElementById('salesChart').style.backgroundColor = '#333333';
 
     // Bookings Chart
     new Chart(document.getElementById('bookingsChart'), {
@@ -579,14 +806,17 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Bookings',
                 data: @json($bookingCounts ?? []),
-                backgroundColor: 'rgba(118,75,162,0.8)',
-                borderColor: '#764ba2',
+                backgroundColor: 'rgba(255,215,0,0.8)',
+                borderColor: '#FFD700',
                 borderWidth: 2,
                 borderRadius: 8
             }]
         },
         options: chartDefaults
     });
+    
+    // Set canvas background color
+    document.getElementById('bookingsChart').style.backgroundColor = '#333333';
 
     // Users per Service Chart
     new Chart(document.getElementById('usersPerServiceChart'), {
@@ -597,18 +827,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: 'Users',
                 data: @json(array_values($usersPerService ?? [])),
                 backgroundColor: [
-                    'rgba(255, 99, 132, 0.8)',
-                    'rgba(54, 162, 235, 0.8)',
-                    'rgba(255, 205, 86, 0.8)',
-                    'rgba(75, 192, 192, 0.8)',
-                    'rgba(153, 102, 255, 0.8)'
+                    'rgba(255, 215, 0, 0.8)',
+                    'rgba(255, 165, 0, 0.8)',
+                    'rgba(218, 165, 32, 0.8)',
+                    'rgba(184, 134, 11, 0.8)',
+                    'rgba(146, 104, 8, 0.8)'
                 ],
                 borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 205, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)'
+                    'rgba(255, 215, 0, 1)',
+                    'rgba(255, 165, 0, 1)',
+                    'rgba(218, 165, 32, 1)',
+                    'rgba(184, 134, 11, 1)',
+                    'rgba(146, 104, 8, 1)'
                 ],
                 borderWidth: 2,
                 borderRadius: 8
@@ -633,6 +863,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
      });
+     
+     // Set canvas background color
+     document.getElementById('usersPerServiceChart').style.backgroundColor = '#333333';
 
      // Services Distribution Pie Chart
      new Chart(document.getElementById('servicesDistributionChart'), {
@@ -643,20 +876,20 @@ document.addEventListener('DOMContentLoaded', function() {
                  label: 'Services',
                  data: @json(array_values($servicesDistribution ?? [])),
                  backgroundColor: [
-                     'rgba(255, 99, 132, 0.8)',
-                     'rgba(54, 162, 235, 0.8)',
-                     'rgba(255, 205, 86, 0.8)',
-                     'rgba(75, 192, 192, 0.8)',
-                     'rgba(153, 102, 255, 0.8)',
-                     'rgba(255, 159, 64, 0.8)'
+                     'rgba(255, 215, 0, 0.8)',
+                     'rgba(255, 165, 0, 0.8)',
+                     'rgba(218, 165, 32, 0.8)',
+                     'rgba(184, 134, 11, 0.8)',
+                     'rgba(146, 104, 8, 0.8)',
+                     'rgba(255, 193, 7, 0.8)'
                  ],
                  borderColor: [
-                     'rgba(255, 99, 132, 1)',
-                     'rgba(54, 162, 235, 1)',
-                     'rgba(255, 205, 86, 1)',
-                     'rgba(75, 192, 192, 1)',
-                     'rgba(153, 102, 255, 1)',
-                     'rgba(255, 159, 64, 1)'
+                     'rgba(255, 215, 0, 1)',
+                     'rgba(255, 165, 0, 1)',
+                     'rgba(218, 165, 32, 1)',
+                     'rgba(184, 134, 11, 1)',
+                     'rgba(146, 104, 8, 1)',
+                     'rgba(255, 193, 7, 1)'
                  ],
                  borderWidth: 2
              }]
@@ -667,9 +900,20 @@ document.addEventListener('DOMContentLoaded', function() {
              plugins: {
                  legend: {
                      display: true,
-                     position: 'bottom'
+                     position: 'bottom',
+                     labels: {
+                         color: '#e0e0e0',
+                         font: {
+                             size: 12
+                         }
+                     }
                  },
                  tooltip: {
+                     backgroundColor: '#2a2a2a',
+                     titleColor: '#FFD700',
+                     bodyColor: '#e0e0e0',
+                     borderColor: '#3a3a3a',
+                     borderWidth: 1,
                      callbacks: {
                          label: function(context) {
                              const label = context.label || '';
@@ -699,6 +943,23 @@ document.addEventListener('DOMContentLoaded', function() {
              }
          }
      });
- });
- </script>
+     
+     // Set canvas background color
+     document.getElementById('servicesDistributionChart').style.backgroundColor = '#333333';
+});
+
+// Toggle section functionality
+function toggleSection(sectionName) {
+    const content = document.getElementById(sectionName + '-content');
+    const icon = document.getElementById(sectionName + '-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = '';
+        icon.textContent = '−';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '+';
+    }
+}
+</script>
  @endsection

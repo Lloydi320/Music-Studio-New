@@ -5,19 +5,20 @@
 @section('content')
 <style>
     :root {
-        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --gradient-warning: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        --gradient-danger: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --gradient-primary: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        --gradient-secondary: linear-gradient(135deg, #FFD700 0%, #FFED4E 100%);
+        --gradient-success: linear-gradient(135deg, #34a853 0%, #4ade80 100%);
+        --gradient-warning: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        --gradient-danger: linear-gradient(135deg, #ea4335 0%, #f87171 100%);
         --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.1);
         --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
     .admin-content {
         padding: 2rem;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: #1a1a1a;
         min-height: 100vh;
+        color: #e0e0e0;
     }
 
     .page-header {
@@ -91,11 +92,12 @@
     }
 
     .details-card {
-        background: white;
+        background: #2a2a2a;
         padding: 2rem;
         border-radius: 20px;
         box-shadow: var(--shadow-soft);
         transition: all 0.3s ease;
+        border: 1px solid #3a3a3a;
     }
 
     .details-card:hover {
@@ -121,7 +123,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 1rem 0;
-        border-bottom: 1px solid #f1f3f4;
+        border-bottom: 1px solid #3a3a3a;
     }
 
     .detail-row:last-child {
@@ -130,14 +132,14 @@
 
     .detail-label {
         font-weight: 600;
-        color: #333;
+        color: #FFD700;
         text-transform: uppercase;
         font-size: 0.8rem;
         letter-spacing: 0.5px;
     }
 
     .detail-value {
-        color: #666;
+        color: #e0e0e0;
         font-weight: 500;
         text-align: right;
     }
@@ -191,12 +193,12 @@
     .user-name {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #333;
+        color: #e0e0e0;
         margin-bottom: 0.5rem;
     }
 
     .user-email {
-        color: #666;
+        color: #b0b0b0;
         font-size: 1rem;
         margin-bottom: 1.5rem;
     }
@@ -211,8 +213,9 @@
     .user-stat {
         text-align: center;
         padding: 1rem;
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+        background: #3a3a3a;
         border-radius: 10px;
+        border: 1px solid #4a4a4a;
     }
 
     .user-stat-number {
@@ -225,7 +228,7 @@
     }
 
     .user-stat-label {
-        color: #666;
+        color: #b0b0b0;
         font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -276,9 +279,9 @@
     }
 
     .btn-secondary {
-        background: #f8f9fa;
-        color: #666;
-        border: 2px solid #e1e5e9;
+        background: #3a3a3a;
+        color: #e0e0e0;
+        border: 2px solid #4a4a4a;
     }
 
     .btn:hover {
@@ -306,7 +309,7 @@
         align-items: center;
         gap: 1rem;
         padding: 1rem 0;
-        border-bottom: 1px solid #f1f3f4;
+        border-bottom: 1px solid #3a3a3a;
     }
 
     .timeline-item:last-child {
@@ -331,12 +334,12 @@
 
     .timeline-title {
         font-weight: 600;
-        color: #333;
+        color: #e0e0e0;
         margin-bottom: 0.25rem;
     }
 
     .timeline-date {
-        color: #666;
+        color: #b0b0b0;
         font-size: 0.85rem;
     }
 

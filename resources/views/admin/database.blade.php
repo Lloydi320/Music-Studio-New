@@ -698,22 +698,22 @@ function copyQuery(button) {
         max-width: 1200px;
         margin: 0 auto;
         padding: 24px;
-        background: #f8f9fa;
+        background: #1a1a1a;
         min-height: 100vh;
         font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     /* Modern Header */
     .modern-header {
-        background: white;
+        background: #2d2d2d;
         padding: 32px;
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         margin-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border: 1px solid #e8eaed;
+        border: 1px solid #444;
     }
 
     .header-content {
@@ -725,7 +725,7 @@ function copyQuery(button) {
     .header-icon {
         width: 48px;
         height: 48px;
-        background: #f1f3f4;
+        background: #ffd700;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -733,7 +733,7 @@ function copyQuery(button) {
     }
 
     .header-text h1 {
-        color: #202124;
+        color: #ffffff;
         margin: 0 0 4px 0;
         font-size: 28px;
         font-weight: 500;
@@ -741,17 +741,17 @@ function copyQuery(button) {
     }
 
     .header-text p {
-        color: #5f6368;
+        color: #cccccc;
         margin: 0;
         font-size: 14px;
     }
 
     .theme-toggle {
-        background: #f1f3f4;
+        background: #444;
         border: none;
         border-radius: 20px;
         padding: 8px 16px;
-        color: #5f6368;
+        color: #ffd700;
         cursor: pointer;
         font-size: 14px;
         display: flex;
@@ -761,16 +761,16 @@ function copyQuery(button) {
     }
 
     .theme-toggle:hover {
-        background: #e8eaed;
+        background: #555;
     }
 
     /* Modern Card Design */
     .modern-card {
-        background: white;
+        background: #2d2d2d;
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         margin-bottom: 24px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #444;
         overflow: hidden;
     }
 
@@ -779,13 +779,13 @@ function copyQuery(button) {
         display: flex;
         align-items: flex-start;
         gap: 16px;
-        border-bottom: 1px solid #e8eaed;
+        border-bottom: 1px solid #444;
     }
 
     .card-icon {
         width: 40px;
         height: 40px;
-        background: #f1f3f4;
+        background: #ffd700;
         border-radius: 10px;
         display: flex;
         align-items: center;
@@ -794,7 +794,7 @@ function copyQuery(button) {
     }
 
     .card-title h2 {
-        color: #202124;
+        color: #ffffff;
         margin: 0 0 4px 0;
         font-size: 20px;
         font-weight: 500;
@@ -802,7 +802,7 @@ function copyQuery(button) {
     }
 
     .card-title p {
-        color: #5f6368;
+        color: #cccccc;
         margin: 0;
         font-size: 14px;
         line-height: 1.4;
@@ -821,25 +821,25 @@ function copyQuery(button) {
         justify-content: space-between;
         align-items: center;
         padding: 16px;
-        background: #f8f9fa;
+        background: #3a3a3a;
         border-radius: 12px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #555;
     }
 
     .detail-label {
-        color: #5f6368;
+        color: #cccccc;
         font-size: 14px;
         font-weight: 500;
     }
 
     .detail-value {
-        color: #202124;
+        color: #ffd700;
         font-size: 14px;
         font-family: 'Google Sans Mono', monospace;
     }
 
     .detail-link {
-        color: #1a73e8;
+        color: #ffd700;
         text-decoration: none;
         font-size: 14px;
         font-family: 'Google Sans Mono', monospace;
@@ -850,12 +850,12 @@ function copyQuery(button) {
     }
 
     .status-connected .detail-item {
-        background: #e8f5e8;
+        background: #2d4a2d;
         border-color: #34a853;
     }
 
     .status-disconnected .detail-item {
-        background: #fce8e6;
+        background: #4a2d2d;
         border-color: #ea4335;
     }
 
@@ -869,14 +869,14 @@ function copyQuery(button) {
     }
 
     .info-section h4 {
-        color: #202124;
+        color: #ffffff;
         font-size: 16px;
         font-weight: 500;
         margin: 0 0 8px 0;
     }
 
     .info-section p {
-        color: #5f6368;
+        color: #cccccc;
         font-size: 14px;
         margin: 0 0 16px 0;
         line-height: 1.4;
@@ -897,10 +897,10 @@ function copyQuery(button) {
     }
 
     .stat-card {
-        background: #f8f9fa;
+        background: #3a3a3a;
         border-radius: 12px;
         padding: 20px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #555;
         display: flex;
         align-items: center;
         gap: 16px;
@@ -908,14 +908,14 @@ function copyQuery(button) {
     }
 
     .stat-card:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 16px rgba(255,215,0,0.2);
         transform: translateY(-1px);
     }
 
     .stat-icon {
         width: 48px;
         height: 48px;
-        background: white;
+        background: #ffd700;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -924,7 +924,7 @@ function copyQuery(button) {
     }
 
     .stat-info h3 {
-        color: #202124;
+        color: #ffffff;
         font-size: 24px;
         font-weight: 500;
         margin: 0 0 4px 0;
@@ -932,7 +932,7 @@ function copyQuery(button) {
     }
 
     .stat-info p {
-        color: #5f6368;
+        color: #cccccc;
         font-size: 14px;
         margin: 0;
         line-height: 1.3;
@@ -954,24 +954,24 @@ function copyQuery(button) {
     }
 
     .action-card {
-        background: #f8f9fa;
+        background: #3a3a3a;
         border-radius: 12px;
         padding: 24px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #555;
         display: flex;
         gap: 16px;
         transition: all 0.2s ease;
     }
 
     .action-card:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 16px rgba(255,215,0,0.2);
         transform: translateY(-1px);
     }
 
     .action-icon {
         width: 48px;
         height: 48px;
-        background: white;
+        background: #ffd700;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -984,7 +984,7 @@ function copyQuery(button) {
     }
 
     .action-content h3 {
-        color: #202124;
+        color: #ffffff;
         font-size: 16px;
         font-weight: 500;
         margin: 0 0 8px 0;
@@ -992,7 +992,7 @@ function copyQuery(button) {
     }
 
     .action-content p {
-        color: #5f6368;
+        color: #cccccc;
         font-size: 14px;
         margin: 0 0 16px 0;
         line-height: 1.4;
@@ -1004,8 +1004,8 @@ function copyQuery(button) {
 
     /* Modern Buttons */
     .btn-primary, .btn-secondary, .btn-warning {
-        background: #1a73e8;
-        color: white;
+        background: #ffd700;
+        color: #1a1a1a;
         border: none;
         border-radius: 20px;
         padding: 10px 20px;
@@ -1021,35 +1021,37 @@ function copyQuery(button) {
     }
 
     .btn-primary:hover {
-        background: #1557b0;
-        box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+        background: #ffed4e;
+        box-shadow: 0 4px 16px rgba(255,215,0,0.4);
     }
 
     .btn-secondary {
-        background: #5f6368;
+        background: #555;
+        color: #ffffff;
     }
 
     .btn-secondary:hover {
-        background: #4a4d52;
-        box-shadow: 0 2px 8px rgba(95, 99, 104, 0.3);
+        background: #666;
+        box-shadow: 0 4px 16px rgba(85,85,85,0.4);
     }
 
     .btn-warning {
         background: #ea4335;
+        color: #ffffff;
     }
 
     .btn-warning:hover {
         background: #d33b2c;
-        box-shadow: 0 2px 8px rgba(234, 67, 53, 0.3);
+        box-shadow: 0 4px 16px rgba(234,67,53,0.4);
     }
 
     /* Activity Tables - Modern Design */
     .activity-table {
         overflow-x: auto;
-        background: white;
+        background: #2d2d2d;
         border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border: 1px solid #e8eaed;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 1px solid #444;
     }
 
     .activity-table table {
@@ -1061,18 +1063,18 @@ function copyQuery(button) {
     .activity-table td {
         padding: 16px;
         text-align: left;
-        border-bottom: 1px solid #e8eaed;
+        border-bottom: 1px solid #444;
     }
 
     .activity-table th {
-        background: #f8f9fa;
+        background: #3a3a3a;
         font-weight: 500;
-        color: #202124;
+        color: #ffd700;
         font-size: 14px;
     }
 
     .activity-table tr:hover {
-        background: #f8f9fa;
+        background: #3a3a3a;
     }
 
     .activity-table tr:last-child td {
@@ -1113,9 +1115,9 @@ function copyQuery(button) {
 
     .url-item {
         padding: 16px;
-        background: #f8f9fa;
+        background: #3a3a3a;
         border-radius: 12px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #555;
         display: flex;
         align-items: center;
         gap: 12px;
@@ -1123,12 +1125,12 @@ function copyQuery(button) {
     }
 
     .url-item:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 16px rgba(255,215,0,0.2);
         transform: translateY(-1px);
     }
 
     .url-item a {
-        color: #1a73e8;
+        color: #ffd700;
         text-decoration: none;
         font-family: 'Google Sans Mono', monospace;
         font-size: 14px;
@@ -1173,25 +1175,25 @@ function copyQuery(button) {
     }
 
     .calendar-action {
-        background: #f8f9fa;
+        background: #3a3a3a;
         border-radius: 12px;
         padding: 20px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #555;
         transition: all 0.2s ease;
     }
 
     .calendar-action:hover {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 16px rgba(255,215,0,0.2);
         transform: translateY(-1px);
     }
 
     .calendar-queries, .sync-status {
-        background: white;
+        background: #2d2d2d;
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         padding: 24px;
         margin-bottom: 24px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #444;
     }
 
     /* Query Sections - Modern Design */
@@ -1200,24 +1202,24 @@ function copyQuery(button) {
     }
 
     .query-section h3 {
-        color: #202124;
+        color: #ffd700;
         margin-bottom: 20px;
         padding-bottom: 12px;
-        border-bottom: 2px solid #e8eaed;
+        border-bottom: 2px solid #555;
         font-size: 18px;
         font-weight: 500;
     }
 
     .query-item {
         margin-bottom: 24px;
-        background: #f8f9fa;
+        background: #3a3a3a;
         padding: 24px;
         border-radius: 12px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #555;
     }
 
     .query-item h4 {
-        color: #202124;
+        color: #ffffff;
         margin-bottom: 12px;
         font-size: 16px;
         font-weight: 500;
@@ -1225,15 +1227,15 @@ function copyQuery(button) {
 
     .query-code {
         position: relative;
-        background: #202124;
+        background: #1a1a1a;
         border-radius: 8px;
         padding: 20px;
         margin-top: 12px;
-        border: 1px solid #5f6368;
+        border: 1px solid #555;
     }
 
     .query-code code {
-        color: #e8eaed;
+        color: #ffd700;
         font-family: 'Google Sans Mono', 'Courier New', monospace;
         font-size: 13px;
         line-height: 1.5;
@@ -1246,8 +1248,8 @@ function copyQuery(button) {
         position: absolute;
         top: 12px;
         right: 12px;
-        background: #5f6368;
-        color: white;
+        background: #ffd700;
+        color: #1a1a1a;
         border: none;
         padding: 6px 12px;
         border-radius: 6px;
@@ -1257,26 +1259,26 @@ function copyQuery(button) {
     }
 
     .copy-btn:hover {
-        background: #202124;
+        background: #ffed4e;
     }
 
     /* phpMyAdmin Direct Link - Modern Design */
     .phpmyadmin-direct-link {
-        background: #e8f0fe;
+        background: #2d2d2d;
         padding: 24px;
         border-radius: 12px;
         margin-top: 24px;
         text-align: center;
-        border: 1px solid #1a73e8;
+        border: 1px solid #ffd700;
     }
 
     /* Sync Overview - Modern Design */
     .sync-overview {
-        background: #f8f9fa;
+        background: #3a3a3a;
         padding: 24px;
         border-radius: 12px;
         margin-bottom: 24px;
-        border: 1px solid #e8eaed;
+        border: 1px solid #555;
     }
 
     .sync-stat ul {
@@ -1287,8 +1289,8 @@ function copyQuery(button) {
 
     .sync-stat li {
         padding: 12px 0;
-        border-bottom: 1px solid #e8eaed;
-        color: #5f6368;
+        border-bottom: 1px solid #555;
+        color: #cccccc;
         font-size: 14px;
     }
 
@@ -1298,10 +1300,10 @@ function copyQuery(button) {
 
     /* Sync Actions Section - Modern Design */
     .sync-actions-section {
-        background: #fef7e0;
+        background: #3a3a2d;
         padding: 24px;
         border-radius: 12px;
-        border: 1px solid #fbbc04;
+        border: 1px solid #ffd700;
         margin-bottom: 24px;
     }
 
@@ -1314,7 +1316,7 @@ function copyQuery(button) {
 
     /* Sync Success - Modern Design */
     .sync-success {
-        background: #e8f5e8;
+        background: #2d4a2d;
         padding: 24px;
         border-radius: 12px;
         border: 1px solid #34a853;

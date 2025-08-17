@@ -5,19 +5,20 @@
 @section('content')
 <style>
     :root {
-        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --gradient-warning: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        --gradient-danger: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --gradient-primary: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        --gradient-secondary: linear-gradient(135deg, #FFD700 0%, #FFED4E 100%);
+        --gradient-success: linear-gradient(135deg, #34a853 0%, #4ade80 100%);
+        --gradient-warning: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        --gradient-danger: linear-gradient(135deg, #ea4335 0%, #f87171 100%);
         --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.1);
         --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
     .admin-content {
         padding: 2rem;
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: #1a1a1a;
         min-height: 100vh;
+        color: #e0e0e0;
     }
 
     .page-header {
@@ -64,13 +65,14 @@
     }
 
     .stat-card {
-        background: white;
+        background: #2a2a2a;
         padding: 1.5rem;
         border-radius: 15px;
         box-shadow: var(--shadow-soft);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        border: 1px solid #3a3a3a;
     }
 
     .stat-card::before {
@@ -98,18 +100,19 @@
     }
 
     .stat-label {
-        color: #666;
+        color: #b0b0b0;
         font-weight: 500;
         margin-top: 0.5rem;
     }
 
     .filters-card {
-        background: white;
+        background: #2a2a2a;
         padding: 2rem;
         border-radius: 20px;
         box-shadow: var(--shadow-soft);
         margin-bottom: 2rem;
         backdrop-filter: blur(10px);
+        border: 1px solid #3a3a3a;
     }
 
     .filters-title {
@@ -136,7 +139,7 @@
 
     .form-label {
         font-weight: 600;
-        color: #333;
+        color: #FFD700;
         margin-bottom: 0.5rem;
         text-transform: uppercase;
         font-size: 0.8rem;
@@ -145,18 +148,19 @@
 
     .form-control {
         padding: 0.75rem 1rem;
-        border: 2px solid #e1e5e9;
+        border: 2px solid #3a3a3a;
         border-radius: 10px;
         font-size: 0.9rem;
         transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.8);
+        background: #2a2a2a;
+        color: #e0e0e0;
     }
 
     .form-control:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        background: white;
+        border-color: #FFD700;
+        box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        background: #2a2a2a;
     }
 
     .filter-actions {
@@ -187,9 +191,9 @@
     }
 
     .btn-secondary {
-        background: #f8f9fa;
-        color: #666;
-        border: 2px solid #e1e5e9;
+        background: #3a3a3a;
+        color: #e0e0e0;
+        border: 2px solid #4a4a4a;
     }
 
     .btn:hover {
@@ -198,11 +202,12 @@
     }
 
     .rentals-table-card {
-        background: white;
+        background: #2a2a2a;
         border-radius: 20px;
         box-shadow: var(--shadow-soft);
         overflow: hidden;
         margin-bottom: 2rem;
+        border: 1px solid #3a3a3a;
     }
 
     .table-header {
@@ -215,16 +220,25 @@
     }
 
     .table-title {
-        font-size: 1.3rem;
-        font-weight: 600;
+        font-size: 1.6rem;
+        font-weight: 800;
         margin: 0;
+        color: #1a1a1a;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        letter-spacing: 0.5px;
     }
 
     .records-count {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
+        background: rgba(0, 0, 0, 0.08);
+        backdrop-filter: blur(10px);
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        color: black;
     }
 
     .table-responsive {
@@ -237,8 +251,8 @@
     }
 
     .table thead th {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        color: #333;
+        background: #3a3a3a;
+        color: #FFD700;
         font-weight: 600;
         padding: 1rem;
         border: none;
@@ -252,8 +266,9 @@
 
     .table tbody td {
         padding: 1rem;
-        border-bottom: 1px solid #f1f3f4;
+        border-bottom: 1px solid #3a3a3a;
         vertical-align: middle;
+        color: #e0e0e0;
     }
 
     .table tbody tr {
@@ -261,9 +276,9 @@
     }
 
     .table tbody tr:hover {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+        background: #333333;
         transform: scale(1.01);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(255,215,0,0.1);
     }
 
     .status-badge {
@@ -324,12 +339,12 @@
 
     .user-name {
         font-weight: 600;
-        color: #333;
+        color: #FFD700;
         font-size: 0.9rem;
     }
 
     .user-email {
-        color: #666;
+        color: #b0b0b0;
         font-size: 0.8rem;
     }
 
@@ -341,11 +356,11 @@
 
     .instrument-name {
         font-weight: 600;
-        color: #333;
+        color: #FFD700;
     }
 
     .instrument-type {
-        color: #666;
+        color: #b0b0b0;
         font-size: 0.85rem;
         text-transform: capitalize;
     }
@@ -358,12 +373,12 @@
     }
 
     .date-range {
-        color: #333;
+        color: #e0e0e0;
         font-weight: 500;
     }
 
     .duration {
-        color: #666;
+        color: #b0b0b0;
     }
 
     .amount {
@@ -379,14 +394,14 @@
         display: flex;
         justify-content: center;
         padding: 2rem;
-        background: white;
+        background: #2a2a2a;
         border-radius: 0 0 20px 20px;
     }
 
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        color: #666;
+        color: #b0b0b0;
     }
 
     .empty-state-icon {
@@ -555,7 +570,7 @@
     <!-- Rentals Table -->
     <div class="rentals-table-card">
         <div class="table-header">
-            <h3 class="table-title">Instrument Rental Records</h3>
+            <h3 class="table-title">🎸 Instrument Rental Records</h3>
             <div class="records-count">{{ $instrumentRentals->total() }} records found</div>
         </div>
 

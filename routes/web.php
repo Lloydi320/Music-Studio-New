@@ -99,6 +99,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::delete('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'deleteBooking'])->name('admin.booking.delete');
     Route::patch('/bookings/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveBooking'])->name('admin.booking.approve');
     Route::get('/activity-logs', [App\Http\Controllers\AdminController::class, 'activityLogs'])->name('admin.activity-logs');
+    Route::delete('/activity-logs/clear', [App\Http\Controllers\AdminController::class, 'clearActivityLogs'])->name('admin.activity-logs.clear');
     Route::get('/instrument-bookings', [App\Http\Controllers\AdminController::class, 'instrumentBookings'])->name('admin.instrument-bookings');
     Route::get('/music-lesson-bookings', [App\Http\Controllers\AdminController::class, 'musicLessonBookings'])->name('admin.music-lesson-bookings');
 Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');

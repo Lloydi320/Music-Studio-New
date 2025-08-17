@@ -1272,4 +1272,36 @@ class AdminController extends Controller
 
         return view('admin.music-lesson-bookings', compact('musicLessonBookings', 'totalLessons'));
     }
+
+    /**
+     * Clear all activity logs
+     */
+    public function clearActivityLogs()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            // Get count before deletion for logging
+            $deletedCount = \App\Models\ActivityLog::count();
+            
+            // Clear all activity logs
+            \App\Models\ActivityLog::truncate();
+            
+            // Log this action (will create a new entry after clearing)
+            \App\Models\ActivityLog::logAdmin(
+                "Admin cleared all activity logs ({$deletedCount} entries deleted)",
+                \App\Models\ActivityLog::ACTION_SYSTEM_CHANGE,
+                \App\Models\ActivityLog::SEVERITY_HIGH
+            );
+            
+            return redirect()->route('admin.activity-logs')->with('success', "Successfully cleared {$deletedCount} activity log entries.");
+        } catch (\Exception $e) {
+            return redirect()->route('admin.activity-logs')->with('error', 'Failed to clear activity logs: ' . $e->getMessage());
+        }
+    }
 }

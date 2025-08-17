@@ -323,12 +323,36 @@
 </div>
 
 <style>
+/* Global Font and Text Styling */
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Improved Text Visibility */
+body, .admin-content {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    color: #ffd700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+p, span, div {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #e0e0e0;
+}
+
 /* Google Calendar UI Styles */
 .admin-content {
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
     padding: 24px;
-    background: #f8f9fa;
+    background: #1a1a1a;
     min-height: 100vh;
 }
 
@@ -339,9 +363,10 @@
     align-items: center;
     margin-bottom: 32px;
     padding: 24px;
-    background: white;
+    background: #2d2d2d;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(255,215,0,0.1);
+    border: 1px solid #444;
 }
 
 .header-content {
@@ -356,16 +381,20 @@
 }
 
 .header-text h1 {
-    font-size: 24px;
-    font-weight: 500;
-    color: #202124;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffd700;
     margin: 0 0 4px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
 }
 
 .header-text p {
-    font-size: 14px;
-    color: #5f6368;
+    font-size: 16px;
+    color: #d0d0d0;
     margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
 }
 
 .header-actions {
@@ -374,30 +403,34 @@
 }
 
 .toggle-theme-btn, .open-calendar-btn {
-    padding: 8px 16px;
-    border: 1px solid #dadce0;
+    padding: 10px 18px;
+    border: 1px solid #555;
     border-radius: 6px;
-    background: white;
-    color: #1a73e8;
+    background: #3a3a3a;
+    color: #ffd700;
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     cursor: pointer;
     transition: all 0.2s;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .open-calendar-btn {
-    background: #1a73e8;
-    color: white;
-    border-color: #1a73e8;
+    background: #ffd700;
+    color: #1a1a1a;
+    border-color: #ffd700;
 }
 
 .toggle-theme-btn:hover {
-    background: #f8f9fa;
+    background: #4a4a4a;
+    border-color: #ffd700;
 }
 
 .open-calendar-btn:hover {
-    background: #1557b0;
+    background: #ffed4e;
+    transform: translateY(-1px);
 }
 
 /* Connection Card Styles */
@@ -406,11 +439,12 @@
 }
 
 .connection-card {
-    background: white;
+    background: #2d2d2d;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(255,215,0,0.1);
     padding: 24px;
     margin-bottom: 24px;
+    border: 1px solid #444;
 }
 
 .connection-status {
@@ -438,21 +472,22 @@
 .connection-status h2 {
     font-size: 20px;
     font-weight: 500;
-    color: #202124;
+    color: #ffd700;
     margin: 0;
 }
 
 .connection-status p {
-    color: #5f6368;
+    color: #b0b0b0;
     font-size: 14px;
     margin: 4px 0 0 0;
 }
 
 .calendar-details {
-    background: #f8f9fa;
+    background: #3a3a3a;
     border-radius: 8px;
     padding: 16px;
     margin-bottom: 20px;
+    border: 1px solid #555;
 }
 
 .detail-item {
@@ -468,21 +503,22 @@
 
 .detail-label {
     font-weight: 500;
-    color: #5f6368;
+    color: #b0b0b0;
     min-width: 80px;
 }
 
 .calendar-id {
-    background: #e8f0fe;
-    color: #1a73e8;
+    background: #4a4a4a;
+    color: #ffd700;
     padding: 4px 8px;
     border-radius: 4px;
     font-family: monospace;
     font-size: 12px;
+    border: 1px solid #666;
 }
 
 .sync-time {
-    color: #34a853;
+    color: #4ade80;
     font-weight: 500;
 }
 
@@ -495,7 +531,7 @@
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
-    color: #5f6368;
+    color: #b0b0b0;
 }
 
 .benefit-icon {
@@ -509,11 +545,12 @@
 
 .connect-btn {
     background: #1a73e8;
-    color: white;
+    color: #ffffff;
     padding: 12px 24px;
     border-radius: 6px;
     text-decoration: none;
-    font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
     transition: background 0.2s;
 }
 
@@ -523,11 +560,12 @@
 
 .disconnect-btn {
     background: #ea4335;
-    color: white;
+    color: #ffffff;
     padding: 8px 16px;
     border: none;
     border-radius: 6px;
-    font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -601,13 +639,13 @@
     transition: background 0.3s;
 }
 
-.btn-primary { background: #4285f4; color: white; }
+.btn-primary { background: #4285f4; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; }
 .btn-primary:hover { background: #3367d6; }
-.btn-success { background: #27ae60; color: white; }
+.btn-success { background: #27ae60; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; }
 .btn-success:hover { background: #229954; }
-.btn-danger { background: #e74c3c; color: white; }
+.btn-danger { background: #e74c3c; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; }
 .btn-danger:hover { background: #c0392b; }
-.btn-secondary { background: #95a5a6; color: white; }
+.btn-secondary { background: #95a5a6; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; }
 .btn-secondary:hover { background: #7f8c8d; }
 
 /* Actions Grid */
@@ -619,9 +657,10 @@
 }
 
 .action-card {
-    background: white;
+    background: #2d3748;
+    border: 1px solid #4a5568;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     padding: 24px;
 }
 
@@ -648,16 +687,21 @@
 }
 
 .card-content h3 {
-    font-size: 18px;
-    font-weight: 500;
-    color: #202124;
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffd700;
     margin: 0 0 8px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .card-content p {
-    color: #5f6368;
-    font-size: 14px;
+    color: #d0d0d0;
+    font-size: 15px;
     margin: 0 0 12px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
 }
 
 .sync-status {
@@ -665,24 +709,28 @@
 }
 
 .status-badge {
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
 .status-badge.synced {
-    background: #e8f5e8;
-    color: #137333;
+    background: #27ae60;
+    color: #ffffff;
+    border: 1px solid #2ecc71;
 }
 
 .sync-btn {
     background: #1a73e8;
-    color: white;
+    color: #ffffff;
     padding: 8px 16px;
     border: none;
     border-radius: 6px;
-    font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -692,8 +740,8 @@
 }
 
 .sync-btn:disabled {
-    background: #dadce0;
-    color: #5f6368;
+    background: #555;
+    color: #888;
     cursor: not-allowed;
 }
 
@@ -705,18 +753,21 @@
 }
 
 .card-header h3 {
-    font-size: 18px;
-    font-weight: 500;
-    color: #202124;
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffd700;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     margin: 0;
 }
 
 .shortcuts-label {
     font-size: 12px;
-    color: #5f6368;
-    background: #f8f9fa;
+    color: #b0b0b0;
+    background: #3a3a3a;
     padding: 4px 8px;
     border-radius: 12px;
+    border: 1px solid #555;
 }
 
 .quick-actions-list {
@@ -732,13 +783,16 @@
     padding: 12px;
     border-radius: 8px;
     text-decoration: none;
-    color: #5f6368;
-    transition: background 0.2s;
+    color: #b0b0b0;
+    transition: all 0.2s;
+    border: 1px solid transparent;
 }
 
 .quick-action:hover {
-    background: #f8f9fa;
-    color: #202124;
+    background: #4a4a4a;
+    color: #ffd700;
+    border-color: #ffd700;
+    transform: translateY(-1px);
 }
 
 .action-icon {
@@ -747,11 +801,12 @@
 
 /* Calendar View */
 .calendar-view, .instructions {
-    background: white;
+    background: #2d2d2d;
     border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(255,215,0,0.1);
     padding: 24px;
     margin-bottom: 24px;
+    border: 1px solid #444;
 }
 
 .overview-header {
@@ -760,13 +815,13 @@
     align-items: flex-start;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #555;
 }
 
 .overview-header h2 {
     font-size: 20px;
     font-weight: 500;
-    color: #202124;
+    color: #ffd700;
     margin: 0;
 }
 
@@ -777,7 +832,7 @@
 .overview-subtitle {
     display: block;
     font-size: 14px;
-    color: #5f6368;
+    color: #b0b0b0;
     margin-bottom: 8px;
 }
 
@@ -789,12 +844,12 @@
 
 .view-label {
     font-size: 14px;
-    color: #5f6368;
+    color: #b0b0b0;
 }
 
 .view-toggle {
     display: flex;
-    border: 1px solid #dadce0;
+    border: 1px solid #555;
     border-radius: 6px;
     overflow: hidden;
 }
@@ -802,20 +857,21 @@
 .view-btn {
     padding: 6px 12px;
     border: none;
-    background: white;
-    color: #5f6368;
+    background: #3a3a3a;
+    color: #b0b0b0;
     font-size: 12px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .view-btn.active {
-    background: #1a73e8;
-    color: white;
+    background: #ffd700;
+    color: #1a1a1a;
 }
 
 .view-btn:hover:not(.active) {
-    background: #f8f9fa;
+    background: #4a4a4a;
+    color: #ffd700;
 }
 
 .sync-card {
@@ -823,14 +879,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px;
-    background: #f8f9fa;
+    background: #3a3a3a;
     border-radius: 8px;
     gap: 20px;
+    border: 1px solid #555;
 }
 
 .sync-stats {
     margin-top: 10px;
-    color: #666;
+    color: #b0b0b0;
 }
 
 .sync-stats strong {
@@ -854,8 +911,9 @@
     align-items: center;
     gap: 15px;
     padding: 15px;
-    background: #f8f9fa;
+    background: #3a3a3a;
     border-radius: 8px;
+    border: 1px solid #555;
 }
 
 .activity-icon {
@@ -871,14 +929,17 @@
 }
 
 .activity-details {
-    color: #666;
-    font-size: 14px;
+    color: #d0d0d0;
+    font-size: 15px;
     margin-bottom: 3px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
 }
 
 .activity-time {
-    color: #999;
-    font-size: 12px;
+    color: #b0b0b0;
+    font-size: 13px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .status-badge {
@@ -889,9 +950,9 @@
     text-transform: uppercase;
 }
 
-.status-pending { background: #fff3cd; color: #856404; }
-.status-confirmed { background: #d4edda; color: #155724; }
-.status-cancelled { background: #f8d7da; color: #721c24; }
+.status-pending { background: #4a4a00; color: #ffff99; }
+.status-confirmed { background: #004a00; color: #99ff99; }
+.status-cancelled { background: #4a0000; color: #ff9999; }
 
 .instruction-steps {
     display: flex;
@@ -906,32 +967,43 @@
 }
 
 .step-number {
-    background: #3498db;
-    color: white;
+    background: #ffd700;
+    color: #1a1a1a;
     width: 40px;
     height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    font-weight: 700;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(255,215,0,0.3);
 }
 
 .step-content h3 {
     margin: 0 0 8px 0;
-    color: #333;
+    color: #ffd700;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .step-content p {
-    color: #666;
+    color: #d0d0d0;
     margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
 }
 
 .no-activity {
     text-align: center;
     padding: 40px;
-    color: #666;
+    color: #d0d0d0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
 }
 
 /* New Calendar View Styles */
@@ -947,7 +1019,7 @@
 .calendar-section h3 {
     font-size: 16px;
     font-weight: 500;
-    color: #202124;
+    color: #ffd700;
     margin: 0 0 16px 0;
 }
 
@@ -958,8 +1030,8 @@
 }
 
 .event-card {
-    background: white;
-    border: 1px solid #e0e0e0;
+    background: #2d2d2d;
+    border: 1px solid #555;
     border-radius: 8px;
     padding: 16px;
     transition: all 0.2s;
@@ -967,16 +1039,17 @@
 }
 
 .event-card:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-color: #dadce0;
+    box-shadow: 0 4px 16px rgba(255,215,0,0.2);
+    border-color: #ffd700;
+    transform: translateY(-1px);
 }
 
 .event-card.studio-event {
-    border-left: 4px solid #ea4335;
+    border-left: 4px solid #ff6b6b;
 }
 
 .event-card.other-event {
-    border-left: 4px solid #1a73e8;
+    border-left: 4px solid #4dabf7;
 }
 
 .event-header {
@@ -993,13 +1066,13 @@
 .event-date {
     font-size: 14px;
     font-weight: 500;
-    color: #202124;
+    color: #ffd700;
     margin-bottom: 2px;
 }
 
 .event-duration {
     font-size: 12px;
-    color: #5f6368;
+    color: #b0b0b0;
 }
 
 .event-type-badge {
@@ -1011,13 +1084,15 @@
 }
 
 .event-type-badge.studio {
-    background: #fce8e6;
-    color: #d93025;
+    background: #4a1a1a;
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
 }
 
 .event-type-badge.other {
-    background: #e8f0fe;
-    color: #1a73e8;
+    background: #1a2a4a;
+    color: #4dabf7;
+    border: 1px solid #4dabf7;
 }
 
 .event-content {
@@ -1027,7 +1102,7 @@
 .event-title {
     font-size: 16px;
     font-weight: 500;
-    color: #202124;
+    color: #ffd700;
     margin: 0 0 8px 0;
 }
 
@@ -1036,7 +1111,7 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #5f6368;
+    color: #b0b0b0;
     margin-bottom: 4px;
 }
 
@@ -1046,7 +1121,7 @@
 
 .event-meta {
     font-size: 12px;
-    color: #5f6368;
+    color: #b0b0b0;
 }
 
 .event-actions {
@@ -1055,17 +1130,20 @@
 }
 
 .event-view-btn {
-    color: #1a73e8;
+    color: #ffd700;
     text-decoration: none;
     font-size: 12px;
     font-weight: 500;
     padding: 4px 8px;
     border-radius: 4px;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    border: 1px solid transparent;
 }
 
 .event-view-btn:hover {
-    background: #f8f9fa;
+    background: #4a4a4a;
+    border-color: #ffd700;
+    transform: translateY(-1px);
 }
 
 .event-time {
@@ -1075,12 +1153,12 @@
 
 .event-date {
     font-weight: bold;
-    color: #333;
+    color: #ffd700;
     font-size: 14px;
 }
 
 .event-hour {
-    color: #666;
+    color: #b0b0b0;
     font-size: 12px;
 }
 
@@ -1090,13 +1168,13 @@
 
 .event-title {
     font-weight: bold;
-    color: #333;
+    color: #ffd700;
     margin-bottom: 5px;
 }
 
 .event-duration, .event-attendees, .event-location {
     font-size: 12px;
-    color: #666;
+    color: #b0b0b0;
     margin-bottom: 3px;
 }
 
@@ -1112,13 +1190,15 @@
 }
 
 .type-badge.studio {
-    background: #fee;
-    color: #e74c3c;
+    background: #4a1a1a;
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
 }
 
 .type-badge.other {
-    background: #eff8ff;
-    color: #3498db;
+    background: #1a2a4a;
+    color: #4dabf7;
+    border: 1px solid #4dabf7;
 }
 
 .sync-comparison {
@@ -1133,15 +1213,16 @@
 }
 
 .comparison-section {
-    background: #f8f9fa;
+    background: #2d2d2d;
     border-radius: 8px;
     padding: 20px;
+    border: 1px solid #555;
 }
 
 .comparison-section h4 {
     margin: 0 0 15px 0;
-    color: #333;
-    border-bottom: 2px solid #ddd;
+    color: #ffd700;
+    border-bottom: 2px solid #555;
     padding-bottom: 8px;
 }
 
@@ -1152,37 +1233,39 @@
 }
 
 .booking-item {
-    background: white;
+    background: #3a3a3a;
     border-radius: 6px;
     padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-left: 3px solid #ddd;
+    border-left: 3px solid #666;
+    border: 1px solid #555;
 }
 
 .booking-item.synced {
-    border-left-color: #27ae60;
+    border-left-color: #4ade80;
 }
 
 .booking-item.unsynced {
-    border-left-color: #f39c12;
+    border-left-color: #fbbf24;
 }
 
 .booking-title {
     font-weight: bold;
     margin-bottom: 3px;
+    color: #ffd700;
 }
 
 .booking-ref {
     font-size: 12px;
-    color: #666;
+    color: #b0b0b0;
     margin-left: 8px;
 }
 
 .booking-time {
     font-size: 12px;
-    color: #666;
+    color: #b0b0b0;
 }
 
 .sync-badge {
@@ -1193,13 +1276,15 @@
 }
 
 .sync-badge.synced {
-    background: #d4edda;
-    color: #155724;
+    background: #1a4a1a;
+    color: #4ade80;
+    border: 1px solid #4ade80;
 }
 
 .sync-badge.unsynced {
-    background: #fff3cd;
-    color: #856404;
+    background: #4a3a00;
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
 }
 
 .calendar-stats {
@@ -1210,22 +1295,23 @@
 
 .stat-item {
     text-align: center;
-    background: white;
+    background: #3a3a3a;
     padding: 12px;
     border-radius: 6px;
     flex: 1;
+    border: 1px solid #555;
 }
 
 .stat-number {
     display: block;
     font-size: 24px;
     font-weight: bold;
-    color: #3498db;
+    color: #ffd700;
 }
 
 .stat-label {
     font-size: 12px;
-    color: #666;
+    color: #b0b0b0;
 }
 
 .calendar-actions {
@@ -1233,18 +1319,20 @@
 }
 
 .btn-info {
-    background: #17a2b8;
-    color: white;
+    background: #ffd700;
+    color: #1a1a1a;
+    border: 1px solid #ffd700;
 }
 
 .btn-info:hover {
-    background: #138496;
+    background: #ffed4e;
+    transform: translateY(-1px);
 }
 
 .no-bookings, .no-events {
     text-align: center;
     padding: 20px;
-    color: #666;
+    color: #b0b0b0;
     font-style: italic;
 }
 

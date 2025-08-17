@@ -4,8 +4,10 @@ html, body {
 }
 .booking-navbar {
   width: 100%;
-  background: #fff;
-  border-bottom: 1px solid #eee;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -14,37 +16,64 @@ html, body {
   box-sizing: border-box;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 .navbar-left {
   display: flex;
   align-items: center;
+  transition: transform 0.3s ease;
+}
+.navbar-left:hover {
+  transform: scale(1.02);
 }
 .navbar-logo {
-  height: 38px;
-  width: 38px;
+  height: 42px;
+  width: 42px;
   margin-right: 12px;
-  border-radius: 6px;
+  border-radius: 8px;
+  filter: drop-shadow(0 2px 8px rgba(219, 180, 17, 0.3));
+  transition: filter 0.3s ease;
+}
+.navbar-logo:hover {
+  filter: drop-shadow(0 4px 12px rgba(219, 180, 17, 0.5));
 }
 .navbar-title {
   font-size: 20px;
   font-weight: 700;
   color: #222;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #222 0%, #dbb411 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 .navbar-links {
   display: flex;
-  gap: 18px;
+  gap: 24px;
+  align-items: center;
 }
 .navbar-link {
-  color: #333;
+  color: rgba(51, 51, 51, 0.9);
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
-  transition: color 0.2s;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
+
 .navbar-link:hover {
   color: #dbb411;
+  background: rgba(219, 180, 17, 0.1);
+  backdrop-filter: blur(10px);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(219, 180, 17, 0.2);
 }
+
 .booking-cancel-top {
   width: 100%;
   display: flex;

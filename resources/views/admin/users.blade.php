@@ -51,18 +51,22 @@
         <div class="card-header">
             <div class="card-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="8.5" cy="7" r="4" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <line x1="20" y1="8" x2="20" y2="14" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <line x1="17" y1="11" x2="23" y2="11" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="8.5" cy="7" r="4" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="20" y1="8" x2="20" y2="14" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="17" y1="11" x2="23" y2="11" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div class="card-title">
                 <h2>Grant Admin Access</h2>
                 <p>Add a new administrator to the system</p>
             </div>
+            <button class="toggle-btn" onclick="toggleSection('grant-admin')">
+                <span id="grant-admin-icon">−</span>
+            </button>
         </div>
         
+        <div id="grant-admin-content">
         <form action="{{ route('admin.makeAdmin') }}" method="POST" class="modern-form">
             @csrf
             <div class="form-group">
@@ -82,6 +86,7 @@
                 Grant Admin Access
             </button>
         </form>
+        </div>
     </div>
     @endif
 
@@ -90,18 +95,22 @@
         <div class="card-header">
             <div class="card-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="9" cy="7" r="4" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M23 21V19C23 18.1645 22.7155 17.3541 22.2094 16.6977C21.7033 16.0414 20.9983 15.5759 20.2 15.3726" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="9" cy="7" r="4" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M23 21V19C23 18.1645 22.7155 17.3541 22.2094 16.6977C21.7033 16.0414 20.9983 15.5759 20.2 15.3726" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div class="card-title">
                 <h2>Current Administrators</h2>
                 <p>List of all current administrators</p>
             </div>
+            <button class="toggle-btn" onclick="toggleSection('current-admins')">
+                <span id="current-admins-icon">−</span>
+            </button>
         </div>
         
+        <div id="current-admins-content">
         <div class="table-container">
             <table class="modern-table">
                 <thead>
@@ -158,6 +167,7 @@
                 </tbody>
             </table>
         </div>
+        </div>
     </div>
 
     <!-- User Profile Cards -->
@@ -165,16 +175,20 @@
         <div class="card-header">
             <div class="card-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="12" cy="7" r="4" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div class="card-title">
                 <h2>User Profiles</h2>
                 <p>Detailed information about system users</p>
             </div>
+            <button class="toggle-btn" onclick="toggleSection('user-profiles')">
+                <span id="user-profiles-icon">−</span>
+            </button>
         </div>
         
+        <div id="user-profiles-content">
         <div class="user-profiles-grid">
             @php
                 $allUsers = \App\Models\User::orderBy('name')->take(6)->get();
@@ -264,6 +278,7 @@
             </div>
             @endforeach
         </div>
+        </div>
     </div>
 
     <!-- Regular Users with Admin Access -->
@@ -279,8 +294,12 @@
                 <h2>Users with Admin Access</h2>
                 <p>Regular users who have been granted admin privileges</p>
             </div>
+            <button class="toggle-btn" onclick="toggleSection('admin-users')">
+                <span id="admin-users-icon">−</span>
+            </button>
         </div>
         
+        <div id="admin-users-content">
         <div class="table-container">
             <table class="modern-table">
                 <thead>
@@ -330,6 +349,7 @@
                 </tbody>
             </table>
         </div>
+        </div>
     </div>
 
     @if(!$isSuperAdmin)
@@ -337,9 +357,9 @@
         <div class="alert-info">
             <div class="alert-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="#4285f4" stroke-width="2"/>
-                    <path d="M12 16V12" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 8H12.01" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="10" stroke="#FFD700" stroke-width="2"/>
+                    <path d="M12 16V12" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 8H12.01" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
             <div class="alert-content">
@@ -352,13 +372,14 @@
 </div>
 
 <style>
-/* Modern Google Calendar-inspired Admin Users Styling */
+/* Modern Dark Theme Admin Users Styling */
 .admin-content {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
     padding: 24px;
-    background: #f8f9fa;
+    background: #1a1a1a;
     min-height: 100vh;
+    color: #e0e0e0;
 }
 
 /* Header Styling */
@@ -368,10 +389,10 @@
     align-items: center;
     margin-bottom: 32px;
     padding: 24px;
-    background: white;
+    background: #2a2a2a;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 1px solid #e8eaed;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border: 1px solid #3a3a3a;
 }
 
 .header-content {
@@ -383,7 +404,7 @@
 .header-icon {
     width: 48px;
     height: 48px;
-    background: #f1f3f4;
+    background: #3a3a3a;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -394,12 +415,12 @@
     margin: 0;
     font-size: 28px;
     font-weight: 500;
-    color: #202124;
+    color: #FFD700;
 }
 
 .header-text p {
     margin: 4px 0 0 0;
-    color: #5f6368;
+    color: #b0b0b0;
     font-size: 14px;
 }
 
@@ -412,19 +433,19 @@
     width: 40px;
     height: 40px;
     border: none;
-    background: #f1f3f4;
+    background: #3a3a3a;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    color: #5f6368;
+    color: #FFD700;
 }
 
 .theme-toggle:hover {
-    background: #e8eaed;
-    color: #202124;
+    background: #FFD700;
+    color: #1a1a1a;
 }
 
 /* User Profile Cards Styles */
@@ -436,21 +457,22 @@
 }
 
 .user-profile-card {
-    background: white;
+    background: #2a2a2a;
     border-radius: 12px;
-    border: 1px solid #e8eaed;
+    border: 1px solid #3a3a3a;
     overflow: hidden;
     transition: all 0.3s ease;
 }
 
 .user-profile-card:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
     transform: translateY(-2px);
+    border-color: #FFD700;
 }
 
 .profile-header {
     padding: 24px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e8eaed 100%);
+    background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -464,8 +486,8 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #4285f4;
-    color: white;
+    background: #FFD700;
+    color: #1a1a1a;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -487,20 +509,20 @@
     margin: 0 0 4px 0;
     font-size: 20px;
     font-weight: 600;
-    color: #202124;
+    color: #e0e0e0;
 }
 
 .user-role {
     margin: 0 0 4px 0;
     font-size: 14px;
     font-weight: 500;
-    color: #4285f4;
+    color: #FFD700;
 }
 
 .user-location {
     margin: 0;
     font-size: 14px;
-    color: #5f6368;
+    color: #b0b0b0;
 }
 
 .profile-details {
@@ -519,7 +541,7 @@
     margin: 0 0 16px 0;
     font-size: 16px;
     font-weight: 600;
-    color: #202124;
+    color: #FFD700;
 }
 
 .detail-grid {
@@ -537,14 +559,14 @@
 .detail-label {
     font-size: 12px;
     font-weight: 500;
-    color: #5f6368;
+    color: #b0b0b0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .detail-value {
     font-size: 14px;
-    color: #202124;
+    color: #e0e0e0;
     font-weight: 500;
 }
 
@@ -554,15 +576,15 @@
 
 .profile-actions {
     padding: 16px 24px;
-    background: #f8f9fa;
-    border-top: 1px solid #e8eaed;
+    background: #3a3a3a;
+    border-top: 1px solid #4a4a4a;
     display: flex;
     justify-content: flex-end;
 }
 
 .edit-btn {
-    background: #4285f4;
-    color: white;
+    background: #FFD700;
+    color: #1a1a1a;
     border: none;
     border-radius: 8px;
     padding: 8px 16px;
@@ -576,17 +598,17 @@
 }
 
 .edit-btn:hover {
-    background: #3367d6;
+    background: #FFA500;
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 /* Modern Card Styling */
 .modern-card {
-    background: white;
+    background: #2a2a2a;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 1px solid #e8eaed;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border: 1px solid #3a3a3a;
     margin-bottom: 24px;
     overflow: hidden;
 }
@@ -596,13 +618,13 @@
     align-items: center;
     gap: 16px;
     padding: 24px;
-    border-bottom: 1px solid #e8eaed;
+    border-bottom: 1px solid #3a3a3a;
 }
 
 .card-icon {
     width: 40px;
     height: 40px;
-    background: #f1f3f4;
+    background: #3a3a3a;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -613,12 +635,12 @@
     margin: 0;
     font-size: 20px;
     font-weight: 500;
-    color: #202124;
+    color: #FFD700;
 }
 
 .card-title p {
     margin: 4px 0 0 0;
-    color: #5f6368;
+    color: #b0b0b0;
     font-size: 14px;
 }
 
@@ -635,30 +657,31 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #202124;
+    color: #FFD700;
     font-size: 14px;
 }
 
 .form-input {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #dadce0;
+    border: 1px solid #3a3a3a;
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.2s;
-    background: white;
+    background: #1a1a1a;
+    color: #e0e0e0;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: #4285f4;
-    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+    border-color: #FFD700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
 }
 
 .form-help {
     margin-top: 6px;
     font-size: 12px;
-    color: #5f6368;
+    color: #b0b0b0;
 }
 
 .btn-primary {
@@ -666,8 +689,8 @@
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: #4285f4;
-    color: white;
+    background: #FFD700;
+    color: #1a1a1a;
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -677,8 +700,8 @@
 }
 
 .btn-primary:hover {
-    background: #3367d6;
-    box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+    background: #FFA500;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 /* Table Styling */
@@ -695,23 +718,23 @@
 .modern-table td {
     padding: 16px;
     text-align: left;
-    border-bottom: 1px solid #e8eaed;
+    border-bottom: 1px solid #3a3a3a;
 }
 
 .modern-table th {
-    background: #f8f9fa;
+    background: #3a3a3a;
     font-weight: 500;
-    color: #202124;
+    color: #FFD700;
     font-size: 14px;
 }
 
 .modern-table tbody tr:hover {
-    background: #f8f9fa;
+    background: #3a3a3a;
 }
 
 .modern-table td {
     font-size: 14px;
-    color: #202124;
+    color: #e0e0e0;
 }
 
 /* Badge Styling */
@@ -781,7 +804,7 @@
 }
 
 .text-muted {
-    color: #5f6368;
+    color: #6b7280;
     font-style: italic;
     font-size: 12px;
 }
@@ -792,11 +815,11 @@
     align-items: center;
     gap: 12px;
     padding: 16px;
-    background: #e6f4ea;
+    background: #1a3a1a;
     border: 1px solid #34a853;
     border-radius: 8px;
     margin-bottom: 24px;
-    color: #137333;
+    color: #4ade80;
 }
 
 .alert-error {
@@ -804,11 +827,11 @@
     align-items: center;
     gap: 12px;
     padding: 16px;
-    background: #fce8e6;
+    background: #3a1a1a;
     border: 1px solid #ea4335;
     border-radius: 8px;
     margin-bottom: 24px;
-    color: #d93025;
+    color: #f87171;
 }
 
 .alert-info {
@@ -816,10 +839,10 @@
     align-items: flex-start;
     gap: 12px;
     padding: 20px;
-    background: #e8f0fe;
-    border: 1px solid #4285f4;
+    background: #1a2a3a;
+    border: 1px solid #FFD700;
     border-radius: 8px;
-    color: #1a73e8;
+    color: #FFD700;
 }
 
 .alert-icon {
@@ -855,12 +878,13 @@
 }
 
 .modal-content {
-    background: white;
+    background: #2a2a2a;
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     animation: slideIn 0.3s ease;
+    border: 1px solid #3a3a3a;
 }
 
 .modal-header {
@@ -874,14 +898,14 @@
     margin: 0;
     font-size: 20px;
     font-weight: 600;
-    color: #202124;
+    color: #FFD700;
 }
 
 .close-btn {
     background: none;
     border: none;
     font-size: 24px;
-    color: #5f6368;
+    color: #b0b0b0;
     cursor: pointer;
     padding: 0;
     width: 32px;
@@ -894,8 +918,8 @@
 }
 
 .close-btn:hover {
-    background: #f1f3f4;
-    color: #202124;
+    background: #3a3a3a;
+    color: #FFD700;
 }
 
 .modal-body {
@@ -904,7 +928,7 @@
 
 .modal-body p {
     margin: 0 0 16px 0;
-    color: #5f6368;
+    color: #b0b0b0;
     line-height: 1.5;
 }
 
@@ -920,9 +944,9 @@
 }
 
 .btn-secondary {
-    background: #f8f9fa;
-    color: #5f6368;
-    border: 1px solid #dadce0;
+    background: #3a3a3a;
+    color: #e0e0e0;
+    border: 1px solid #4a4a4a;
     border-radius: 8px;
     padding: 10px 20px;
     font-size: 14px;
@@ -932,8 +956,9 @@
 }
 
 .btn-secondary:hover {
-    background: #f1f3f4;
-    border-color: #c4c7c5;
+    background: #4a4a4a;
+    border-color: #FFD700;
+    color: #FFD700;
 }
 
 @keyframes fadeIn {
@@ -997,6 +1022,42 @@
         margin: 20px;
     }
 }
+
+/* Toggle Button Styles */
+.toggle-btn {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    color: #1a1a1a;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.toggle-btn:hover {
+    background: linear-gradient(135deg, #ffed4e, #ffd700);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    transform: translateY(-1px);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    border-bottom: 1px solid #333;
+}
+
+.section-content {
+    transition: all 0.3s ease;
+}
 </style>
 
 <script>
@@ -1044,6 +1105,19 @@ function saveUser(userId) {
     // Implement save functionality
     alert(`Saving changes for user ${userId}`);
     closeModal();
+}
+
+function toggleSection(sectionId) {
+    const content = document.getElementById(sectionId + '-content');
+    const icon = document.getElementById(sectionId + '-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.textContent = '−';
+    } else {
+        content.style.display = 'none';
+        icon.textContent = '+';
+    }
 }
 
 // Load saved theme

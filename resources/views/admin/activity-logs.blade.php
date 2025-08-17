@@ -9,17 +9,17 @@
         <div class="header-content">
             <div class="header-icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 8V12L15 15" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="12" cy="12" r="9" stroke="#4285f4" stroke-width="2"/>
+                    <path d="M12 8V12L15 15" stroke="#ffd700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="9" stroke="#ffd700" stroke-width="2"/>
                 </svg>
             </div>
             <div class="header-text">
-                <h1>Activity Logs</h1>
-                <p>Monitor system activities and user actions</p>
+                <h1 style="color: #ffd700;">Activity Logs</h1>
+                <p style="color: #cccccc;">Monitor system activities and user actions</p>
             </div>
         </div>
         <div class="header-actions">
-            <button class="theme-toggle" onclick="toggleTheme()">
+            <button class="theme-toggle" onclick="toggleTheme()" style="background: #333; border: 1px solid #555; color: #ffd700;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.6859L5.5 18.5M17.6859 17.6859L18.5 18.5M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -91,6 +91,15 @@
             <div class="card-actions">
                 <span class="record-count">{{ number_format($totalRecords) }} records found</span>
                 <button class="btn btn-outline" onclick="exportLogs()">📊 Export</button>
+                <button class="btn btn-danger" onclick="clearActivityLogs()" title="Clear all activity logs">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Clear Logs
+                </button>
             </div>
         </div>
         <div class="card-content">
@@ -216,17 +225,17 @@
 }
 
 .admin-content {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #1a1a1a;
     min-height: 100vh;
     padding: 2rem;
+    color: #ffffff;
 }
 
 .modern-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #2d2d2d;
+    border: 1px solid #444;
     border-radius: 1rem;
-    box-shadow: var(--shadow-xl);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     margin-bottom: 2rem;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -234,16 +243,17 @@
 
 .modern-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(255,215,0,0.2);
 }
 
 .card-header {
-    background: var(--gradient-primary);
-    color: white;
+    background: #333333;
+    color: #ffd700;
     padding: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #444;
 }
 
 .card-header h3 {
@@ -276,7 +286,7 @@
 .filter-group label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: #ffd700;
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -285,10 +295,10 @@
 .form-select,
 .form-input {
     padding: 0.75rem 1rem;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #555;
     border-radius: 0.75rem;
-    background: white;
-    color: #1f2937;
+    background: #1a1a1a;
+    color: #ffffff;
     font-size: 0.875rem;
     transition: all 0.3s ease;
     box-shadow: var(--shadow-sm);
@@ -297,8 +307,8 @@
 .form-select:focus,
 .form-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), var(--shadow-md);
+    border-color: #ffd700;
+    box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2), var(--shadow-md);
     transform: translateY(-1px);
 }
 
@@ -342,39 +352,58 @@
 }
 
 .btn-primary {
-    background: var(--gradient-primary);
-    color: white;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #1a1a1a;
     box-shadow: var(--shadow-md);
+    font-weight: 700;
 }
 
 .btn-primary:hover {
+    background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    color: #475569;
-    border: 2px solid #e2e8f0;
+    background: #333333;
+    color: #ffffff;
+    border: 2px solid #555;
     box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover {
-    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    background: #444444;
+    border-color: #ffd700;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
 
 .btn-outline {
     background: transparent;
-    color: #667eea;
-    border: 2px solid #667eea;
+    color: #ffd700;
+    border: 2px solid #ffd700;
     backdrop-filter: blur(10px);
 }
 
 .btn-outline:hover {
-    background: var(--gradient-primary);
+    background: #ffd700;
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
     color: white;
+    border: 2px solid #dc2626;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
@@ -405,28 +434,28 @@
 .modern-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: #1a1a1a;
 }
 
 .modern-table th {
-    background: var(--gradient-secondary);
+    background: #333333;
     padding: 1rem;
     text-align: left;
     font-weight: 700;
-    color: white;
+    color: #ffd700;
     font-size: 0.875rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     z-index: 10;
+    border-bottom: 2px solid #444;
 }
 
 .modern-table td {
     padding: 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
+    border-bottom: 1px solid #444;
+    color: #ffffff;
     font-size: 0.875rem;
     transition: all 0.2s ease;
 }
@@ -436,18 +465,15 @@
 }
 
 .modern-table tbody tr:hover {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: #3a3a3a;
     transform: scale(1.01);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 16px rgba(255,215,0,0.1);
 }
 
 .timestamp {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-size: 0.8rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffd700;
     font-weight: 600;
 }
 
@@ -459,7 +485,7 @@
 
 .user-name {
     font-weight: 600;
-    color: #1e293b;
+    color: #ffffff;
 }
 
 .user-name::before {
@@ -502,8 +528,8 @@
     border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 500;
-    background-color: #f3f4f6;
-    color: #374151;
+    background-color: #444;
+    color: #ffd700;
 }
 
 .severity-badge {
@@ -515,23 +541,28 @@
 }
 
 .severity-badge.low {
-    background-color: #d1fae5;
-    color: #065f46;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .severity-badge.medium {
-    background-color: #fef3c7;
-    color: #92400e;
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
 .severity-badge.high {
-    background-color: #fed7aa;
-    color: #c2410c;
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
 }
 
 .severity-badge.critical {
-    background-color: #fecaca;
-    color: #dc2626;
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    animation: glow 2s ease-in-out infinite;
 }
 
 .log-row.critical {
@@ -558,7 +589,7 @@
 
 .resource-type {
     font-size: 0.75rem;
-    color: #6b7280;
+    color: #cccccc;
     text-transform: uppercase;
 }
 
@@ -585,15 +616,15 @@
 }
 
 .btn-details:hover {
-    color: #374151;
+    color: #ffd700;
 }
 
 .details-panel {
     margin-top: 8px;
     padding: 12px;
-    background-color: #f9fafb;
+    background-color: #333333;
     border-radius: 6px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #555;
 }
 
 .change-info {
@@ -605,23 +636,24 @@
 }
 
 .change-info strong {
-    color: #374151;
+    color: #ffd700;
     font-size: 0.875rem;
 }
 
 .change-info pre {
-    background-color: #ffffff;
-    border: 1px solid #d1d5db;
+    background-color: #1a1a1a;
+    border: 1px solid #555;
     border-radius: 4px;
     padding: 8px;
     margin-top: 4px;
     font-size: 0.75rem;
     overflow-x: auto;
     white-space: pre-wrap;
+    color: #ffffff;
 }
 
 .text-muted {
-    color: #9ca3af;
+    color: #cccccc;
 }
 
 .description {
@@ -640,11 +672,11 @@
 .ip-address {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-size: 0.8rem;
-    color: #64748b;
-    background: #f8fafc;
+    color: #cccccc;
+    background: #333333;
     padding: 0.25rem 0.5rem;
     border-radius: 0.375rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #555;
 }
 
 .ip-address::before {
@@ -655,9 +687,10 @@
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: #2d2d2d;
     border-radius: 1rem;
     margin: 2rem 0;
+    border: 1px solid #444;
 }
 
 .empty-icon {
@@ -671,14 +704,14 @@
 }
 
 .empty-state h3 {
-    color: #1e293b;
+    color: #ffd700;
     margin-bottom: 0.75rem;
     font-size: 1.5rem;
     font-weight: 700;
 }
 
 .empty-state p {
-    color: #64748b;
+    color: #cccccc;
     font-size: 1rem;
     line-height: 1.6;
 }
@@ -690,11 +723,11 @@
 }
 
 .pagination-wrapper .pagination {
-    background: white;
+    background: #2d2d2d;
     border-radius: 1rem;
     padding: 0.5rem;
     box-shadow: var(--shadow-lg);
-    border: 1px solid #e2e8f0;
+    border: 1px solid #555;
 }
 
 .pagination-wrapper .pagination a,
@@ -704,11 +737,18 @@
     border-radius: 0.5rem;
     transition: all 0.3s ease;
     font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.pagination-wrapper .pagination .active span {
+    background: #ffd700;
+    color: #1a1a1a;
 }
 
 .pagination-wrapper .pagination a:hover {
-    background: var(--gradient-primary);
-    color: white;
+    background: #ffd700;
+    color: #1a1a1a;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -725,6 +765,39 @@
     }
 }
 
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
 .modern-card {
     animation: fadeInUp 0.6s ease-out;
 }
@@ -735,6 +808,14 @@
 
 .modern-card:nth-child(3) {
     animation-delay: 0.2s;
+}
+
+.modern-table tbody tr {
+    animation: slideIn 0.3s ease-out;
+}
+
+.btn:focus {
+    animation: glow 0.5s ease-in-out;
 }
 
 /* Responsive Design */
@@ -800,6 +881,33 @@ function exportLogs() {
     window.location.href = '{{ route("admin.activity-logs") }}?' + params.toString();
 }
 
+function clearActivityLogs() {
+    // Show modern confirmation dialog
+    if (confirm('⚠️ Are you sure you want to clear all activity logs?\n\nThis action cannot be undone and will permanently delete all log entries.')) {
+        // Create a form to submit the clear request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("admin.activity-logs.clear") ?? "#" }}';
+        
+        // Add CSRF token
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        form.appendChild(csrfToken);
+        
+        // Add method spoofing for DELETE request
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        form.appendChild(methodField);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
 function toggleDetails(logId) {
     const detailsPanel = document.getElementById('details-' + logId);
     const button = event.target.closest('.btn-details');
@@ -808,10 +916,24 @@ function toggleDetails(logId) {
     if (detailsPanel.style.display === 'none' || detailsPanel.style.display === '') {
         detailsPanel.style.display = 'block';
         icon.style.transform = 'rotate(180deg)';
+        // Add smooth animation
+        detailsPanel.style.animation = 'fadeInUp 0.3s ease-out';
     } else {
         detailsPanel.style.display = 'none';
         icon.style.transform = 'rotate(0deg)';
     }
+}
+
+// Add modern loading states
+function showLoading(button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" opacity="0.25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" opacity="0.75"></path></svg> Loading...';
+    button.disabled = true;
+    
+    return function() {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    };
 }
 </script>
 @endsection

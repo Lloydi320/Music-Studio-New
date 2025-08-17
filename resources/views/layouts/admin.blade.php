@@ -20,8 +20,8 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            background: #1a1a1a;
+            color: #e0e0e0;
             line-height: 1.6;
             margin: 0;
             padding: 0;
@@ -29,9 +29,9 @@
         
         /* Top Header */
         .top-header {
-            background: #FFD700;
+            background: #2a2a2a;
             padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid #FFD700;
+            border-bottom: 2px solid #FFD700;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -68,7 +68,7 @@
         
         .brand-text {
             font-weight: bold;
-            color: #333;
+            color: #FFD700;
             font-size: 1.1rem;
         }
         
@@ -79,34 +79,35 @@
         }
         
         .notification-icon {
-            color: #6c757d;
+            color: #FFD700;
             font-size: 1.2rem;
         }
         
         .admin-text {
             font-weight: 500;
-            color: #333;
+            color: #e0e0e0;
         }
         
         /* Sidebar */
         .sidebar {
             width: 200px;
-            background: #495057;
+            background: #1f1f1f;
             min-height: 100vh;
             position: fixed;
             left: 0;
             top: 70px;
             z-index: 1000;
             padding-top: 0;
+            border-right: 2px solid #333;
         }
         
         .sidebar-header {
             padding: 1rem;
-            border-bottom: 1px solid #6c757d;
+            border-bottom: 1px solid #FFD700;
         }
         
         .sidebar-title {
-            color: #fff;
+            color: #FFD700;
             font-size: 0.85rem;
             font-weight: 500;
             margin: 0;
@@ -121,22 +122,23 @@
         }
         
         .sidebar-nav li {
-            border-bottom: 1px solid #6c757d;
+            border-bottom: 1px solid #333;
         }
         
         .sidebar-nav a {
             display: flex;
             align-items: center;
             padding: 0.75rem 1rem;
-            color: #fff;
+            color: #e0e0e0;
             text-decoration: none;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
         }
         
         .sidebar-nav a:hover,
         .sidebar-nav a.active {
-            background: #ffc107;
-            color: #000;
+            background: #FFD700;
+            color: #1a1a1a;
+            transform: translateX(5px);
         }
         
         .sidebar-nav i {
@@ -158,13 +160,13 @@
         }
         
         .dropdown-toggle:hover {
-            background: #ffc107;
-            color: #000;
+            background: #FFD700;
+            color: #1a1a1a;
         }
         
         .dropdown-toggle.active {
-            background: #ffc107;
-            color: #000;
+            background: #FFD700;
+            color: #1a1a1a;
         }
         
         .dropdown-arrow {
@@ -182,10 +184,10 @@
             left: 100%;
             top: 0;
             min-width: 200px;
-            background: #6c757d;
-            border-left: 3px solid #ffc107;
+            background: #2a2a2a;
+            border-left: 3px solid #FFD700;
             border-radius: 0 8px 8px 0;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.5);
             opacity: 0;
             transform: translateX(-20px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -213,7 +215,7 @@
         .dropdown-menu a {
             padding: 0.5rem 1rem 0.5rem 2.5rem;
             font-size: 0.85rem;
-            border-bottom: 1px solid #5a6268;
+            border-bottom: 1px solid #444;
         }
         
         .dropdown-menu a:last-child {
@@ -221,13 +223,13 @@
         }
         
         .dropdown-menu a:hover {
-            background: #ffc107;
-            color: #000;
+            background: #FFD700;
+            color: #1a1a1a;
         }
         
         .dropdown-menu a.active {
-            background: #ffc107;
-            color: #000;
+            background: #FFD700;
+            color: #1a1a1a;
         }
         
         /* Main Content */
@@ -236,7 +238,9 @@
             margin-top: 70px;
             padding: 0;
             min-height: calc(100vh - 70px);
-            background: #f5f5f5;
+            background: #1a1a1a;
+            width: calc(100% - 200px);
+            max-width: none;
         }
         
         /* Content Styles */
@@ -250,7 +254,7 @@
         .page-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: #333;
+            color: #FFD700;
             margin: 0;
         }
         
@@ -268,18 +272,21 @@
         }
         
         .search-btn {
-            background: #ffc107;
-            border: 1px solid #ffc107;
-            color: #000;
+            background: #FFD700;
+            border: 1px solid #FFD700;
+            color: #1a1a1a;
             padding: 0.5rem 1rem;
             border-radius: 4px;
             font-size: 0.9rem;
             font-weight: 500;
+            transition: all 0.3s ease;
         }
         
         .search-btn:hover {
             background: #ffca2c;
             border-color: #ffca2c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
         }
         
         /* Filters */
@@ -290,19 +297,21 @@
         }
         
         .filter-select {
-            border: 1px solid #ced4da;
+            border: 1px solid #444;
             border-radius: 4px;
             padding: 0.5rem 0.75rem;
             font-size: 0.9rem;
-            background: #fff;
+            background: #2a2a2a;
+            color: #e0e0e0;
         }
         
         /* Table Styles */
         .bookings-table {
-            background: #fff;
+            background: #2a2a2a;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             overflow: hidden;
+            border: 1px solid #444;
         }
         
         .table {
@@ -310,10 +319,10 @@
         }
         
         .table thead th {
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
+            background: #1f1f1f;
+            border-bottom: 2px solid #FFD700;
             font-weight: 600;
-            color: #495057;
+            color: #FFD700;
             padding: 1rem 0.75rem;
             font-size: 0.9rem;
         }
@@ -321,11 +330,12 @@
         .table tbody td {
             padding: 1rem 0.75rem;
             vertical-align: middle;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid #444;
+            color: #e0e0e0;
         }
         
         .table tbody tr:hover {
-            background: #f8f9fa;
+            background: #333;
         }
         
         /* Status Badges */
@@ -338,34 +348,34 @@
         }
         
         .status-pending {
-            background: #fff3cd;
-            color: #856404;
+            background: #FFD700;
+            color: #1a1a1a;
         }
         
         .status-accepted {
-            background: #d4edda;
-            color: #155724;
+            background: #28a745;
+            color: #fff;
         }
         
         .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
+            background: #dc3545;
+            color: #fff;
         }
         
         .status-confirmed {
-            background: #d4edda;
-            color: #155724;
+            background: #28a745;
+            color: #fff;
         }
         
         .status-cancelled {
-            background: #f8d7da;
-            color: #721c24;
+            background: #dc3545;
+            color: #fff;
         }
 
         /* Dashboard Container */
         .dashboard-container {
             padding: 20px;
-            background: #f8f9fa;
+            background: #1a1a1a;
             min-height: 100vh;
         }
 
@@ -378,24 +388,24 @@
 
         .client-name {
             font-weight: 600;
-            color: #333;
+            color: #FFD700;
             font-size: 14px;
         }
-
+        
         .service-type {
             font-size: 12px;
-            color: #666;
+            color: #ccc;
         }
 
         .attachments {
             font-size: 11px;
-            color: #007bff;
+            color: #FFD700;
             text-decoration: underline;
             cursor: pointer;
         }
-
+        
         .attachments:hover {
-            color: #0056b3;
+            color: #ffca2c;
         }
 
         /* Date Time Info */
@@ -407,13 +417,13 @@
 
         .date {
             font-weight: 500;
-            color: #333;
+            color: #e0e0e0;
             font-size: 14px;
         }
-
+        
         .time {
             font-size: 12px;
-            color: #666;
+            color: #ccc;
         }
 
         /* Action Buttons */
@@ -445,7 +455,7 @@
         }
 
         .empty-state {
-            color: #666;
+            color: #ccc;
             font-style: italic;
         }
         
@@ -464,7 +474,7 @@
         .page-title {
             font-size: 24px;
             font-weight: 600;
-            color: #333;
+            color: #FFD700;
             margin: 0;
         }
 
@@ -476,24 +486,29 @@
 
         .search-input {
             padding: 8px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #444;
             border-radius: 4px;
             width: 250px;
             font-size: 14px;
+            background: #2a2a2a;
+            color: #e0e0e0;
         }
 
         .search-btn {
             padding: 8px 16px;
-            background: #007bff;
-            color: white;
+            background: #FFD700;
+            color: #1a1a1a;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            transition: all 0.3s ease;
         }
-
+        
         .search-btn:hover {
-            background: #0056b3;
+            background: #ffca2c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
         }
 
         /* Filters Section */
@@ -505,19 +520,21 @@
 
         .filter-select {
             padding: 8px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #444;
             border-radius: 4px;
-            background: white;
+            background: #2a2a2a;
+            color: #e0e0e0;
             font-size: 14px;
             cursor: pointer;
         }
 
         /* Bookings Table */
         .bookings-table {
-            background: white;
+            background: #2a2a2a;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             overflow: hidden;
+            border: 1px solid #444;
         }
 
         .table {
@@ -535,14 +552,14 @@
         }
 
         .table th {
-            background: #f8f9fa;
+            background: #1f1f1f;
             font-weight: 600;
-            color: #333;
+            color: #FFD700;
             font-size: 14px;
         }
-
+        
         .table tbody tr:hover {
-            background: #f8f9fa;
+            background: #333;
         }
 
         /* Action Buttons */
@@ -571,12 +588,12 @@
         }
 
         .btn-reschedule {
-            background: #ffc107;
-            color: #212529;
+            background: #FFD700;
+            color: #1a1a1a;
         }
-
+        
         .btn-reschedule:hover {
-            background: #e0a800;
+            background: #ffca2c;
         }
 
         /* Form Elements */
@@ -669,47 +686,50 @@
         /* Booking Details */
         .booking-name {
             font-weight: 600;
-            color: #333;
+            color: #FFD700;
             margin-bottom: 0.25rem;
         }
         
         .booking-details {
             font-size: 0.85rem;
-            color: #6c757d;
+            color: #ccc;
             margin-bottom: 0.25rem;
         }
         
         .booking-adjustments {
             font-size: 0.8rem;
-            color: #ffc107;
+            color: #FFD700;
             cursor: pointer;
         }
         
         .booking-adjustments:hover {
             text-decoration: underline;
+            color: #ffca2c;
         }
         
         /* Additional Bookings Table Styles */
         .search-section {
-            background: white;
+            background: #2a2a2a;
             padding: 1.5rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 1px solid #444;
         }
         
         .filters-section {
-            background: white;
+            background: #2a2a2a;
             padding: 1.5rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 1px solid #444;
         }
         
         .status-accepted {
-            background: #d1edff;
-            color: #0c5460;
-            border: 1px solid #b8daff;
+            background: #28a745;
+            color: #fff;
+            border: 1px solid #28a745;
         }
         
         .action-btn {
@@ -729,14 +749,17 @@
         
         /* New Admin Content Styles */
         .admin-content {
-            background: #fff;
+            background: #1a1a1a;
             min-height: calc(100vh - 70px);
+            max-width: 100%;
+            margin: 0;
+            padding: 0 15px;
         }
         
         .page-header {
-            background: #fff;
+            background: #2a2a2a;
             padding: 1.5rem 2rem;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 2px solid #FFD700;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -756,11 +779,13 @@
         }
         
         .search-input {
-            border: 1px solid #ced4da;
+            border: 1px solid #444;
             border-radius: 4px;
             padding: 0.5rem 0.75rem;
             font-size: 0.9rem;
             width: 250px;
+            background: #2a2a2a;
+            color: #e0e0e0;
         }
         
         .search-btn {
@@ -781,24 +806,25 @@
         
         .filters-row {
             padding: 1rem 2rem;
-            background: #fff;
-            border-bottom: 1px solid #e9ecef;
+            background: #2a2a2a;
+            border-bottom: 1px solid #444;
             display: flex;
             gap: 0.75rem;
         }
         
         .filter-select {
-            border: 1px solid #ced4da;
+            border: 1px solid #444;
             border-radius: 4px;
             padding: 0.5rem 0.75rem;
             font-size: 0.9rem;
-            background: #fff;
+            background: #2a2a2a;
+            color: #e0e0e0;
             min-width: 120px;
         }
         
         /* Table Styles */
         .bookings-table-container {
-            background: #fff;
+            background: #2a2a2a;
             margin: 0;
         }
         
@@ -809,10 +835,10 @@
         }
         
         .bookings-table thead th {
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
+            background: #1f1f1f;
+            border-bottom: 2px solid #FFD700;
             font-weight: 600;
-            color: #495057;
+            color: #FFD700;
             padding: 1rem;
             font-size: 0.9rem;
             text-align: left;
@@ -821,11 +847,12 @@
         .bookings-table tbody td {
             padding: 1rem;
             vertical-align: middle;
-            border-bottom: 1px solid #f1f1f1;
+            border-bottom: 1px solid #444;
+            color: #e0e0e0;
         }
         
         .bookings-table tbody tr:hover {
-            background: #f8f9fa;
+            background: #333;
         }
         
         .checkbox-col {
@@ -1497,7 +1524,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h6 class="sidebar-title">Navigation</h6>
+            <!-- Navigation text removed -->
         </div>
         
         <ul class="sidebar-nav">
