@@ -151,7 +151,7 @@
         <h1>BOOK YOUR STUDIO SESSION TODAY!</h1>
         <p>Bringing your music to life, one session at a time.</p>
         @if(Auth::check())
-          <a href="/services#bottom-of-services" class="book-btn">Book Now!</a>
+          <button id="openServicesPopup" class="book-btn">Book Now!</button>
           @if(Auth::user()->isAdmin())
             <a href="/admin/dashboard" class="book-btn" style="background: #e74c3c; margin-left: 10px;">Admin Panel</a>
           @endif
@@ -246,6 +246,40 @@
 
           <button type="submit" class="submit-btn">Submit Feedback</button>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Services Popup Modal -->
+<div id="servicesPopup" class="services-popup">
+  <div class="services-modal">
+    <div class="services-modal-header">
+      <h2>Choose Your Service</h2>
+      <button class="close-services" id="closeServices">&times;</button>
+    </div>
+    <div class="services-modal-content">
+      <div class="service-grid-popup">
+        <a href="/booking" class="service-box-popup">
+          <img src="{{ asset('images/studio.jpg') }}" alt="Studio Rental" />
+          <h3>Studio Rental</h3>
+          <p>Book our acoustically treated studios for jamming, rehearsals, or recording. Fully equipped and flexible.</p>
+          <small class="service-hint">Click to Book</small>
+        </a>
+
+        <a href="/instrument-rental" class="service-box-popup">
+          <img src="{{ asset('images/instruments.png') }}" alt="Instruments Rental" />
+          <h3>Instruments Rental</h3>
+          <p>Need a guitar, amp, or mic? Rent affordable gear for your session without the hassle.</p>
+          <small class="service-hint">Click to Rent</small>
+        </a>
+
+        <a href="/music-lessons" class="service-box-popup">
+          <img src="{{ asset('images/lessons.jpg') }}" alt="Music Lessons" />
+          <h3>Music Lessons</h3>
+          <p>Private or group lessons in vocals, guitar, keyboard, and drums. Ideal for all ages and skill levels.</p>
+          <small class="service-hint">Click to see more details</small>
+        </a>
       </div>
     </div>
   </div>
@@ -1045,6 +1079,28 @@ document.addEventListener('DOMContentLoaded', function() {
         contactPopup.addEventListener('click', function(e) {
             if (e.target === contactPopup) {
                 contactPopup.style.display = 'none';
+            }
+        });
+    }
+
+    // Services Popup functionality
+    const openServicesBtn = document.getElementById('openServicesPopup');
+    const servicesPopup = document.getElementById('servicesPopup');
+    const closeServicesBtn = document.getElementById('closeServices');
+
+    if (openServicesBtn && servicesPopup && closeServicesBtn) {
+        openServicesBtn.addEventListener('click', function() {
+            servicesPopup.style.display = 'flex';
+        });
+
+        closeServicesBtn.addEventListener('click', function() {
+            servicesPopup.style.display = 'none';
+        });
+
+        // Close popup when clicking outside
+        servicesPopup.addEventListener('click', function(e) {
+            if (e.target === servicesPopup) {
+                servicesPopup.style.display = 'none';
             }
         });
     }
