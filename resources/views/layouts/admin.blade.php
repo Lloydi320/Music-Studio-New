@@ -81,6 +81,140 @@
         .notification-icon {
             color: #FFD700;
             font-size: 1.2rem;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            min-width: 18px;
+        }
+        
+        .notification-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .notification-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: #2a2a2a;
+            min-width: 320px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border: 1px solid #444;
+            z-index: 1002;
+            margin-top: 10px;
+        }
+        
+        .notification-dropdown-content.show {
+            display: block;
+        }
+        
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .notification-header h6 {
+            margin: 0;
+            color: #FFD700;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .mark-all-read {
+            color: #6c757d;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .mark-all-read:hover {
+            color: #FFD700;
+        }
+        
+        .notification-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .notification-item:hover {
+            background-color: #333;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-item.unread {
+            background-color: rgba(255, 215, 0, 0.05);
+            border-left: 3px solid #FFD700;
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .notification-icon-item {
+            color: #FFD700;
+            font-size: 1.1rem;
+            margin-top: 2px;
+        }
+        
+        .notification-text {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .notification-message {
+            color: #b0b0b0;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            color: #6c757d;
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+        
+        .no-notifications {
+            padding: 30px 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .no-notifications p {
+            margin: 0;
+            font-style: italic;
         }
         
         .admin-text {
@@ -1490,7 +1624,23 @@
         </div>
         
         <div class="user-section">
-            <i class="fas fa-bell notification-icon"></i>
+            <div class="notification-dropdown">
+                <div class="notification-icon" onclick="toggleNotificationDropdown()">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                </div>
+                <div class="notification-dropdown-content" id="notificationDropdown">
+                    <div class="notification-header">
+                        <h6>New Bookings</h6>
+                        <a href="#" class="mark-all-read" onclick="markAllAsRead()">Mark all as read</a>
+                    </div>
+                    <div id="notificationList">
+                        <div class="no-notifications">
+                            <p>No new notifications</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="admin-dropdown">
                 <span class="admin-text" onclick="toggleAdminDropdown()">Admin <i class="fas fa-chevron-down"></i></span>
                 <div class="admin-dropdown-content" id="adminDropdown">
@@ -1675,7 +1825,369 @@
                 dropdownMenu.classList.add('show');
                 dropdownArrow.classList.add('open');
             }
+            
+            // Initialize notification system
+            checkForNewBookings();
+            setInterval(checkForNewBookings, 30000); // Check every 30 seconds
+        });
+        
+        // Notification functions
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('show');
+            
+            // Close admin dropdown if open
+            const adminDropdown = document.getElementById('adminDropdown');
+            if (adminDropdown.classList.contains('show')) {
+                adminDropdown.classList.remove('show');
+            }
+        }
+        
+        function checkForNewBookings() {
+            fetch('/admin/notifications/new-bookings')
+                .then(response => response.json())
+                .then(data => {
+                    updateNotificationBadge(data.count);
+                    updateNotificationList(data.bookings);
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                });
+        }
+        
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notificationBadge');
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        
+        function updateNotificationList(bookings) {
+            const notificationList = document.getElementById('notificationList');
+            
+            if (bookings.length === 0) {
+                notificationList.innerHTML = '<div class="no-notifications"><p>No new notifications</p></div>';
+                return;
+            }
+            
+            let html = '';
+            bookings.forEach(booking => {
+                const timeAgo = getTimeAgo(booking.created_at);
+                html += `
+                    <div class="notification-item unread" onclick="viewBooking(${booking.id})">
+                        <div class="notification-content">
+                            <i class="fas fa-calendar-plus notification-icon-item"></i>
+                            <div class="notification-text">
+                                <div class="notification-title">New Studio Booking</div>
+                                <div class="notification-message">
+                                    ${booking.customer_name} booked ${booking.studio_name} for ${booking.date}
+                                </div>
+                                <div class="notification-time">${timeAgo}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            notificationList.innerHTML = html;
+        }
+        
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) {
+                return 'Just now';
+            } else if (diffInSeconds < 3600) {
+                const minutes = Math.floor(diffInSeconds / 60);
+                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            } else if (diffInSeconds < 86400) {
+                const hours = Math.floor(diffInSeconds / 3600);
+                return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            } else {
+                const days = Math.floor(diffInSeconds / 86400);
+                return `${days} day${days > 1 ? 's' : ''} ago`;
+            }
+        }
+        
+        function viewBooking(bookingId) {
+            window.location.href = `/admin/bookings?highlight=${bookingId}`;
+        }
+        
+        function markAllAsRead() {
+            fetch('/admin/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateNotificationBadge(0);
+                    document.getElementById('notificationList').innerHTML = '<div class="no-notifications"><p>No new notifications</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notifications as read:', error);
+            });
+        }
+        
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.notification-dropdown')) {
+                const dropdown = document.getElementById('notificationDropdown');
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+        
+        // Toast Notification Functions
+        function showToastNotification(booking) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.id = toastId;
+            
+            const bookingDate = new Date(booking.booking_date + ' ' + booking.start_time);
+            const formattedDate = bookingDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            const formattedTime = bookingDate.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <div class="toast-icon">📅</div>
+                    <h6 class="toast-title">BOOKING NOTIFICATION FOR STUDIO RENTAL</h6>
+                    <button class="toast-close" onclick="dismissToast('${toastId}')">&times;</button>
+                </div>
+                <div class="toast-body">
+                    <strong>${booking.customer_name}</strong> has booked a studio session.
+                </div>
+                <div class="toast-details">
+                    <span class="toast-time">${formattedDate} at ${formattedTime}</span>
+                    <span class="toast-reference">${booking.reference_number}</span>
+                </div>
+                <div class="toast-progress" id="progress-${toastId}"></div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Auto dismiss after 8 seconds
+            const progressBar = document.getElementById('progress-' + toastId);
+            progressBar.style.width = '100%';
+            progressBar.style.transitionDuration = '8s';
+            
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+            }, 100);
+            
+            setTimeout(() => {
+                dismissToast(toastId);
+            }, 8000);
+        }
+        
+        function dismissToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.remove();
+                }, 400);
+            }
+        }
+        
+        // Enhanced booking check to show toast notifications
+        let lastBookingCount = 0;
+        
+        function checkForNewBookingsWithToast() {
+            fetch('/admin/notifications/new-bookings')
+                .then(response => response.json())
+                .then(data => {
+                    // Update existing notification dropdown
+                    updateNotificationBadge(data.count);
+                    updateNotificationList(data.bookings);
+                    
+                    // Show toast for new bookings
+                    if (data.count > lastBookingCount && lastBookingCount > 0) {
+                        // Get the newest booking(s)
+                        const newBookings = data.bookings.slice(0, data.count - lastBookingCount);
+                        newBookings.forEach(booking => {
+                            showToastNotification(booking);
+                        });
+                    }
+                    
+                    lastBookingCount = data.count;
+                })
+                .catch(error => {
+                    console.error('Error checking for new bookings:', error);
+                });
+        }
+        
+        // Initialize and start checking for new bookings
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial check to set baseline
+            checkForNewBookingsWithToast();
+            
+            // Check every 10 seconds for new bookings
+            setInterval(checkForNewBookingsWithToast, 10000);
         });
     </script>
+    
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <style>
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+        
+        .toast {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(40, 167, 69, 0.3);
+            border-left: 4px solid #ffffff;
+            transform: translateX(450px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .toast.hide {
+            transform: translateX(450px);
+            opacity: 0;
+        }
+        
+        .toast::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        
+        .toast-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .toast-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .toast-body {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .toast-details {
+            font-size: 12px;
+            opacity: 0.9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toast-time {
+            font-weight: 500;
+        }
+        
+        .toast-reference {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Animation for multiple toasts */
+        .toast:not(:last-child) {
+            margin-bottom: 12px;
+        }
+        
+        /* Progress bar for auto-dismiss */
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0 0 12px 12px;
+            transition: width linear;
+        }
+    </style>
 </body>
 </html>

@@ -102,7 +102,11 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::delete('/activity-logs/clear', [App\Http\Controllers\AdminController::class, 'clearActivityLogs'])->name('admin.activity-logs.clear');
     Route::get('/instrument-bookings', [App\Http\Controllers\AdminController::class, 'instrumentBookings'])->name('admin.instrument-bookings');
     Route::get('/music-lesson-bookings', [App\Http\Controllers\AdminController::class, 'musicLessonBookings'])->name('admin.music-lesson-bookings');
-Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');
+    Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');
+    
+    // Notification routes
+    Route::get('/notifications/new-bookings', [App\Http\Controllers\AdminController::class, 'getNewBookingNotifications'])->name('admin.notifications.new-bookings');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\AdminController::class, 'markAllNotificationsAsRead'])->name('admin.notifications.mark-all-read');
 
 // Add these new routes for instrument rental approval
 Route::patch('/instrument-rentals/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveRental'])->name('admin.rental.approve');

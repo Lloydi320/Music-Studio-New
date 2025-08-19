@@ -1041,25 +1041,44 @@ class AdminController extends Controller
             
             // Store old values for logging
             $oldValues = $booking->toArray();
+            $bookingReference = $booking->reference;
+            $customerName = $booking->user->name;
             
-            // Update booking status to cancelled
-            $booking->update(['status' => 'cancelled']);
-            
-            // Log booking rejection
+            // Log booking rejection before deletion
             ActivityLog::logBooking(
                 ActivityLog::ACTION_BOOKING_REJECTED,
                 $booking,
                 $oldValues,
-                $booking->fresh()->toArray()
+                ['status' => 'deleted']
             );
             
-            Log::info('Booking rejected by admin', [
-                'booking_id' => $booking->id,
-                'reference' => $booking->reference,
+            // Delete from Google Calendar if event exists
+            if ($booking->google_event_id && $this->calendarService) {
+                try {
+                    $this->calendarService->deleteBookingEvent($booking);
+                    Log::info('Google Calendar event deleted for rejected booking', [
+                        'booking_id' => $booking->id,
+                        'google_event_id' => $booking->google_event_id
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to delete Google Calendar event for rejected booking', [
+                        'booking_id' => $booking->id,
+                        'google_event_id' => $booking->google_event_id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+            
+            // Delete the booking from database
+            $booking->delete();
+            
+            Log::info('Booking rejected and deleted by admin', [
+                'booking_id' => $oldValues['id'],
+                'reference' => $bookingReference,
                 'admin_id' => $user->id
             ]);
             
-            return redirect()->back()->with('success', "Booking {$booking->reference} for {$booking->user->name} has been rejected.");
+            return redirect()->back()->with('success', "Booking {$bookingReference} for {$customerName} has been rejected and automatically deleted from the system.");
         } catch (\Exception $e) {
             Log::error('Failed to reject booking', [
                 'booking_id' => $id,
@@ -1302,6 +1321,73 @@ class AdminController extends Controller
             return redirect()->route('admin.activity-logs')->with('success', "Successfully cleared {$deletedCount} activity log entries.");
         } catch (\Exception $e) {
             return redirect()->route('admin.activity-logs')->with('error', 'Failed to clear activity logs: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get new booking notifications for admin
+     */
+    public function getNewBookingNotifications()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            return response()->json(['error' => 'Access denied'], 403);
+        }
+        
+        try {
+            // Get bookings from the last 24 hours that haven't been viewed
+            $newBookings = Booking::where('created_at', '>=', now()->subDay())
+                ->where('status', 'pending')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($booking) {
+                    return [
+                        'id' => $booking->id,
+                        'customer_name' => $booking->customer_name,
+                        'studio_name' => 'Studio Rental', // You can customize this based on your studio types
+                        'date' => $booking->date,
+                        'time_slot' => $booking->time_slot,
+                        'created_at' => $booking->created_at->toISOString(),
+                    ];
+                });
+            
+            return response()->json([
+                'count' => $newBookings->count(),
+                'bookings' => $newBookings
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching new booking notifications: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch notifications'], 500);
+        }
+    }
+    
+    /**
+     * Mark all notifications as read
+     */
+    public function markAllNotificationsAsRead()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            return response()->json(['error' => 'Access denied'], 403);
+        }
+        
+        try {
+            // For now, we'll just return success
+            // In a more complex implementation, you might want to track which notifications have been read
+            
+            ActivityLog::logAdmin('Admin marked all notifications as read', ActivityLog::ACTION_ADMIN_ACCESS);
+            
+            return response()->json(['success' => true]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error marking notifications as read: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to mark notifications as read'], 500);
         }
     }
 }
