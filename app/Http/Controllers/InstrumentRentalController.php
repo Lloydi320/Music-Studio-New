@@ -38,6 +38,8 @@ class InstrumentRentalController extends Controller
             'venue_type' => 'required|in:indoor,outdoor',
             'event_duration_hours' => 'required|integer|min:1|max:12',
             'documentation_consent' => 'nullable|boolean',
+            'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+            'reference_code' => 'required|string|size:4|regex:/^[0-9]{4}$/',
         ]);
 
         // Calculate rental duration
@@ -78,6 +80,20 @@ class InstrumentRentalController extends Controller
             return back()->with('error', 'This instrument is not available for the selected dates. Please choose different dates or a different instrument.');
         }
 
+        // Handle image upload
+        $receiptImagePath = null;
+        if ($request->hasFile('picture')) {
+            $receiptImagePath = $request->file('picture')->store('instrument-receipts', 'public');
+        }
+
+        // Use the 4-digit code from the form and ensure it's unique
+        $fourDigitCode = $request->reference_code;
+        
+        // Check if this 4-digit code is already in use
+        if (InstrumentRental::where('four_digit_code', $fourDigitCode)->exists()) {
+            return back()->with('error', 'This 4-digit reference code is already in use. Please try a different code.');
+        }
+
         $rental = InstrumentRental::create([
             'user_id' => Auth::id(),
             'instrument_type' => $request->instrument_type,
@@ -88,7 +104,9 @@ class InstrumentRentalController extends Controller
             'daily_rate' => $dailyRate,
             'total_amount' => $totalAmount,
             'status' => 'pending',
+            'four_digit_code' => $fourDigitCode,
             'notes' => $request->notes,
+            'receipt_image' => $receiptImagePath,
             'pickup_location' => $request->pickup_location,
             'return_location' => $request->return_location,
             'transportation' => $request->transportation,
@@ -122,7 +140,22 @@ class InstrumentRentalController extends Controller
             'total_amount' => $rental->total_amount
         ]);
 
-        return redirect('/instrument-rental')->with('success', 'Your instrument rental has been submitted! Reference: ' . $rental->reference);
+        // Prepare detailed booking information for confirmation modal
+        $bookingDetails = [
+            'reference' => $rental->reference,
+            'four_digit_code' => $rental->four_digit_code,
+            'instrument_name' => $rental->instrument_name,
+            'rental_start_date' => $rental->rental_start_date->format('Y-m-d'),
+            'rental_end_date' => $rental->rental_end_date->format('Y-m-d'),
+            'rental_duration_days' => $rental->rental_duration_days,
+            'total_amount' => $rental->total_amount,
+            'created_at' => $rental->created_at->format('Y-m-d H:i')
+        ];
+
+        return redirect('/instrument-rental')->with([
+            'booking_confirmed' => true,
+            'booking_details' => $bookingDetails
+        ]);
     }
 
     public function checkAvailability(Request $request)

@@ -1256,6 +1256,23 @@ class AdminController extends Controller
         return view('admin.instrument-bookings', compact('instrumentRentals', 'totalRentals', 'instrumentTypes'));
     }
 
+    /**
+     * Show individual instrument rental details
+     */
+    public function showInstrumentRental($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $rental = InstrumentRental::with('user')->findOrFail($id);
+        
+        return view('admin.instrument-rental-details', compact('rental'));
+    }
+
     public function musicLessonBookings(Request $request)
     {
         // Filter bookings that are likely music lessons (duration <= 120 minutes)

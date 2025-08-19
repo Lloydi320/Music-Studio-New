@@ -95,6 +95,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/database/migrate', [App\Http\Controllers\AdminController::class, 'runMigrations'])->name('admin.database.migrate');
     Route::post('/database/clear-cache', [App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.database.clear-cache');
     Route::get('/instrument-rentals', [App\Http\Controllers\AdminController::class, 'instrumentRentals'])->name('admin.instrument-rentals');
+    Route::get('/instrument-rentals/{id}', [App\Http\Controllers\AdminController::class, 'showInstrumentRental'])->name('admin.instrument-rentals.show');
     Route::post('/instrument-rentals/{id}/status', [App\Http\Controllers\AdminController::class, 'updateRentalStatus'])->name('admin.rental-status');
     Route::delete('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'deleteBooking'])->name('admin.booking.delete');
     Route::patch('/bookings/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveBooking'])->name('admin.booking.approve');

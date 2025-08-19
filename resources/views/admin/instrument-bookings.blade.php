@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Instrument Bookings')
+@section('title', 'Instrument Rental Bookings')
 
 @section('content')
 <style>
@@ -147,20 +147,73 @@
     }
 
     .form-control {
-        padding: 0.75rem 1rem;
-        border: 2px solid #3a3a3a;
+        padding: 0.9rem 1.2rem;
+        border: 2px solid #4a4a4a;
         border-radius: 10px;
-        font-size: 0.9rem;
+        font-size: 1rem;
+        font-weight: 600;
         transition: all 0.3s ease;
         background: #2a2a2a;
-        color: #e0e0e0;
+        color: #ffffff;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
     .form-control:focus {
         outline: none;
         border-color: #FFD700;
-        box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3), inset 0 2px 4px rgba(0,0,0,0.2);
+        background: #3a3a3a;
+        color: #FFD700;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    }
+
+    .form-control::placeholder {
+        color: #FFD700;
+        font-weight: 500;
+        opacity: 0.8;
+    }
+
+    .form-select {
+        padding: 0.9rem 1.2rem;
+        border: 2px solid #4a4a4a;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
         background: #2a2a2a;
+        color: #ffffff;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        cursor: pointer;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: #FFD700;
+        box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3), inset 0 2px 4px rgba(0,0,0,0.2);
+        background: #3a3a3a;
+        color: #FFD700;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    }
+
+    .form-select option {
+        background: #2a2a2a;
+        color: #ffffff;
+        padding: 0.8rem;
+        font-weight: 500;
+        border-bottom: 1px solid #4a4a4a;
+    }
+
+    .form-select option:hover {
+        background: #FFD700;
+        color: #1a1a1a;
+    }
+
+    .form-select option:selected {
+        background: #FFD700;
+        color: #1a1a1a;
+        font-weight: 600;
     }
 
     .filter-actions {
@@ -199,6 +252,8 @@
     .btn:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow-soft);
+        text-decoration: none;
+        color: inherit;
     }
 
     .rentals-table-card {
@@ -241,50 +296,51 @@
         color: black;
     }
 
-    .table-responsive {
-        overflow-x: auto;
+    .bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 1.5rem;
+        padding: 1.5rem;
     }
 
-    .table {
-        width: 100%;
-        margin: 0;
-    }
-
-    .table thead th {
+    .booking-card {
         background: #3a3a3a;
-        color: #FFD700;
-        font-weight: 600;
-        padding: 1rem;
-        border: none;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .table tbody td {
-        padding: 1rem;
-        border-bottom: 1px solid #3a3a3a;
-        vertical-align: middle;
-        color: #e0e0e0;
-    }
-
-    .table tbody tr {
+        border-radius: 15px;
+        box-shadow: var(--shadow-soft);
         transition: all 0.3s ease;
+        border: 2px solid #4a4a4a;
+        overflow: hidden;
     }
 
-    .table tbody tr:hover {
-        background: #333333;
-        transform: scale(1.01);
-        box-shadow: 0 5px 15px rgba(255,215,0,0.1);
+    .booking-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 215, 0, 0.3);
+        border-color: #FFD700;
+    }
+
+    .booking-card-header {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #FFD700;
+    }
+
+    .booking-card-body {
+        padding: 1.5rem;
+    }
+
+    .booking-card-footer {
+        padding: 1rem 1.5rem;
+        background: #2a2a2a;
+        border-top: 1px solid #4a4a4a;
     }
 
     .status-badge {
-        padding: 0.4rem 0.8rem;
+        padding: 0.5rem 1rem;
         border-radius: 20px;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -313,6 +369,50 @@
         color: white;
     }
 
+    .booking-reference {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .booking-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        color: #b0b0b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .info-value {
+        color: #FFD700;
+        font-weight: 600;
+    }
+
+    .booking-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .booking-actions .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
     .user-info {
         display: flex;
         align-items: center;
@@ -338,14 +438,18 @@
     }
 
     .user-name {
-        font-weight: 600;
-        color: #FFD700;
-        font-size: 0.9rem;
+        font-weight: 700;
+        color: #ffffff;
+        font-size: 1.1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        letter-spacing: 0.3px;
     }
 
     .user-email {
-        color: #b0b0b0;
-        font-size: 0.8rem;
+        color: #e0e0e0;
+        font-size: 0.9rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        font-weight: 500;
     }
 
     .instrument-info {
@@ -398,6 +502,74 @@
         border-radius: 0 0 20px 20px;
     }
 
+    .booking-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        color: #b0b0b0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .info-value {
+        color: #FFD700;
+        font-weight: 600;
+    }
+
+    .instrument-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .instrument-name {
+        font-weight: 600;
+        color: #FFD700;
+    }
+
+    .instrument-type {
+        color: #b0b0b0;
+        font-size: 0.85rem;
+        text-transform: capitalize;
+    }
+
+    .rental-dates {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.85rem;
+    }
+
+    .date-range {
+        color: #e0e0e0;
+        font-weight: 500;
+    }
+
+    .duration {
+        color: #b0b0b0;
+    }
+
+    .amount {
+        font-weight: 700;
+        font-size: 1.1rem;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
@@ -425,38 +597,84 @@
         color: #999;
     }
 
-    /* Action Buttons */
     .action-buttons {
         display: flex;
         gap: 0.5rem;
-        align-items: center;
+        flex-wrap: wrap;
     }
 
     .action-buttons .btn {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-        border-radius: 4px;
+        flex: 1;
+        min-width: 80px;
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-view {
+        background: var(--gradient-secondary);
+        color: #ffffff;
+        border: 2px solid #FFD700;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .btn-view:hover {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        color: #1a1a1a;
+        border-color: #FFD700;
+        transform: translateY(-2px);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        transform: translateY(-2px);
+    }
+
+    .btn-reschedule {
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        color: #1a1a1a;
+        border: 2px solid #FFD700;
+        font-weight: 600;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-reschedule:hover {
+        background: linear-gradient(135deg, #FFA500 0%, #FF8C00 100%);
+        color: #1a1a1a;
+        border-color: #FFA500;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    }
+
+    .reference-id {
+        color: #1a1a1a;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8);
+        letter-spacing: 0.5px;
+    }
+
+    .created-date {
+        color: #1a1a1a;
+        font-size: 0.9rem;
         font-weight: 500;
-    }
-
-    .action-buttons .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-    }
-
-    .action-buttons .btn-success:hover {
-        background-color: #218838;
-        border-color: #1e7e34;
-    }
-
-    .action-buttons .btn-danger {
-        background-color: #dc3545;
-        border-color: #dc3545;
-    }
-
-    .action-buttons .btn-danger:hover {
-        background-color: #c82333;
-        border-color: #bd2130;
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.6);
     }
 
     @media (max-width: 768px) {
@@ -493,12 +711,21 @@
             align-items: flex-start;
             gap: 0.5rem;
         }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
     }
 </style>
 
 <div class="admin-content">
     <div class="page-header">
-        <h1 class="page-title">🎸 Instrument Bookings</h1>
+        <h1 class="page-title">🎸 Instrument Rental Bookings</h1>
     </div>
 
     <!-- Stats Overview -->
@@ -567,7 +794,7 @@
         </form>
     </div>
 
-    <!-- Rentals Table -->
+    <!-- Rentals Cards -->
     <div class="rentals-table-card">
         <div class="table-header">
             <h3 class="table-title">🎸 Instrument Rental Records</h3>
@@ -575,27 +802,34 @@
         </div>
 
         @if($instrumentRentals->count() > 0)
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Reference</th>
-                            <th>Customer</th>
-                            <th>Instrument</th>
-                            <th>Rental Period</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($instrumentRentals as $rental)
-                            <tr>
-                                <td>
-                                    <strong>{{ $rental->reference }}</strong>
-                                </td>
-                                <td>
+            <div class="bookings-grid">
+                @foreach($instrumentRentals as $rental)
+                    <div class="booking-card">
+                        <div class="booking-card-header">
+                            <div class="booking-reference">
+                                <div class="reference-id">{{ $rental->reference }}</div>
+                                <div class="four-digit-code">Code: {{ $rental->four_digit_code ?? 'N/A' }}</div>
+                                <div class="created-date">{{ $rental->created_at->format('M d, Y') }}</div>
+                            </div>
+                            <span class="status-badge status-{{ $rental->status }}">
+                                @if($rental->status == 'pending')
+                                    ⏳ Pending
+                                @elseif($rental->status == 'active')
+                                    ✅ Active
+                                @elseif($rental->status == 'returned')
+                                    📦 Returned
+                                @elseif($rental->status == 'cancelled')
+                                    ❌ Cancelled
+                                @else
+                                    {{ ucfirst($rental->status) }}
+                                @endif
+                            </span>
+                        </div>
+                        
+                        <div class="booking-card-body">
+                            <div class="booking-info">
+                                <div class="info-item">
+                                    <div class="info-label">Customer</div>
                                     <div class="user-info">
                                         <div class="user-avatar">
                                             {{ strtoupper(substr($rental->user->name ?? 'U', 0, 1)) }}
@@ -605,14 +839,18 @@
                                             <div class="user-email">{{ $rental->user->email ?? 'N/A' }}</div>
                                         </div>
                                     </div>
-                                </td>
-                                <td>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">Instrument</div>
                                     <div class="instrument-info">
                                         <div class="instrument-name">{{ $rental->instrument_name }}</div>
                                         <div class="instrument-type">{{ $rental->instrument_type }}</div>
                                     </div>
-                                </td>
-                                <td>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">Rental Period</div>
                                     <div class="rental-dates">
                                         <div class="date-range">
                                             {{ \Carbon\Carbon::parse($rental->rental_start_date)->format('M d, Y') }} - 
@@ -620,57 +858,40 @@
                                         </div>
                                         <div class="duration">{{ $rental->rental_duration_days }} day(s)</div>
                                     </div>
-                                </td>
-                                <td>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">Amount</div>
                                     <div class="amount">₱{{ number_format($rental->total_amount, 2) }}</div>
-                                </td>
-                                <td>
-                                    <span class="status-badge status-{{ $rental->status }}">
-                                        @if($rental->status == 'pending')
-                                            ⏳ Pending
-                                        @elseif($rental->status == 'active')
-                                            ✅ Active
-                                        @elseif($rental->status == 'returned')
-                                            📦 Returned
-                                        @elseif($rental->status == 'cancelled')
-                                            ❌ Cancelled
-                                        @else
-                                            {{ ucfirst($rental->status) }}
-                                        @endif
-                                    </span>
-                                </td>
-                                <td>
-                                    <div style="font-size: 0.85rem; color: #666;">
-                                        {{ $rental->created_at->format('M d, Y') }}<br>
-                                        <small>{{ $rental->created_at->format('h:i A') }}</small>
-                                    </div>
-                                </td>
-                                <td>
-                                    @if($rental->status == 'pending')
-                                        <div class="action-buttons">
-                                            <form method="POST" action="{{ route('admin.rental.approve', $rental->id) }}" style="display: inline;">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure you want to approve this rental?')">
-                                                    <i class="fas fa-check"></i> Accept
-                                                </button>
-                                            </form>
-                                            <form method="POST" action="{{ route('admin.rental.reject', $rental->id) }}" style="display: inline;">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to reject this rental?')">
-                                                    <i class="fas fa-times"></i> Decline
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @else
-                                        <span class="text-muted">No actions available</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="booking-card-footer">
+                            <div class="booking-actions">
+                                <a href="{{ route('admin.instrument-rentals.show', $rental->id) }}" class="btn btn-view">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                @if($rental->status == 'pending')
+                                    <form method="POST" action="{{ route('admin.rental.approve', $rental->id) }}" style="display: inline;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to approve this rental?')">
+                                            <i class="fas fa-check"></i> Accept
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.rental.reject', $rental->id) }}" style="display: inline;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this rental?')">
+                                            <i class="fas fa-times"></i> Decline
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
 
             <div class="pagination-wrapper">

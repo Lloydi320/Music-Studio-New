@@ -418,110 +418,408 @@
        .modal {
          display: none;
          position: fixed;
-         z-index: 9999;
+         z-index: 1000;
          left: 0;
          top: 0;
-         width: 100vw;
-         height: 100vh;
-         background-color: rgba(0, 0, 0, 0.7);
-         backdrop-filter: blur(8px);
-         animation: modalFadeIn 0.3s ease-out;
+         width: 100%;
+         height: 100%;
+         background-color: rgba(0, 0, 0, 0.8);
+         backdrop-filter: blur(5px);
        }
-       
-       @keyframes modalFadeIn {
-         from {
-           opacity: 0;
-           backdrop-filter: blur(0px);
-         }
-         to {
-           opacity: 1;
-           backdrop-filter: blur(8px);
-         }
+
+       .modal-container {
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         height: 100%;
+         padding: 20px;
        }
-       
+
        .modal-content {
-         background-color: white;
-         margin: 2% auto;
-         padding: 0;
+         background: white;
          border-radius: 20px;
          width: 95%;
-         max-width: 750px;
-         max-height: 90vh;
+         max-width: 1200px;
+         max-height: 85vh;
          overflow-y: auto;
-         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 10px 20px rgba(0, 0, 0, 0.1);
-         animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-         transform-origin: center;
+         overflow-x: hidden;
+         display: flex;
+         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+         scroll-behavior: smooth;
        }
-       
-       @keyframes modalSlideIn {
-         from {
-           opacity: 0;
-           transform: scale(0.9) translateY(-20px);
-         }
-         to {
-           opacity: 1;
-           transform: scale(1) translateY(0);
-         }
+
+       .modal-left {
+         flex: 1;
+         padding: 25px;
+         background: #f8f9fa;
+         border-radius: 20px 0 0 20px;
+         overflow-y: auto;
+         max-height: 85vh;
+       }
+
+       .modal-center {
+         flex: 1.2;
+         padding: 25px;
+         background: white;
+         border-left: 1px solid #e9ecef;
+         border-right: 1px solid #e9ecef;
+         overflow-y: auto;
+         max-height: 85vh;
+       }
+
+       .modal-right {
+         flex: 1;
+         padding: 25px;
+         background: white;
+         border-radius: 0 20px 20px 0;
+         display: flex;
+         align-items: flex-start;
+         justify-content: center;
+         overflow-y: auto;
+         max-height: 85vh;
+         padding-top: 15px;
        }
        
        .modal-header {
-         background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
-         color: #111;
-         padding: 25px 30px;
-         border-radius: 20px 20px 0 0;
+         margin-bottom: 20px;
+       }
+
+       .modal-title {
+         font-size: 24px;
+         font-weight: bold;
+         color: #333;
+         margin-bottom: 5px;
+       }
+
+       .modal-subtitle {
+         color: #666;
+         font-size: 14px;
+         margin-bottom: 15px;
+       }
+
+       .location {
+         color: #666;
+         font-size: 14px;
+         margin-bottom: 15px;
+       }
+
+       .booking-details {
+         background: white;
+         padding: 20px;
+         border-radius: 10px;
+         margin-bottom: 20px;
+         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+       }
+
+       .detail-item {
          display: flex;
          justify-content: space-between;
-         align-items: center;
-         position: relative;
-         overflow: hidden;
+         margin-bottom: 10px;
+         padding: 8px 0;
+         border-bottom: 1px solid #eee;
+       }
+
+       .detail-label {
+         font-weight: 500;
+         color: #555;
+       }
+
+       .detail-value {
+         color: #333;
+         font-weight: 600;
+       }
+
+       /* List-Style Booking Summary */
+       .booking-summary-list {
+         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+         border-radius: 12px;
+         padding: 20px;
+         margin-bottom: 20px;
+         border: 1px solid #dee2e6;
+         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
        }
        
-       .modal-header::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: 0;
-         right: 0;
-         bottom: 0;
-         background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
-         pointer-events: none;
+       .summary-header {
+         text-align: center;
+         margin-bottom: 20px;
+         padding-bottom: 12px;
+         border-bottom: 2px solid #007bff;
        }
        
-       .modal-header h2 {
+       .summary-header h3 {
          margin: 0;
-         font-size: 1.3em;
+         font-size: 1.3rem;
+         font-weight: 600;
+         color: #2c3e50;
        }
        
-       .close-modal {
-         color: rgba(17, 17, 17, 0.8);
-         font-size: 32px;
-         font-weight: 300;
-         cursor: pointer;
-         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-         width: 40px;
-         height: 40px;
+       .summary-header i {
+         margin-right: 8px;
+         color: #007bff;
+       }
+       
+       .summary-list {
+         margin-bottom: 20px;
+       }
+       
+       .summary-list-item {
+         display: flex;
+         align-items: center;
+         padding: 12px 0;
+         border-bottom: 1px solid #e9ecef;
+         transition: background-color 0.2s ease;
+       }
+       
+       .summary-list-item:last-child {
+         border-bottom: none;
+       }
+       
+       .summary-list-item:hover {
+         background-color: rgba(0, 123, 255, 0.05);
+         border-radius: 6px;
+       }
+       
+       .item-icon {
+         width: 32px;
+         height: 32px;
+         background: linear-gradient(135deg, #007bff, #0056b3);
+         border-radius: 50%;
          display: flex;
          align-items: center;
          justify-content: center;
-         border-radius: 50%;
-         background: rgba(17, 17, 17, 0.1);
-         backdrop-filter: blur(10px);
-         position: relative;
-         z-index: 10;
-         line-height: 1;
+         margin-right: 12px;
+         flex-shrink: 0;
        }
        
-       .close-modal:hover {
+       .item-icon i {
+         font-size: 0.9rem;
          color: white;
-         background: rgba(255, 255, 255, 0.2);
-         transform: scale(1.1);
-         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
        }
        
-       .modal-body {
-         padding: 30px;
-         background-color: #ffffff;
-         position: relative;
+       .item-content {
+         flex: 1;
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+       }
+       
+       .item-label {
+         font-size: 0.9rem;
+         color: #6c757d;
+         font-weight: 500;
+       }
+       
+       .item-value {
+         font-weight: 600;
+         color: #2c3e50;
+         font-size: 0.9rem;
+       }
+       
+       .price-breakdown-list {
+         background: #f8f9fa;
+         border-radius: 8px;
+         padding: 16px;
+         margin-bottom: 16px;
+         border: 1px solid #e9ecef;
+       }
+       
+       .price-list-item {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         padding: 8px 0;
+         font-size: 0.85rem;
+         border-bottom: 1px solid #e9ecef;
+       }
+       
+       .price-list-item:last-child {
+         border-bottom: none;
+       }
+       
+       .price-label {
+         color: #6c757d;
+         font-weight: 500;
+       }
+       
+       .price-label i {
+         margin-right: 6px;
+         width: 14px;
+         color: #007bff;
+       }
+       
+       .price-value {
+         font-weight: 600;
+         color: #2c3e50;
+       }
+       
+       .price-list-total {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         padding: 12px 0 8px 0;
+         margin-top: 8px;
+         border-top: 2px solid #007bff;
+         font-weight: 700;
+         font-size: 1rem;
+       }
+       
+       .total-label {
+         color: #2c3e50;
+         font-weight: 700;
+       }
+       
+       .total-label i {
+         margin-right: 6px;
+         color: #007bff;
+       }
+       
+       .total-value {
+         color: #007bff;
+         font-weight: 700;
+         font-size: 1.1rem;
+       }
+       
+       .reservation-fee {
+         background: rgba(255, 193, 7, 0.1);
+         border-radius: 4px;
+         padding: 4px 0;
+       }
+       
+       .reservation-fee .price-label {
+         color: #856404;
+       }
+       
+       .reservation-fee .price-value {
+         color: #856404;
+         font-weight: 700;
+       }
+       
+       .payment-note-list {
+         background: rgba(23, 162, 184, 0.1);
+         border: 1px solid rgba(23, 162, 184, 0.3);
+         border-radius: 6px;
+         padding: 10px;
+         display: flex;
+         align-items: center;
+         font-size: 0.8rem;
+         color: #0c5460;
+       }
+       
+       .payment-note-list i {
+         margin-right: 8px;
+         color: #17a2b8;
+       }
+       
+       /* Responsive Design for List Summary */
+       @media (max-width: 768px) {
+         .booking-summary-list {
+           padding: 16px;
+         }
+         
+         .summary-list-item {
+           padding: 10px 0;
+         }
+         
+         .item-content {
+           flex-direction: column;
+           align-items: flex-start;
+           gap: 4px;
+         }
+         
+         .summary-header h3 {
+           font-size: 1.1rem;
+         }
+       }
+
+       .studio-image-modal {
+         width: 100%;
+         height: 200px;
+         object-fit: cover;
+         border-radius: 10px;
+         margin-bottom: 20px;
+       }
+
+       .form-group {
+         margin-bottom: 20px;
+       }
+
+       .form-group label {
+         display: block;
+         margin-bottom: 8px;
+         font-weight: 600;
+         color: #333;
+         font-size: 14px;
+       }
+
+       .form-group input,
+       .form-group select {
+         width: 100%;
+         padding: 12px 15px;
+         border: 2px solid #e9ecef;
+         border-radius: 8px;
+         font-size: 14px;
+         transition: all 0.3s ease;
+         background: white;
+       }
+
+       .form-group input:focus,
+       .form-group select:focus {
+         outline: none;
+         border-color: #007bff;
+         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+       }
+
+       .form-group input[type="file"] {
+         padding: 8px;
+         border: 2px dashed #e9ecef;
+         background: #f8f9fa;
+       }
+
+       .required {
+         color: #dc3545;
+       }
+
+       .policy-section {
+         margin: 20px 0;
+         padding: 15px;
+         background: #f8f9fa;
+         border-radius: 8px;
+         border-left: 4px solid #ffc107;
+       }
+
+       .policy-section h4 {
+         color: #333;
+         margin-bottom: 10px;
+         font-size: 16px;
+       }
+
+       .policy-section p {
+         color: #666;
+         font-size: 13px;
+         line-height: 1.5;
+         margin-bottom: 8px;
+       }
+
+       .checkbox-group {
+         margin: 20px 0;
+       }
+
+       .checkbox-group input[type="checkbox"] {
+         margin-right: 8px;
+       }
+
+       .checkbox-group label {
+         font-size: 14px;
+         color: #333;
+       }
+
+       .checkbox-group a {
+         color: #007bff;
+         text-decoration: none;
+       }
+
+       .checkbox-group a:hover {
+         text-decoration: underline;
        }
        
        .summary-section {
@@ -667,6 +965,125 @@
        .btn-confirm:hover {
          transform: translateY(-2px);
          box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
+       }
+
+       .gcash-container {
+         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+         border-radius: 15px;
+         padding: 20px;
+         text-align: center;
+         color: white;
+         box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
+         position: relative;
+         overflow: hidden;
+       }
+
+       .gcash-container::before {
+         content: '';
+         position: absolute;
+         top: -50%;
+         left: -50%;
+         width: 200%;
+         height: 200%;
+         background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+         animation: shimmer 3s infinite;
+       }
+
+       @keyframes shimmer {
+         0% { transform: rotate(0deg); }
+         100% { transform: rotate(360deg); }
+       }
+
+       .gcash-logo {
+         font-size: 24px;
+         font-weight: bold;
+         margin-bottom: 15px;
+         position: relative;
+         z-index: 2;
+       }
+
+       .qr-code {
+         background: white;
+         padding: 15px;
+         border-radius: 10px;
+         margin: 15px 0;
+         position: relative;
+         z-index: 2;
+       }
+
+       .qr-code img {
+         width: 150px;
+         height: 150px;
+       }
+
+       .payment-info {
+         position: relative;
+         z-index: 2;
+       }
+
+       .account-name {
+         font-size: 14px;
+         margin: 10px 0 5px;
+         opacity: 0.9;
+       }
+
+       .account-number {
+         font-size: 12px;
+         opacity: 0.8;
+         margin-bottom: 15px;
+       }
+
+       .scan-text {
+         font-size: 12px;
+         opacity: 0.9;
+         margin-bottom: 10px;
+       }
+
+       .amount-display {
+         font-size: 28px;
+         font-weight: bold;
+         margin: 15px 0;
+         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+         position: relative;
+         z-index: 2;
+       }
+
+       .modal-actions {
+         display: flex;
+         gap: 15px;
+         margin-top: 25px;
+       }
+
+       .btn-cancel-modal,
+       .btn-confirm-booking {
+         flex: 1;
+         padding: 12px 20px;
+         border: none;
+         border-radius: 8px;
+         font-size: 16px;
+         font-weight: 600;
+         cursor: pointer;
+         transition: all 0.3s ease;
+       }
+
+       .btn-cancel-modal {
+         background: #6c757d;
+         color: white;
+       }
+
+       .btn-cancel-modal:hover {
+         background: #5a6268;
+         transform: translateY(-1px);
+       }
+
+       .btn-confirm-booking {
+         background: #28a745;
+         color: white;
+       }
+
+       .btn-confirm-booking:hover {
+         background: #218838;
+         transform: translateY(-1px);
        }
        
        /* Responsive modal for smaller screens */
@@ -1052,12 +1469,6 @@
         <p>Rent professional-grade band equipment for events, gigs, and performances</p>
       </div>
 
-      @if(session('success'))
-        <div class="alert alert-success">
-          {{ session('success') }}
-        </div>
-      @endif
-      
       @if(session('error'))
         <div class="alert alert-error">
           {{ session('error') }}
@@ -1258,98 +1669,180 @@
         </div>
       </form>
       
-      <!-- Rental Summary Modal -->
-      <div id="rentalSummaryModal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2><i class="fas fa-clipboard-list"></i> Rental Booking Summary</h2>
-            <span class="close-modal">&times;</span>
-          </div>
-          <div class="modal-body">
-            <div class="summary-section">
-              <h3><i class="fas fa-guitar"></i> Instrument Details</h3>
-              <div class="summary-item">
-                <span>Instrument Type:</span>
-                <span id="modal_instrument_type">-</span>
+      <!-- Instrument Rental Payment Modal -->
+      <div id="instrumentRentalModal" class="modal">
+        <div class="modal-container">
+          <div class="modal-content">
+            <!-- Left Side - Booking Details -->
+            <div class="modal-left">
+              <div class="modal-header">
+                <h2 class="modal-title">INSTRUMENT RENTAL</h2>
+                <p class="modal-subtitle">SELECT DATE</p>
+                <p class="location">📍 288H Sto.Domingo Street 2nd Filmont Homes Subdivision, Calamba, 4027 Laguna</p>
               </div>
-              <div class="summary-item">
-                <span>Specific Instrument:</span>
-                <span id="modal_instrument_name">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Daily Rate:</span>
-                <span id="modal_daily_rate">-</span>
+              
+              <div class="booking-summary-list">
+                <div class="summary-header">
+                  <h3><i class="fas fa-calendar-check"></i> Booking Summary</h3>
+                </div>
+                
+                <div class="summary-list">
+                  <div class="summary-list-item">
+                    <div class="item-icon">
+                      <i class="fas fa-music"></i>
+                    </div>
+                    <div class="item-content">
+                      <span class="item-label">Instrument</span>
+                      <span class="item-value" id="modalInstrumentSummary">-</span>
+                    </div>
+                  </div>
+                  
+                  <div class="summary-list-item">
+                    <div class="item-icon">
+                      <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="item-content">
+                      <span class="item-label">Rental Period</span>
+                      <span class="item-value" id="modalRentalPeriod">-</span>
+                    </div>
+                  </div>
+                  
+                  <div class="summary-list-item">
+                    <div class="item-icon">
+                      <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="item-content">
+                      <span class="item-label">Event Duration</span>
+                      <span class="item-value" id="modalEventDuration">7 hours</span>
+                    </div>
+                  </div>
+                  
+                  <div class="summary-list-item">
+                    <div class="item-icon">
+                      <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="item-content">
+                      <span class="item-label">Delivery</span>
+                      <span class="item-value" id="modalDeliveryInfo">-</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="price-breakdown-list">
+                  <div class="price-list-item">
+                    <span class="price-label"><i class="fas fa-tag"></i> Base Rate</span>
+                    <span class="price-value" id="modalBaseRate">₱0.00</span>
+                  </div>
+                  <div class="price-list-item" id="transportationFeeRow" style="display: none;">
+                    <span class="price-label"><i class="fas fa-shipping-fast"></i> Delivery Fee</span>
+                    <span class="price-value" id="modalTransportationFee">₱0.00</span>
+                  </div>
+                  <div class="price-list-item" id="extraHoursRow" style="display: none;">
+                    <span class="price-label"><i class="fas fa-plus-circle"></i> Extra Hours</span>
+                    <span class="price-value" id="modalExtraHours">₱0.00</span>
+                  </div>
+                  <div class="price-list-item reservation-fee">
+                    <span class="price-label"><i class="fas fa-shield-alt"></i> Reservation Fee</span>
+                    <span class="price-value">₱300.00</span>
+                  </div>
+                  <div class="price-list-total">
+                    <span class="total-label"><i class="fas fa-calculator"></i> Total Amount</span>
+                    <span class="total-value" id="modalTotalPrice">₱300.00</span>
+                  </div>
+                </div>
+                
+                <div class="payment-note-list">
+                  <i class="fas fa-info-circle"></i>
+                  <span>30% down payment required to secure booking</span>
+                </div>
               </div>
             </div>
             
-            <div class="summary-section">
-              <h3><i class="fas fa-calendar-check"></i> Rental Period</h3>
-              <div class="summary-item">
-                <span>Start Date:</span>
-                <span id="modal_start_date">-</span>
-              </div>
-              <div class="summary-item">
-                <span>End Date:</span>
-                <span id="modal_end_date">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Duration:</span>
-                <span id="modal_duration">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Event Duration:</span>
-                <span id="modal_event_duration">-</span>
-              </div>
+            <!-- Center - Form Section -->
+            <div class="modal-center">
+              <h3>Enter Details</h3>
+              <form id="instrumentRentalForm" method="POST" action="{{ route('instrument-rental.store') }}" enctype="multipart/form-data">
+                @csrf
+                
+                <!-- Hidden fields for booking data -->
+                <input type="hidden" id="modalInstrumentTypeInput" name="instrument_type">
+                <input type="hidden" id="modalInstrumentNameInput" name="instrument_name">
+                <input type="hidden" id="modalStartDateInput" name="rental_start_date">
+                <input type="hidden" id="modalEndDateInput" name="rental_end_date">
+                <input type="hidden" id="modalDurationInput" name="rental_duration">
+                <input type="hidden" id="modalEventDurationInput" name="event_duration_hours">
+                <input type="hidden" id="modalPickupLocationInput" name="pickup_location">
+                <input type="hidden" id="modalReturnLocationInput" name="return_location">
+                <input type="hidden" id="modalTransportationInput" name="transportation">
+                <input type="hidden" id="modalFullPackageInput" name="full_package">
+                <input type="hidden" id="modalTotalAmountInput" name="total_amount">
+                <input type="hidden" id="modalVenueTypeInput" name="venue_type">
+                <input type="hidden" id="modalNotesInput" name="notes">
+                <input type="hidden" id="modalDocumentationConsentInput" name="documentation_consent">
+                
+                <div class="form-group">
+                  <label class="form-label" for="modalFullName">FULL NAME *</label>
+                  <input type="text" id="modalFullName" name="full_name" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="modalContactNumber">CONTACT NUMBER *</label>
+                  <input type="tel" id="modalContactNumber" name="contact_number" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="modalReferenceCode">REFERENCE CODE (4 DIGITS) *</label>
+                  <input type="text" id="modalReferenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="modalPicture">UPLOAD PICTURE</label>
+                  <input type="file" id="modalPicture" name="picture" class="file-input" accept="image/*">
+                  <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ffeaa7; font-size: 0.85rem;">
+                    ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
+                  </div>
+                </div>
+                
+                <div class="policy-section">
+                  <div class="policy-title">Down Payment Policy</div>
+                  <p class="policy-text">To secure your booking, a non-refundable down payment of 30% of the total service fee is required upon reservation.</p>
+                  <p class="policy-text">This ensures your preferred date and time slot is reserved exclusively for you.</p>
+                  <p class="policy-text">• Rebooking is allowed up to 24 hours before the session, subject to availability.</p>
+                </div>
+                
+                <div class="checkbox-group">
+                  <input type="checkbox" id="modalAgreement" name="agreement" required>
+                  <label class="checkbox-label" for="modalAgreement">I agree to <a href="#" target="_blank">User Agreement</a> and <a href="#" target="_blank">Privacy Policy</a></label>
+                </div>
+                
+                <div class="modal-buttons">
+                  <button type="button" class="btn-cancel" id="cancelRentalModal">Cancel</button>
+                  <button type="submit" class="btn-confirm">Confirm Booking</button>
+                </div>
+              </form>
             </div>
             
-            <div class="summary-section">
-              <h3>📍 Location & Services</h3>
-              <div class="summary-item">
-                <span>Pickup Location:</span>
-                <span id="modal_pickup">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Return Location:</span>
-                <span id="modal_return">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Transportation:</span>
-                <span id="modal_transportation">-</span>
-              </div>
-            </div>
-            
-            <div class="summary-section">
-              <h3>💰 Payment Summary</h3>
-              <div class="summary-item">
-                <span>Subtotal:</span>
-                <span id="modal_subtotal">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Transportation Fee:</span>
-                <span id="modal_transportation_fee">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Extra Hour Charges:</span>
-                <span id="modal_extra_hours">-</span>
-              </div>
-              <div class="summary-item total">
-                <span>Total Amount:</span>
-                <span id="modal_total">-</span>
-              </div>
-              <div class="summary-item">
-                <span>Security Deposit (Paid First):</span>
-                <span>₱300.00</span>
+            <!-- Right Side - GCash Payment Section -->
+            <div class="modal-right">
+              <div class="gcash-container">
+                <div class="gcash-logo">
+                  <span>💳</span> GCash
+                </div>
+                
+                <div class="gcash-qr">
+                  <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code">
+                </div>
+                
+                <div class="gcash-details">
+                  <div>Scan to pay with GCash</div>
+                  <div class="gcash-merchant">LEMON HUB</div>
+                  <div>Mobile No: 0995...217</div>
+                  <div>Account ID: ...60JPSU</div>
+                </div>
+                
+                <div class="gcash-amount">₱ <span id="modalGcashAmount">300.00</span></div>
               </div>
             </div>
-            
-            <div class="payment-reminder">
-              <strong>💳 Payment Reminder:</strong>
-              <p>Security deposit (₱300) must be paid first to confirm this booking. Full payment will be collected upon pickup/delivery. Security deposit is refundable upon event completion.</p>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn-cancel" id="cancelBooking">❌ Cancel</button>
-            <button type="button" class="btn-confirm" id="confirmBooking">✅ Confirm Booking</button>
           </div>
         </div>
       </div>
@@ -1480,11 +1973,10 @@
        }
 
       // Modal functionality
-      const modal = document.getElementById('rentalSummaryModal');
+      const modal = document.getElementById('instrumentRentalModal');
       const showSummaryBtn = document.getElementById('showSummaryBtn');
-      const closeModal = document.querySelector('.close-modal');
-      const cancelBooking = document.getElementById('cancelBooking');
-      const confirmBooking = document.getElementById('confirmBooking');
+      const cancelRentalModal = document.getElementById('cancelRentalModal');
+      const instrumentRentalForm = document.getElementById('instrumentRentalForm');
       
       // Show modal when button is clicked
       showSummaryBtn.addEventListener('click', function() {
@@ -1505,21 +1997,26 @@
         modal.style.display = 'none';
       }
       
-      closeModal.addEventListener('click', closeModalFunc);
-      cancelBooking.addEventListener('click', closeModalFunc);
+      if (cancelRentalModal) {
+        cancelRentalModal.addEventListener('click', closeModalFunc);
+      }
       
       // Close modal when clicking outside
-      window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-          closeModalFunc();
-        }
-      });
+      if (modal) {
+        modal.addEventListener('click', function(event) {
+          if (event.target === modal) {
+            closeModalFunc();
+          }
+        });
+      }
       
-      // Confirm booking
-      confirmBooking.addEventListener('click', function() {
-        // Submit the form
-        form.submit();
-      });
+      // Handle form submission
+      if (instrumentRentalForm) {
+        instrumentRentalForm.addEventListener('submit', function(e) {
+          // Allow normal form submission
+          // The form will submit to the server normally
+        });
+      }
       
       // Form validation function
       function validateForm() {
@@ -1577,21 +2074,75 @@
         const extraHourCharges = extraHours * 200;
         const total = subtotal + transportationFee + 300 + extraHourCharges; // 300 is reservation fee
         
-        // Populate modal fields
-        document.getElementById('modal_instrument_type').textContent = instrumentTypes[selectedType] || '-';
-        document.getElementById('modal_instrument_name').textContent = availableInstruments[selectedType]?.[selectedInstrument] || '-';
-        document.getElementById('modal_daily_rate').textContent = `₱${dailyRate.toFixed(2)}`;
-        document.getElementById('modal_start_date').textContent = startDateInput.value || '-';
-        document.getElementById('modal_end_date').textContent = endDateInput.value || '-';
-        document.getElementById('modal_duration').textContent = durationInput.value || '-';
-        document.getElementById('modal_event_duration').textContent = `${eventDurationHours} hour(s)`;
-        document.getElementById('modal_pickup').textContent = pickupLocation === 'Studio' ? 'Studio (288H Sto.Domingo Street, Calamba)' : pickupLocation;
-        document.getElementById('modal_return').textContent = returnLocation === 'Studio' ? 'Studio (288H Sto.Domingo Street, Calamba)' : returnLocation;
-        document.getElementById('modal_transportation').textContent = transportation === 'delivery' ? 'Delivery & Pickup (₱550)' : 'No Transportation (Self Pickup)';
-        document.getElementById('modal_subtotal').textContent = `₱${subtotal.toFixed(2)}`;
-        document.getElementById('modal_transportation_fee').textContent = `₱${transportationFee.toFixed(2)}`;
-        document.getElementById('modal_extra_hours').textContent = extraHours > 0 ? `₱${extraHourCharges.toFixed(2)} (${extraHours} extra hour(s))` : '₱0.00';
-        document.getElementById('modal_total').textContent = `₱${total.toFixed(2)}`;
+        // Format dates for display
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        const formatDate = (date) => {
+          return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          });
+        };
+        
+        // Populate modern summary fields
+        const instrumentDisplay = fullPackage ? 'Full Package' : (selectedInstrument || selectedType || 'Selected Instrument');
+        document.getElementById('modalInstrumentSummary').textContent = instrumentDisplay;
+        
+        const rentalPeriod = `${formatDate(startDate)} - ${formatDate(endDate)} (${duration} days)`;
+        document.getElementById('modalRentalPeriod').textContent = rentalPeriod;
+        
+        document.getElementById('modalEventDuration').textContent = `${eventDurationHours} hours`;
+        
+        const deliveryInfo = transportation === 'delivery' ? `Delivery to ${pickupLocation}` : 'Pickup Only';
+        document.getElementById('modalDeliveryInfo').textContent = deliveryInfo;
+        
+        // Populate price breakdown
+        document.getElementById('modalBaseRate').textContent = '₱' + subtotal.toFixed(2);
+        
+        // Show/hide transportation fee
+        const transportationRow = document.getElementById('transportationFeeRow');
+        if (transportationFee > 0) {
+          transportationRow.style.display = 'flex';
+          document.getElementById('modalTransportationFee').textContent = '₱' + transportationFee.toFixed(2);
+        } else {
+          transportationRow.style.display = 'none';
+        }
+        
+        // Show/hide extra hours
+        const extraHoursRow = document.getElementById('extraHoursRow');
+        if (extraHourCharges > 0) {
+          extraHoursRow.style.display = 'flex';
+          document.getElementById('modalExtraHours').textContent = '₱' + extraHourCharges.toFixed(2);
+        } else {
+          extraHoursRow.style.display = 'none';
+        }
+        
+        document.getElementById('modalTotalPrice').textContent = '₱' + total.toFixed(2);
+        
+        // Get additional form values
+        const venueType = document.querySelector('select[name="venue_type"]').value;
+        const notes = document.querySelector('textarea[name="notes"]').value;
+        const documentationConsent = document.querySelector('input[name="documentation_consent"]').checked;
+        
+        // Populate hidden form fields
+        document.getElementById('modalInstrumentTypeInput').value = selectedType;
+        document.getElementById('modalInstrumentNameInput').value = selectedInstrument;
+        document.getElementById('modalStartDateInput').value = startDateInput.value;
+        document.getElementById('modalEndDateInput').value = endDateInput.value;
+        document.getElementById('modalDurationInput').value = durationInput.value;
+        document.getElementById('modalEventDurationInput').value = eventDurationHours;
+        document.getElementById('modalPickupLocationInput').value = pickupLocation;
+        document.getElementById('modalReturnLocationInput').value = returnLocation;
+        document.getElementById('modalTransportationInput').value = transportation;
+        document.getElementById('modalFullPackageInput').value = fullPackage ? '1' : '0';
+        document.getElementById('modalTotalAmountInput').value = total;
+        document.getElementById('modalVenueTypeInput').value = venueType;
+        document.getElementById('modalNotesInput').value = notes;
+        document.getElementById('modalDocumentationConsentInput').value = documentationConsent ? '1' : '0';
+        
+        // Update GCash amount (security deposit)
+        document.getElementById('modalGcashAmount').textContent = '300.00';
       }
 
       // Set minimum end date based on start date
@@ -1603,6 +2154,201 @@
       });
     });
   </script>
+
+  <!-- Success Confirmation Modal -->
+  @if(session('booking_confirmed'))
+  <div id="successModal" class="modal" style="display: block; animation: fadeIn 0.3s ease-out;">
+    <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+      <div class="modal-content" style="
+        max-width: 560px;
+        border-radius: 20px;
+        padding: 30px;
+        background: #ffffff;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      ">
+        
+        <!-- Left Section: Icon and Title -->
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          flex-shrink: 0;
+        ">
+          <!-- Success Icon -->
+          <div style="
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounceIn 0.6s ease-out 0.2s both;
+          ">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20,6 9,17 4,12"></polyline>
+            </svg>
+          </div>
+          
+          <!-- Title -->
+          <h2 style="
+            color: #10b981;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            animation: fadeInUp 0.5s ease-out 0.3s both;
+            white-space: nowrap;
+          ">Booking<br>Confirmed!</h2>
+        </div>
+        
+        <!-- Right Section: Details -->
+        <div style="
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        ">
+          <!-- Success Message -->
+          <div style="
+            background: #f0fdf4;
+            color: #166534;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #bbf7d0;
+            font-weight: 400;
+            line-height: 1.5;
+            font-size: 14px;
+            animation: fadeInUp 0.5s ease-out 0.4s both;
+          ">
+            Booking confirmed! Your rental on {{ session('booking_details.rental_start_date') }} at {{ session('booking_details.created_at') }} for {{ session('booking_details.rental_duration_days') }} day(s) has been accepted. Reference: {{ session('booking_details.reference') }}. You will receive an email confirmation shortly.
+          </div>
+          
+          <!-- Bottom Section -->
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+          ">
+            <!-- Email confirmation text -->
+            <p style="
+              color: #6b7280;
+              margin: 0;
+              font-size: 14px;
+              font-weight: 400;
+              animation: fadeInUp 0.5s ease-out 0.5s both;
+              flex: 1;
+            ">You will receive an email confirmation shortly.</p>
+            
+            <!-- Countdown -->
+            <div style="
+              color: #6b7280;
+              font-size: 13px;
+              font-weight: 400;
+              animation: fadeInUp 0.5s ease-out 0.6s both;
+              text-align: right;
+              flex-shrink: 0;
+            ">
+              Redirecting in <span id="countdown" style="color: #374151; font-weight: 500;">4</span> seconds...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+
+    .modal-container {
+      position: relative;
+      z-index: 10001;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      70% {
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+
+  <script>
+    // Auto-redirect after countdown
+    @if(session('booking_confirmed'))
+    let countdown = 4;
+    const countdownElement = document.getElementById('countdown');
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdownElement) {
+        countdownElement.textContent = countdown;
+      }
+      if (countdown <= 0) {
+        clearInterval(countdownInterval);
+        window.location.href = '/instrument-rental';
+      }
+    }, 1000);
+    @endif
+  </script>
+  @endif
+
   <script src="{{ asset('js/page-transitions.js') }}"></script>
 </body>
 </html>
