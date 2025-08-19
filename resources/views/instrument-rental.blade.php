@@ -6,6 +6,8 @@
   <title>Band Equipment Rental - Lemon Hub Studio</title>
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
+  <!-- Font Awesome for modern icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
          .rental-container {
        max-width: 1400px;
@@ -18,68 +20,117 @@
 
          .rental-header {
        text-align: center;
-       margin-bottom: 30px;
-       padding: 20px;
-       background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
+       margin-bottom: 40px;
+       padding: 40px 30px;
+       background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
        color: #111;
-       border-radius: 10px;
-       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+       border-radius: 20px;
+       box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.1);
+       position: relative;
+       overflow: hidden;
+     }
+
+     .rental-header::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: 0;
+       right: 0;
+       bottom: 0;
+       background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+       pointer-events: none;
      }
 
          .rental-header h1 {
        margin: 0;
-       font-size: 2.5em;
-       font-weight: bold;
+       font-size: 3.2em;
+       font-weight: 700;
+       background: linear-gradient(45deg, #111111, #333333);
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+       background-clip: text;
+       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+       letter-spacing: -1px;
      }
 
          .rental-header p {
-       margin: 10px 0 0 0;
-       font-size: 1.1em;
-       opacity: 0.9;
+       margin: 15px 0 0 0;
+       font-size: 1.3em;
+       opacity: 0.95;
+       font-weight: 300;
+       letter-spacing: 0.5px;
      }
 
          .rental-form {
        display: grid;
        grid-template-columns: 1fr 1fr 1fr;
-       gap: 25px;
-       margin-bottom: 30px;
+       gap: 30px;
+       margin-bottom: 40px;
      }
 
          .form-section {
-       background: #f8f9fa;
-       padding: 25px;
-       border-radius: 8px;
-       border: 1px solid #e9ecef;
+       background: linear-gradient(145deg, #fffbf0 0%, #ffffff 100%);
+       padding: 35px;
+       border-radius: 20px;
+       border: 2px solid #ffd700;
+       box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15), 0 4px 12px rgba(255, 215, 0, 0.08);
+       transition: all 0.3s ease;
+       position: relative;
+       overflow: hidden;
+     }
+
+     .form-section::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: 0;
+       right: 0;
+       height: 4px;
+       background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
+     }
+
+     .form-section:hover {
+       transform: translateY(-5px);
+       box-shadow: 0 20px 40px rgba(255, 215, 0, 0.25), 0 8px 16px rgba(255, 215, 0, 0.15);
      }
 
          .form-section h3 {
-       margin: 0 0 20px 0;
-       color: #111;
-       font-size: 1.3em;
-       border-bottom: 2px solid #ffd700;
-       padding-bottom: 10px;
+       margin: 0 0 25px 0;
+       color: #2d3748;
+       font-size: 1.4em;
+       font-weight: 600;
+       border-bottom: none;
+       padding-bottom: 0;
+       display: flex;
+       align-items: center;
+       gap: 10px;
      }
 
          .form-group {
-       margin-bottom: 20px;
+       margin-bottom: 25px;
+       position: relative;
      }
 
     .form-group label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #555;
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #4a5568;
+      font-size: 0.95em;
+      letter-spacing: 0.3px;
     }
 
     .form-group select,
     .form-group input,
     .form-group textarea {
       width: 100%;
-      padding: 12px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
+      padding: 16px 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
       font-size: 16px;
-      transition: border-color 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
     .form-group select:focus,
@@ -87,16 +138,45 @@
     .form-group textarea:focus {
       outline: none;
       border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(102, 126, 234, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .form-group select:hover,
+    .form-group input:hover,
+    .form-group textarea:hover {
+      border-color: #cbd5e0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-group small {
+      display: block;
+      margin-top: 8px;
+      color: #718096;
+      font-size: 0.85em;
+      line-height: 1.4;
     }
 
          .price-summary {
-       background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
-       color: #111;
-       padding: 25px;
-       border-radius: 10px;
-       margin-bottom: 30px;
-       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+       color: white;
+       padding: 35px;
+       border-radius: 20px;
+       margin-bottom: 40px;
+       box-shadow: 0 15px 35px rgba(102, 126, 234, 0.25), 0 8px 16px rgba(0, 0, 0, 0.1);
+       position: relative;
+       overflow: hidden;
+     }
+
+     .price-summary::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: 0;
+       right: 0;
+       bottom: 0;
+       background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+       pointer-events: none;
      }
      
 
@@ -162,43 +242,76 @@
 
          .submit-section {
        text-align: center;
-       padding: 20px;
-       background: #f8f9fa;
-       border-radius: 8px;
+       padding: 30px;
+       background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+       border-radius: 20px;
+       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+       margin-top: 20px;
      }
 
          .submit-btn {
-       background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
+       background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
        color: #111;
        border: none;
-       padding: 15px 40px;
+       padding: 18px 50px;
        font-size: 18px;
-       font-weight: bold;
-       border-radius: 8px;
+       font-weight: 600;
+       border-radius: 50px;
        cursor: pointer;
-       transition: all 0.3s ease;
-       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+       box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+       letter-spacing: 0.5px;
+       position: relative;
+       overflow: hidden;
+     }
+
+     .submit-btn::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: -100%;
+       width: 100%;
+       height: 100%;
+       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+       transition: left 0.5s;
+     }
+
+     .submit-btn:hover::before {
+       left: 100%;
      }
 
          .submit-btn:hover {
-       transform: translateY(-2px);
-       box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
-       background: linear-gradient(135deg, #dbb411 0%, #ffd700 100%);
+       transform: translateY(-3px);
+       box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+       background: linear-gradient(135deg, #dbb411 0%, #ffd700 50%, #ffed4e 100%);
      }
 
      .rental-terms {
-       background: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%);
-       border: 2px solid #ffd700;
-       border-radius: 8px;
-       padding: 20px;
-       margin: 20px 0;
-       box-shadow: 0 2px 10px rgba(255, 215, 0, 0.2);
+       background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+       border: 2px solid #e2e8f0;
+       border-radius: 20px;
+       padding: 30px;
+       margin: 30px 0;
+       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+       position: relative;
+     }
+
+     .rental-terms::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       left: 0;
+       right: 0;
+       height: 4px;
+       background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+       border-radius: 20px 20px 0 0;
      }
 
      .rental-terms h3 {
-       color: #111;
-       margin: 0 0 15px 0;
-       font-size: 1.3em;
+       color: #2d3748;
+       margin: 0 0 20px 0;
+       font-size: 1.4em;
+       font-weight: 600;
      }
 
      .terms-list {
@@ -310,30 +423,68 @@
          top: 0;
          width: 100vw;
          height: 100vh;
-         background-color: rgba(0, 0, 0, 0.6);
-         backdrop-filter: blur(5px);
+         background-color: rgba(0, 0, 0, 0.7);
+         backdrop-filter: blur(8px);
+         animation: modalFadeIn 0.3s ease-out;
+       }
+       
+       @keyframes modalFadeIn {
+         from {
+           opacity: 0;
+           backdrop-filter: blur(0px);
+         }
+         to {
+           opacity: 1;
+           backdrop-filter: blur(8px);
+         }
        }
        
        .modal-content {
          background-color: white;
-         margin: 1% auto;
+         margin: 2% auto;
          padding: 0;
-         border-radius: 10px;
+         border-radius: 20px;
          width: 95%;
-         max-width: 700px;
-         max-height: 85vh;
+         max-width: 750px;
+         max-height: 90vh;
          overflow-y: auto;
-         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 0 10px 20px rgba(0, 0, 0, 0.1);
+         animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+         transform-origin: center;
+       }
+       
+       @keyframes modalSlideIn {
+         from {
+           opacity: 0;
+           transform: scale(0.9) translateY(-20px);
+         }
+         to {
+           opacity: 1;
+           transform: scale(1) translateY(0);
+         }
        }
        
        .modal-header {
-         background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
+         background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
          color: #111;
-         padding: 15px 20px;
-         border-radius: 10px 10px 0 0;
+         padding: 25px 30px;
+         border-radius: 20px 20px 0 0;
          display: flex;
          justify-content: space-between;
          align-items: center;
+         position: relative;
+         overflow: hidden;
+       }
+       
+       .modal-header::before {
+         content: '';
+         position: absolute;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+         pointer-events: none;
        }
        
        .modal-header h2 {
@@ -342,105 +493,180 @@
        }
        
        .close-modal {
-         color: #111;
-         font-size: 28px;
-         font-weight: bold;
+         color: rgba(17, 17, 17, 0.8);
+         font-size: 32px;
+         font-weight: 300;
          cursor: pointer;
+         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+         width: 40px;
+         height: 40px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         border-radius: 50%;
+         background: rgba(17, 17, 17, 0.1);
+         backdrop-filter: blur(10px);
+         position: relative;
+         z-index: 10;
          line-height: 1;
        }
        
        .close-modal:hover {
-         color: #333;
+         color: white;
+         background: rgba(255, 255, 255, 0.2);
+         transform: scale(1.1);
+         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
        }
        
        .modal-body {
-         padding: 12px 18px;
+         padding: 30px;
+         background-color: #ffffff;
+         position: relative;
        }
        
        .summary-section {
-         margin-bottom: 15px;
+         margin-bottom: 20px;
+         background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+         padding: 20px;
+         border-radius: 12px;
+         border: 1px solid #e2e8f0;
+         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
        }
        
        .summary-section h3 {
-         color: #111;
-         margin: 0 0 8px 0;
-         font-size: 1em;
-         border-bottom: 2px solid #ffd700;
-         padding-bottom: 2px;
+         color: #2d3748;
+         margin: 0 0 15px 0;
+         font-size: 1.2em;
+         font-weight: 600;
+         border-bottom: 3px solid #ffd700;
+         padding-bottom: 8px;
+         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         -webkit-background-clip: text;
+         -webkit-text-fill-color: transparent;
+         background-clip: text;
        }
        
        .summary-item {
          display: flex;
          justify-content: space-between;
-         padding: 4px 0;
-         border-bottom: 1px solid #eee;
-         font-size: 0.9em;
+         padding: 8px 0;
+         border-bottom: 1px solid #e2e8f0;
+         font-size: 0.95em;
+         transition: all 0.2s ease;
+       }
+       
+       .summary-item:hover {
+         background: rgba(102, 126, 234, 0.05);
+         padding-left: 8px;
+         border-radius: 4px;
        }
        
        .summary-item.total {
          font-weight: bold;
-         font-size: 1.05em;
+         font-size: 1.15em;
          color: #dbb411;
-         border-bottom: 2px solid #ffd700;
+         border-bottom: 3px solid #ffd700;
+         background: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%);
+         padding: 12px 8px;
+         border-radius: 8px;
+         margin-top: 10px;
+         box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
        }
        
        .payment-reminder {
          background: linear-gradient(135deg, #fff8dc 0%, #fffacd 100%);
          border: 2px solid #ffd700;
-         border-radius: 8px;
-         padding: 10px;
-         margin-top: 12px;
+         border-radius: 12px;
+         padding: 20px;
+         margin-top: 20px;
+         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+         position: relative;
+         overflow: hidden;
+       }
+       
+       .payment-reminder::before {
+         content: '';
+         position: absolute;
+         top: 0;
+         left: 0;
+         right: 0;
+         height: 4px;
+         background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
        }
        
        .payment-reminder strong {
-         color: #111;
+         color: #2d3748;
+         font-size: 1.1em;
        }
        
        .payment-reminder p {
-         margin: 6px 0 0 0;
-         color: #555;
-         font-size: 0.85em;
+         margin: 10px 0 0 0;
+         color: #4a5568;
+         font-size: 0.9em;
+         line-height: 1.5;
        }
        
        .modal-footer {
-         padding: 12px 18px;
-         border-top: 1px solid #eee;
+         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+         padding: 25px 30px;
+         border-radius: 0 0 20px 20px;
+         text-align: center;
+         border-top: 1px solid #e2e8f0;
          display: flex;
-         gap: 15px;
-         justify-content: flex-end;
+         gap: 20px;
+         justify-content: center;
        }
        
        .btn-cancel, .btn-confirm {
-         padding: 10px 20px;
+         padding: 12px 24px;
          border: none;
-         border-radius: 6px;
-         font-size: 14px;
-         font-weight: bold;
+         border-radius: 12px;
+         font-size: 1em;
+         font-weight: 600;
          cursor: pointer;
-         transition: all 0.3s ease;
+         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+         position: relative;
+         overflow: hidden;
+         min-width: 120px;
+         text-transform: uppercase;
+         letter-spacing: 0.5px;
+       }
+       
+       .btn-cancel::before, .btn-confirm::before {
+         content: '';
+         position: absolute;
+         top: 0;
+         left: -100%;
+         width: 100%;
+         height: 100%;
+         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+         transition: left 0.5s;
+       }
+       
+       .btn-cancel:hover::before, .btn-confirm:hover::before {
+         left: 100%;
        }
        
        .btn-cancel {
-         background: #f8f9fa;
-         color: #666;
-         border: 2px solid #ddd;
+         background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+         color: white;
+         box-shadow: 0 4px 15px rgba(113, 128, 150, 0.4);
        }
        
        .btn-cancel:hover {
-         background: #e9ecef;
-         border-color: #adb5bd;
+         transform: translateY(-2px);
+         box-shadow: 0 8px 25px rgba(113, 128, 150, 0.6);
        }
        
        .btn-confirm {
          background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
          color: #111;
-         border: 2px solid #ffd700;
-         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
        }
        
        .btn-confirm:hover {
          transform: translateY(-2px);
-         box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+         box-shadow: 0 8px 25px rgba(255, 215, 0, 0.6);
        }
        
        /* Responsive modal for smaller screens */
@@ -495,7 +721,137 @@
          }
        }
      
-     /* Responsive design */
+     /* Mobile-First Responsive Design */
+     @media (max-width: 480px) {
+       .rental-container {
+         margin: 5px;
+         padding: 15px;
+         border-radius: 15px;
+       }
+       
+       .rental-header {
+         padding: 20px 15px;
+         text-align: center;
+       }
+       
+       .rental-header h1 {
+         font-size: 1.8em;
+         margin-bottom: 8px;
+       }
+       
+       .rental-header p {
+         font-size: 0.9em;
+       }
+       
+       .rental-form {
+         grid-template-columns: 1fr;
+         gap: 15px;
+       }
+       
+       .form-section {
+         padding: 20px 15px;
+       }
+       
+       .form-section h3 {
+         font-size: 1.1em;
+       }
+       
+       .price-summary {
+         padding: 20px 15px;
+       }
+       
+       .submit-section {
+         padding: 20px 15px;
+       }
+       
+       .submit-btn {
+         width: 100%;
+         padding: 15px;
+         font-size: 1.1em;
+       }
+       
+       .modal-content {
+         width: 95%;
+         margin: 5% auto;
+         border-radius: 15px;
+       }
+       
+       .modal-header {
+         padding: 20px 15px;
+         border-radius: 15px 15px 0 0;
+       }
+       
+       .modal-body {
+         padding: 20px 15px;
+       }
+       
+       .summary-section {
+         padding: 15px;
+         margin-bottom: 15px;
+       }
+       
+       .modal-footer {
+         flex-direction: column;
+         gap: 15px;
+         padding: 20px 15px;
+       }
+       
+       .btn-cancel, .btn-confirm {
+         width: 100%;
+         padding: 15px;
+       }
+     }
+     
+     @media (min-width: 481px) and (max-width: 768px) {
+       .rental-container {
+         margin: 15px;
+         padding: 25px;
+       }
+       
+       .rental-form {
+         grid-template-columns: 1fr;
+         gap: 20px;
+       }
+       
+       .form-section {
+         padding: 25px 20px;
+       }
+       
+       .price-summary {
+         padding: 25px 20px;
+       }
+       
+       .submit-section {
+         padding: 25px 20px;
+       }
+       
+       .modal-content {
+         width: 90%;
+         margin: 3% auto;
+       }
+       
+       .modal-body {
+         padding: 25px 20px;
+       }
+       
+       .modal-footer {
+         flex-direction: row;
+         gap: 15px;
+         justify-content: center;
+       }
+     }
+     
+     @media (min-width: 769px) and (max-width: 1024px) {
+       .rental-container {
+         max-width: 900px;
+       }
+       
+       .rental-form {
+         grid-template-columns: 2fr 1fr;
+         gap: 25px;
+       }
+     }
+     
      @media (max-width: 1200px) {
        .rental-form {
          grid-template-columns: 1fr 1fr;
@@ -610,6 +966,15 @@
        .price-details {
          grid-template-columns: 1fr;
        }
+       
+       .instrument-grid {
+         grid-template-columns: 1fr;
+         gap: 10px;
+       }
+       
+       .instrument-card {
+         padding: 12px;
+       }
      }
 
      /* Ensure proper spacing */
@@ -683,7 +1048,7 @@
   <div class="booking-main">
     <div class="rental-container">
       <div class="rental-header">
-        <h1>🎸 Band Equipment Rental</h1>
+        <h1><i class="fas fa-music"></i> Band Equipment Rental</h1>
         <p>Rent professional-grade band equipment for events, gigs, and performances</p>
       </div>
 
@@ -703,7 +1068,7 @@
         @csrf
         <div class="rental-form">
           <div class="form-section">
-            <h3>📋 Instrument Selection</h3>
+            <h3><i class="fas fa-music"></i> Instrument Selection</h3>
             
             <div class="form-group">
               <label for="instrument_type">Instrument Type:</label>
@@ -750,7 +1115,7 @@
           </div>
 
           <div class="form-section">
-            <h3>📅 Rental Period</h3>
+            <h3><i class="fas fa-calendar-alt"></i> Rental Period</h3>
             
             <div class="form-group">
               <label for="rental_start_date">Start Date:</label>
@@ -798,7 +1163,7 @@
           </div>
 
           <div class="form-section">
-            <h3>💰 Price Summary</h3>
+            <h3><i class="fas fa-calculator"></i> Price Summary</h3>
             
             <div class="price-details">
               <div class="price-item">
@@ -859,7 +1224,7 @@
 
 
         <div class="rental-terms">
-          <h3>⚠️ Rental Terms & Conditions</h3>
+          <h3><i class="fas fa-exclamation-triangle"></i> Rental Terms & Conditions</h3>
           <div class="terms-list">
             <div class="term-item">
               <strong>₱300 Reservation Fee & Security Deposit</strong> - Refundable after return of equipment
@@ -889,7 +1254,7 @@
         </div>
 
         <div class="submit-section">
-          <button type="button" class="submit-btn" id="showSummaryBtn">🎵 Confirm Instrument Rental</button>
+          <button type="button" class="submit-btn" id="showSummaryBtn"><i class="fas fa-check-circle"></i> Confirm Instrument Rental</button>
         </div>
       </form>
       
@@ -897,12 +1262,12 @@
       <div id="rentalSummaryModal" class="modal">
         <div class="modal-content">
           <div class="modal-header">
-            <h2>📋 Rental Booking Summary</h2>
+            <h2><i class="fas fa-clipboard-list"></i> Rental Booking Summary</h2>
             <span class="close-modal">&times;</span>
           </div>
           <div class="modal-body">
             <div class="summary-section">
-              <h3>🎸 Instrument Details</h3>
+              <h3><i class="fas fa-guitar"></i> Instrument Details</h3>
               <div class="summary-item">
                 <span>Instrument Type:</span>
                 <span id="modal_instrument_type">-</span>
@@ -918,7 +1283,7 @@
             </div>
             
             <div class="summary-section">
-              <h3>📅 Rental Period</h3>
+              <h3><i class="fas fa-calendar-check"></i> Rental Period</h3>
               <div class="summary-item">
                 <span>Start Date:</span>
                 <span id="modal_start_date">-</span>
