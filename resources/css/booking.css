@@ -1,33 +1,133 @@
-body {
+/* Modern Booking Page Styles - Consolidated */
+html, body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: url('../images/studio-bg.jpg') no-repeat center center fixed;
-  background-size: cover;
-  color: #333;
+  padding: 0;
 }
 
-.booking-container {
+.booking-navbar {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
-  justify-content: center;
-  align-items: stretch;
-  padding: 40px;
-  background: #ffffff; 
-  width: 95%;
-  max-width: 1200px;
-  margin: 60px auto 40px auto;
-  border-radius: 18px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
- 
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 64px;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
 
-.info-section {
-  flex: 1;
-  padding: 30px 40px;
-  border-right: 1px solid #ccc;
+.navbar-left:hover {
+  transform: scale(1.02);
+}
+
+.navbar-logo {
+  height: 42px;
+  width: 42px;
+  margin-right: 12px;
+  border-radius: 8px;
+  filter: drop-shadow(0 2px 8px rgba(219, 180, 17, 0.3));
+  transition: filter 0.3s ease;
+}
+
+.navbar-logo:hover {
+  filter: drop-shadow(0 4px 12px rgba(219, 180, 17, 0.5));
+}
+
+.navbar-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #222 0%, #dbb411 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.navbar-link {
+  color: rgba(51, 51, 51, 0.9);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.navbar-link:hover {
+  color: #dbb411;
+  background: rgba(219, 180, 17, 0.1);
+  backdrop-filter: blur(10px);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(219, 180, 17, 0.2);
+}
+
+body.booking-page {
+  background: #f7f7f7 !important;
+}
+
+body.booking-page::before {
+  display: none !important;
+}
+
+.booking-main {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  max-width: 1600px;
+  width: 100%;
+  margin: 100px auto 24px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 24px rgba(0,0,0,0.07);
+  overflow: hidden;
+  padding-bottom: 80px;
+}
+
+.booking-content {
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+}
+
+.info-section, .booking-right {
+  flex: 1 1 0;
+  min-width: 0;
+  background: #fff;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.info-section {
+  border-right: 1px solid #eee;
+}
+
+.booking-right {
+  border-left: none;
 }
 
 .info-section .studio-name {

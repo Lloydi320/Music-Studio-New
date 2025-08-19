@@ -763,16 +763,17 @@
               </form>
             </div>
           </div>
+          <!-- Session Messages -->
+          @if(session('success'))
+            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb; position: relative; z-index: 1000;">
+              {{ session('success') }}
+            </div>
+          @endif
+          
           <div class="booking-summary" id="bookingSummary">
             <div id="bookingSummaryContent">
-              @if(session('success'))
-                <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb;">
-                  {{ session('success') }}
-                </div>
-              @else
-                <!-- Default placeholder content -->
-                Select a date and time to see booking details
-              @endif
+              <!-- Default placeholder content -->
+              Select a date and time to see booking details
             </div>
             <div id="bookingConfirmationMessage" style="display:none;">
               <strong>Your booking has been confirmed!</strong>
@@ -955,6 +956,308 @@
     <p>Professional Music Studio Services</p>
   </div>
 </footer>
+
+<!-- Success Confirmation Modal -->
+<div id="successModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="modal-content" style="
+      max-width: 560px;
+      border-radius: 20px;
+      padding: 30px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    ">
+      
+      <!-- Left Section: Icon and Title -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+      ">
+        <!-- Success Icon -->
+        <div style="
+          width: 60px;
+          height: 60px;
+          margin-bottom: 16px;
+          background: #10b981;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: bounceIn 0.6s ease-out 0.2s both;
+        ">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20,6 9,17 4,12"></polyline>
+          </svg>
+        </div>
+        
+        <!-- Title -->
+        <h2 style="
+          color: #10b981;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: -0.3px;
+          animation: fadeInUp 0.5s ease-out 0.3s both;
+          white-space: nowrap;
+        ">Booking<br>Confirmed!</h2>
+      </div>
+      
+      <!-- Right Section: Details -->
+      <div style="
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <!-- Success Message -->
+        <div id="successMessage" style="
+          background: #f0fdf4;
+          color: #166534;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #bbf7d0;
+          font-weight: 400;
+          line-height: 1.5;
+          font-size: 14px;
+          animation: fadeInUp 0.5s ease-out 0.4s both;
+        ">
+          <!-- Success message will be populated here -->
+        </div>
+        
+        <!-- Bottom Section -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+        ">
+          <!-- Email confirmation text -->
+          <p style="
+            color: #6b7280;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.5s both;
+            flex: 1;
+          ">You will receive an email confirmation shortly.</p>
+          
+          <!-- Countdown -->
+          <div style="
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.6s both;
+            text-align: right;
+            flex-shrink: 0;
+          ">
+            Redirecting in <span id="countdown" style="color: #374151; font-weight: 500;">5</span> seconds...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="modal-content" style="
+      max-width: 560px;
+      border-radius: 20px;
+      padding: 30px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    ">
+      
+      <!-- Left Section: Icon and Title -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+      ">
+        <!-- Error Icon -->
+        <div style="
+          width: 60px;
+          height: 60px;
+          margin-bottom: 16px;
+          background: #ef4444;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: bounceIn 0.6s ease-out 0.2s both;
+        ">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        
+        <!-- Title -->
+        <h2 style="
+          color: #ef4444;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: -0.3px;
+          animation: fadeInUp 0.5s ease-out 0.3s both;
+          white-space: nowrap;
+        ">Booking<br>Error!</h2>
+      </div>
+      
+      <!-- Right Section: Details -->
+      <div style="
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <!-- Error Message -->
+        <div id="errorMessage" style="
+          background: #fef2f2;
+          color: #991b1b;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #fecaca;
+          font-weight: 400;
+          line-height: 1.5;
+          font-size: 14px;
+          animation: fadeInUp 0.5s ease-out 0.4s both;
+        ">
+          <!-- Error message will be populated here -->
+        </div>
+        
+        <!-- Bottom Section -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+        ">
+          <!-- Try again text -->
+          <p style="
+            color: #6b7280;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.5s both;
+            flex: 1;
+          ">Please try again or contact support if the problem persists.</p>
+          
+          <!-- Countdown and Close button -->
+          <div style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          ">
+            <div style="
+              color: #6b7280;
+              font-size: 13px;
+              font-weight: 400;
+              animation: fadeInUp 0.5s ease-out 0.6s both;
+            ">
+              Refreshing in <span id="errorCountdown" style="color: #374151; font-weight: 500;">3</span> seconds...
+            </div>
+            <button onclick="closeErrorModal()" style="
+              background: #ef4444;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 8px;
+              font-size: 14px;
+              font-weight: 500;
+              cursor: pointer;
+              animation: fadeInUp 0.5s ease-out 0.6s both;
+              transition: background-color 0.2s ease;
+            " onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modern CSS Animations -->
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #successModal .modal-content {
+    max-width: 90% !important;
+    margin: 20px !important;
+    padding: 30px 20px !important;
+  }
+  
+  #successModal h2 {
+    font-size: 24px !important;
+  }
+  
+  #successModal .modal-container {
+    padding: 20px !important;
+  }
+}
+</style>
 
 <script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('js/page-transitions.js') }}"></script>

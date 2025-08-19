@@ -501,98 +501,76 @@ document.addEventListener("DOMContentLoaded", function () {
   
 
 
-  // Handle form submission
+  // Handle form submission via AJAX to show modal
   const bookingForm = document.getElementById('bookingForm');
+  const studioRentalForm = document.getElementById('studioRentalForm');
+  
+  function handleFormSubmission(form, e) {
+    e.preventDefault();
+    
+    console.log('Submitting booking form via AJAX...');
+    console.log('Form action:', form.action);
+    
+    const formData = new FormData(form);
+    
+    // Add AJAX header
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showSuccessModal(data.message);
+      } else {
+        showErrorModal('Error: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showErrorModal('An error occurred while processing your booking. Please try again.');
+    });
+  }
+  
   if (bookingForm) {
     bookingForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Show confirmation message in booking summary
-      const bookingSummary = document.getElementById('bookingSummary');
-      const bookingSummaryContent = document.getElementById('bookingSummaryContent');
-      const bookingConfirmationMessage = document.getElementById('bookingConfirmationMessage');
-      
-      if (bookingSummary && bookingSummaryContent && bookingConfirmationMessage) {
-        // Hide booking summary content and show confirmation message
-        bookingSummaryContent.style.display = 'none';
-        bookingConfirmationMessage.style.display = 'block';
-        
-        // Add confirmed styling
-        bookingSummary.classList.add('confirmed');
-        bookingSummary.classList.remove('empty');
-        
-        // Hide the form buttons
-        const nextBtn = document.querySelector('.next-btn');
-        if (nextBtn) nextBtn.style.display = 'none';
-        bookingForm.style.display = 'none';
-      }
-      
-      // Submit the form data via AJAX to avoid page reload
-      const formData = new FormData(bookingForm);
-      
-      // Debug: Log form data
-      console.log('Submitting booking form...');
-      console.log('Form action:', bookingForm.action);
-      console.log('Date:', formData.get('date'));
-      console.log('Time slot:', formData.get('time_slot'));
-      console.log('Duration:', formData.get('duration'));
-      
-      fetch(bookingForm.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-        }
-      })
-      .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response redirected:', response.redirected);
-        console.log('Response ok:', response.ok);
-        
-        if (response.redirected) {
-          // If there's a redirect, follow it
-          console.log('Following redirect to:', response.url);
-          window.location.href = response.url;
-        } else if (response.ok) {
-          // If successful, refresh the booking data and show success message
-          console.log('Booking submitted successfully, refreshing data...');
-          
-          // Refresh the booking data immediately
-          if (selectedDate) {
-            fetchBookings(selectedDate);
-          }
-          
-          // Show success message
-          alert('Booking created successfully! The time slot is now blocked for other users.');
-        } else {
-          // If there's an error, handle it
-          return response.text().then(text => {
-            console.error('Booking submission error:', text);
-            
-            // Try to extract error message from response
-            let errorMessage = 'There was an error creating your booking. Please try again.';
-            try {
-              // Check if response contains validation errors
-              if (text.includes('validation')) {
-                errorMessage = 'Please check your booking details and try again.';
-              } else if (text.includes('overlaps')) {
-                errorMessage = 'This time slot overlaps with an existing booking. Please choose a different time.';
-              } else if (text.includes('unauthenticated')) {
-                errorMessage = 'Please log in to make a booking.';
-              }
-            } catch (e) {
-              console.log('Could not parse error response');
-            }
-            
-            alert(errorMessage);
-          });
-        }
-      })
-      .catch(error => {
-        console.error('Error submitting booking:', error);
-        alert('There was an error creating your booking. Please try again.');
-      });
+      handleFormSubmission(bookingForm, e);
     });
+  }
+  
+  if (studioRentalForm) {
+    studioRentalForm.addEventListener('submit', function(e) {
+      handleFormSubmission(studioRentalForm, e);
+    });
+  }
+  
+  // Function to show success modal with countdown and auto-refresh
+  function showSuccessModal(message) {
+    const modal = document.getElementById('successModal');
+    const messageDiv = document.getElementById('successMessage');
+    const countdownSpan = document.getElementById('countdown');
+    
+    if (modal && messageDiv && countdownSpan) {
+      messageDiv.innerHTML = message;
+      modal.style.display = 'block';
+      
+      let countdown = 5;
+      countdownSpan.textContent = countdown;
+      
+      const countdownInterval = setInterval(() => {
+        countdown--;
+        countdownSpan.textContent = countdown;
+        
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+          window.location.reload();
+        }
+      }, 1000);
+    }
   }
   
   // Initialize booking summary as empty
@@ -656,3 +634,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1000);
   };
 });
+
+// Global functions for error modal (accessible from HTML onclick)
+function showErrorModal(message) {
+  const modal = document.getElementById('errorModal');
+  const messageDiv = document.getElementById('errorMessage');
+  const countdownSpan = document.getElementById('errorCountdown');
+  
+  if (modal && messageDiv && countdownSpan) {
+    messageDiv.innerHTML = message;
+    modal.style.display = 'block';
+    
+    let countdown = 3;
+    countdownSpan.textContent = countdown;
+    
+    errorCountdownInterval = setInterval(() => {
+      countdown--;
+      countdownSpan.textContent = countdown;
+      
+      if (countdown <= 0) {
+        clearInterval(errorCountdownInterval);
+        window.location.reload();
+      }
+    }, 1000);
+  }
+}
+
+let errorCountdownInterval;
+
+function closeErrorModal() {
+  const modal = document.getElementById('errorModal');
+  if (modal) {
+    modal.style.display = 'none';
+    if (errorCountdownInterval) {
+      clearInterval(errorCountdownInterval);
+    }
+  }
+}

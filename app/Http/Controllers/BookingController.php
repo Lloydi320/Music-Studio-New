@@ -33,7 +33,16 @@ class BookingController extends Controller
         if ($request->reference_code) {
             $existingBooking = Booking::where('reference_code', $request->reference_code)->first();
             if ($existingBooking) {
-                return back()->with('error', 'Reference number "' . $request->reference_code . '" already exists. Please use a different reference number from GCash 4-digits last number to proceed booking.');
+                $errorMessage = 'Reference number "' . $request->reference_code . '" already exists. Please use a different reference number from GCash 4-digits last number to proceed booking.';
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage
+                    ], 422);
+                }
+                
+                return back()->with('error', $errorMessage);
             }
         }
 
@@ -77,7 +86,16 @@ class BookingController extends Controller
                 ($newStartTime < $existingEnd && $newEndTime > $existingStart) ||
                 ($existingStart < $newEndTime && $existingEnd > $newStartTime)
             ) {
-                return back()->with('error', 'This time slot overlaps with an existing booking. Please choose a different time.');
+                $errorMessage = 'This time slot overlaps with an existing booking. Please choose a different time.';
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage
+                    ], 422);
+                }
+                
+                return back()->with('error', $errorMessage);
             }
         }
     
@@ -151,7 +169,26 @@ class BookingController extends Controller
             'status' => $booking->status,
         ]);
     
-        return back()->with('success', 'Booking created successfully! You will receive an email confirmation shortly.');
+        $successMessage = 'Booking confirmed! Your session on ' . $booking->date . ' at ' . $booking->time_slot . ' for ' . $booking->duration . ' hours has been booked. Reference: ' . $booking->reference . '. You will receive an email confirmation shortly.';
+        
+        // Check if this is an AJAX request
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $successMessage,
+                'booking' => [
+                    'id' => $booking->id,
+                    'reference' => $booking->reference,
+                    'date' => $booking->date,
+                    'time_slot' => $booking->time_slot,
+                    'duration' => $booking->duration,
+                    'total_amount' => $booking->total_amount
+                ]
+            ]);
+        }
+        
+        return back()->with('success', $successMessage);
+    
     }
 
     public function getByDate(Request $request)
