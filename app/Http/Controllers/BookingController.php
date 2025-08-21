@@ -352,6 +352,171 @@ class BookingController extends Controller
         ]);
     }
 
+    public function rescheduleRequest(Request $request)
+    {
+        $request->validate([
+            'band_name' => 'required|string|max:255',
+            'reference_number' => 'required|string|size:4',
+            'new_date' => 'required|date|after_or_equal:today',
+            'new_time_slot' => 'required|string',
+            'duration' => 'required|integer|min:1|max:8'
+        ]);
+
+        try {
+            // Find booking by band name and reference code (4-digit number)
+            $booking = Booking::where('band_name', $request->band_name)
+                             ->where('reference_code', $request->reference_number)
+                             ->first();
+            
+            if (!$booking) {
+                return response()->json(['error' => 'Booking not found'], 404);
+            }
+
+            // Check for time slot conflicts
+            $conflictingBooking = Booking::where('date', $request->new_date)
+                ->where('time_slot', $request->new_time_slot)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->where('id', '!=', $booking->id)
+                ->first();
+                
+            if ($conflictingBooking) {
+                return response()->json(['error' => 'The selected time slot is already booked'], 409);
+            }
+
+            // Create reschedule request data for notification
+            $rescheduleData = [
+                'booking_id' => $booking->id,
+                'old_date' => $booking->date,
+                'old_time_slot' => $booking->time_slot,
+                'old_duration' => $booking->duration,
+                'new_date' => $request->new_date,
+                'new_time_slot' => $request->new_time_slot,
+                'new_duration' => $request->duration,
+                'requested_by' => $booking->user_id,
+                'requested_at' => now()
+            ];
+
+            // Log reschedule request (without updating the booking)
+            ActivityLog::logBooking(
+                'Reschedule Request Submitted',
+                $booking,
+                $booking->toArray(),
+                $rescheduleData
+            );
+
+            // Send notification to admin
+            $this->notifyAdminOfReschedule($booking, $rescheduleData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reschedule request submitted successfully. Admin will review and approve your request.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to submit reschedule request', [
+                'band_name' => $request->band_name,
+                'reference_number' => $request->reference_number,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'Failed to submit reschedule request: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function rescheduleByReference(Request $request, $reference)
+    {
+        $request->validate([
+            'band_name' => 'required|string|max:255',
+            'reference_number' => 'required|string|size:4',
+            'new_date' => 'required|date|after_or_equal:today',
+            'new_time_slot' => 'required|string',
+            'duration' => 'required|integer|min:1|max:8'
+        ]);
+
+        try {
+            // Find booking by band name and reference code (4-digit number)
+            $booking = Booking::where('band_name', $request->band_name)
+                             ->where('reference_code', $request->reference_number)
+                             ->first();
+            
+            if (!$booking) {
+                return response()->json(['error' => 'Booking not found'], 404);
+            }
+
+            // Check for time slot conflicts
+            $conflictingBooking = Booking::where('date', $request->new_date)
+                ->where('time_slot', $request->new_time_slot)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->where('id', '!=', $booking->id)
+                ->first();
+                
+            if ($conflictingBooking) {
+                return response()->json(['error' => 'The selected time slot is already booked'], 409);
+            }
+
+            // Create reschedule request data for notification
+            $rescheduleData = [
+                'booking_id' => $booking->id,
+                'old_date' => $booking->date,
+                'old_time_slot' => $booking->time_slot,
+                'old_duration' => $booking->duration,
+                'new_date' => $request->new_date,
+                'new_time_slot' => $request->new_time_slot,
+                'new_duration' => $request->duration,
+                'requested_by' => $booking->user_id,
+                'requested_at' => now()
+            ];
+
+            // Log reschedule request (without updating the booking)
+            ActivityLog::logBooking(
+                'Reschedule Request Submitted',
+                $booking,
+                $booking->toArray(),
+                $rescheduleData
+            );
+
+            // Send notification to admin
+            $this->notifyAdminOfReschedule($booking, $rescheduleData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reschedule request submitted successfully. Admin will review and approve your request.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to submit reschedule request', [
+                'reference' => $reference,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'Failed to submit reschedule request: ' . $e->getMessage()], 500);
+        }
+    }
+
+    private function notifyAdminOfReschedule($booking, $rescheduleData)
+    {
+        try {
+            // Get all admin users
+            $adminUsers = \App\Models\User::where('is_admin', true)->get();
+            
+            foreach ($adminUsers as $admin) {
+                // Send email notification
+                \Illuminate\Support\Facades\Mail::to($admin->email)->send(
+                    new \App\Mail\RescheduleNotification($booking, $rescheduleData)
+                );
+            }
+            
+            \Illuminate\Support\Facades\Log::info('Reschedule notification sent to admins', [
+                'booking_reference' => $booking->reference,
+                'admin_count' => $adminUsers->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send reschedule notification', [
+                'booking_reference' => $booking->reference,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     public function checkStatus($reference)
     {
         $booking = Booking::where('reference', $reference)->first();

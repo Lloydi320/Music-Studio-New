@@ -878,6 +878,119 @@
             text-align: left;
         }
     }
+
+    /* Reschedule Modal Styles */
+    .reschedule-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .reschedule-modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #2a2a2a;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .reschedule-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #3a3a3a;
+        background: var(--gradient-primary);
+        border-radius: 15px 15px 0 0;
+    }
+
+    .reschedule-modal-header h3 {
+        margin: 0;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .reschedule-modal-close {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .reschedule-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    .reschedule-modal-body {
+        padding: 1.5rem;
+    }
+
+    .reschedule-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-top: 1px solid #3a3a3a;
+        background: #252525;
+        border-radius: 0 0 15px 15px;
+    }
+
+    .date-picker {
+        position: relative;
+        cursor: pointer;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ff6b35" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM2 4v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V4H2z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    .date-picker::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        cursor: pointer;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .date-picker:hover {
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-text {
+        color: #888;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
 </style>
 
 <div class="admin-content">
@@ -1054,13 +1167,91 @@
 
 </div>
 
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="reschedule-modal">
+    <div class="reschedule-modal-content">
+        <div class="reschedule-modal-header">
+            <h3><i class="fas fa-calendar-alt"></i> Reschedule Booking</h3>
+            <span class="reschedule-modal-close" onclick="closeRescheduleModal()">&times;</span>
+        </div>
+        <form id="rescheduleForm" method="POST" action="">
+            @csrf
+            @method('PATCH')
+            <div class="reschedule-modal-body">
+                <div class="form-group">
+                    <label for="reschedule_date">Date</label>
+                    <input type="date" id="reschedule_date" name="date" class="form-control date-picker" required min="{{ date('Y-m-d') }}" placeholder="Select a date">
+                    <small class="form-text">Click to select a new date for the booking</small>
+                </div>
+                <div class="form-group">
+                    <label for="reschedule_time_slot">Time Slot</label>
+                    <select id="reschedule_time_slot" name="time_slot" class="form-control" required>
+                        <option value="">Select Time Slot</option>
+                        <option value="09:00-10:00">09:00 - 10:00</option>
+                        <option value="10:00-11:00">10:00 - 11:00</option>
+                        <option value="11:00-12:00">11:00 - 12:00</option>
+                        <option value="12:00-13:00">12:00 - 13:00</option>
+                        <option value="13:00-14:00">13:00 - 14:00</option>
+                        <option value="14:00-15:00">14:00 - 15:00</option>
+                        <option value="15:00-16:00">15:00 - 16:00</option>
+                        <option value="16:00-17:00">16:00 - 17:00</option>
+                        <option value="17:00-18:00">17:00 - 18:00</option>
+                        <option value="18:00-19:00">18:00 - 19:00</option>
+                        <option value="19:00-20:00">19:00 - 20:00</option>
+                        <option value="20:00-21:00">20:00 - 21:00</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reschedule_duration">Duration (hours)</label>
+                    <select id="reschedule_duration" name="duration" class="form-control" required>
+                        <option value="">Select Duration</option>
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                        <option value="5">5 hours</option>
+                        <option value="6">6 hours</option>
+                        <option value="7">7 hours</option>
+                        <option value="8">8 hours</option>
+                    </select>
+                </div>
+            </div>
+            <div class="reschedule-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRescheduleModal()">Cancel</button>
+                <button type="submit" class="btn btn-warning"><i class="fas fa-calendar-alt"></i> Reschedule Booking</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function rescheduleBooking(bookingId) {
-        // Add reschedule functionality here
-        if (confirm('Are you sure you want to reschedule this booking?')) {
-            // Implement reschedule logic
-            alert('Reschedule functionality will be implemented');
-        }
+        // Set the form action URL
+        const form = document.getElementById('rescheduleForm');
+        form.action = `/admin/bookings/${bookingId}/reschedule`;
+        
+        // Show the modal
+        openRescheduleModal();
+    }
+    
+    function openRescheduleModal() {
+        const modal = document.getElementById('rescheduleModal');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Focus on date picker for better UX
+        setTimeout(() => {
+            const datePicker = document.getElementById('reschedule_date');
+            if (datePicker) {
+                datePicker.focus();
+            }
+        }, 100);
+    }
+    
+    function closeRescheduleModal() {
+        const modal = document.getElementById('rescheduleModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
     }
 
     // Add smooth animations for status badges
@@ -1094,6 +1285,34 @@
                 }
             });
         });
+        
+        // Add event listeners for reschedule modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeRescheduleModal();
+            }
+        });
+        
+        document.getElementById('rescheduleModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRescheduleModal();
+            }
+        });
+        
+        // Enhanced date picker functionality
+        const datePicker = document.getElementById('reschedule_date');
+        if (datePicker) {
+            // Auto-focus and open date picker when modal opens
+            datePicker.addEventListener('click', function() {
+                this.showPicker();
+            });
+            
+            // Set default date to tomorrow for better UX
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const defaultDate = tomorrow.toISOString().split('T')[0];
+            datePicker.setAttribute('value', defaultDate);
+        }
     });
 </script>
 @endsection

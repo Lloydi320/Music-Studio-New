@@ -104,10 +104,20 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/instrument-bookings', [App\Http\Controllers\AdminController::class, 'instrumentBookings'])->name('admin.instrument-bookings');
     Route::get('/music-lesson-bookings', [App\Http\Controllers\AdminController::class, 'musicLessonBookings'])->name('admin.music-lesson-bookings');
     Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');
+    Route::patch('/bookings/{id}/reschedule', [App\Http\Controllers\AdminController::class, 'rescheduleBooking'])->name('admin.booking.reschedule');
     
     // Notification routes
     Route::get('/notifications/new-bookings', [App\Http\Controllers\AdminController::class, 'getNewBookingNotifications'])->name('admin.notifications.new-bookings');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\AdminController::class, 'markAllNotificationsAsRead'])->name('admin.notifications.mark-all-read');
+    
+    // Reschedule request routes
+    Route::get('/reschedule-requests/{id}', [App\Http\Controllers\AdminController::class, 'showRescheduleRequest'])->name('admin.reschedule-request.show');
+    Route::post('/reschedule-requests/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveRescheduleRequest'])->name('admin.reschedule-request.approve');
+    Route::post('/reschedule-requests/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectRescheduleRequest'])->name('admin.reschedule-request.reject');
+    
+    // Modal API routes
+    Route::get('/reschedule-requests/{id}/data', [App\Http\Controllers\AdminController::class, 'getRescheduleRequestData'])->name('admin.reschedule-request.data');
+    Route::get('/bookings/{id}/data', [App\Http\Controllers\AdminController::class, 'getBookingData'])->name('admin.booking.data');
 
 // Add these new routes for instrument rental approval
 Route::patch('/instrument-rentals/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveRental'])->name('admin.rental.approve');

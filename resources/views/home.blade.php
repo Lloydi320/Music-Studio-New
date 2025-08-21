@@ -103,6 +103,15 @@
               </svg>
               <span>Book Session</span>
             </a>
+            <a href="#" id="rescheduleBookingLink" class="dropdown-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3.51 15A9 9 0 0 0 21 12A9 9 0 0 0 11.5 3.04L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20.49 9A9 9 0 0 0 3 12A9 9 0 0 0 12.5 20.96L17 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Reschedule Booking</span>
+            </a>
             <a href="/services" class="dropdown-item">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L3.09 8.26L4 21L12 17L20 21L20.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -247,6 +256,94 @@
           <button type="submit" class="submit-btn">Submit Feedback</button>
         </form>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modern Reschedule Booking Modal -->
+<div id="reschedulePopup" class="reschedule-popup">
+  <div class="reschedule-modal">
+    <div class="reschedule-modal-header">
+      <h2>✨ Reschedule Booking</h2>
+      <button class="close-reschedule" id="closeReschedule" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="reschedule-modal-content">
+      <form id="rescheduleForm">
+        <div class="form-group">
+          <label for="bandName">🎵 Band Name</label>
+          <input type="text" id="bandName" name="bandName" required placeholder="Enter your band name" aria-describedby="bandName-help">
+          <small id="bandName-help" class="form-help">The name of your band or group</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="referenceNumber">🔢 Reference Number</label>
+          <input type="text" id="referenceNumber" name="referenceNumber" required placeholder="Enter 4-digit reference number" maxlength="4" pattern="[0-9]{4}" aria-describedby="ref-help">
+          <small id="ref-help" class="form-help">4-digit booking reference number</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="newDate">📅 New Date</label>
+          <div class="date-input-wrapper">
+            <input type="date" id="newDate" name="newDate" required aria-describedby="date-help" class="date-picker-input">
+            <div class="date-picker-icon">📅</div>
+          </div>
+          <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="duration">⏱️ Duration</label>
+          <select id="duration" name="duration" required aria-describedby="duration-help">
+            <option value="">Select duration</option>
+            <option value="1">1 hour</option>
+            <option value="2">2 hours</option>
+            <option value="3">3 hours</option>
+            <option value="4">4 hours</option>
+            <option value="5">5 hours</option>
+            <option value="6">6 hours</option>
+          </select>
+          <small id="duration-help" class="form-help">How long do you need the studio?</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="newTime">⏰ New Time Slot</label>
+          <select id="newTime" name="newTime" required aria-describedby="time-help">
+            <option value="">Select a time slot</option>
+            <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
+            <option value="08:30 AM - 09:30 AM">08:30 AM - 09:30 AM</option>
+            <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+            <option value="09:30 AM - 10:30 AM">09:30 AM - 10:30 AM</option>
+            <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+            <option value="10:30 AM - 11:30 AM">10:30 AM - 11:30 AM</option>
+            <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+            <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
+            <option value="12:00 PM - 01:00 PM">12:00 PM - 01:00 PM</option>
+            <option value="12:30 PM - 01:30 PM">12:30 PM - 01:30 PM</option>
+            <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM</option>
+            <option value="01:30 PM - 02:30 PM">01:30 PM - 02:30 PM</option>
+            <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+            <option value="02:30 PM - 03:30 PM">02:30 PM - 03:30 PM</option>
+            <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
+            <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM</option>
+            <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+            <option value="04:30 PM - 05:30 PM">04:30 PM - 05:30 PM</option>
+            <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
+            <option value="05:30 PM - 06:30 PM">05:30 PM - 06:30 PM</option>
+            <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
+            <option value="06:30 PM - 07:30 PM">06:30 PM - 07:30 PM</option>
+            <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
+          </select>
+          <small id="time-help" class="form-help">Available time slots will update based on duration</small>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" id="cancelReschedule">
+            <span>Cancel</span>
+          </button>
+          <button type="submit" class="submit-btn">
+            <span>✨ Reschedule Booking</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -1103,6 +1200,571 @@ document.addEventListener('DOMContentLoaded', function() {
                 servicesPopup.style.display = 'none';
             }
         });
+    }
+
+    // Reschedule Popup functionality
+    const rescheduleBookingLink = document.getElementById('rescheduleBookingLink');
+    const reschedulePopup = document.getElementById('reschedulePopup');
+    const closeRescheduleBtn = document.getElementById('closeReschedule');
+    const cancelRescheduleBtn = document.getElementById('cancelReschedule');
+    const rescheduleForm = document.getElementById('rescheduleForm');
+
+    if (rescheduleBookingLink && reschedulePopup) {
+        rescheduleBookingLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            reschedulePopup.style.display = 'flex';
+        });
+    }
+
+    if (closeRescheduleBtn && reschedulePopup) {
+        closeRescheduleBtn.addEventListener('click', function() {
+            reschedulePopup.style.display = 'none';
+        });
+    }
+
+    if (cancelRescheduleBtn && reschedulePopup) {
+        cancelRescheduleBtn.addEventListener('click', function() {
+            reschedulePopup.style.display = 'none';
+        });
+    }
+
+    // Close popup when clicking outside
+    if (reschedulePopup) {
+        reschedulePopup.addEventListener('click', function(e) {
+            if (e.target === reschedulePopup) {
+                reschedulePopup.style.display = 'none';
+            }
+        });
+    }
+
+    // Function to generate time slots based on duration
+    function generateRescheduleTimeSlots(durationHours) {
+        const timeSelect = document.getElementById('newTime');
+        if (!timeSelect) return;
+        
+        // Clear existing options except the first one
+        timeSelect.innerHTML = '<option value="">Select a time slot</option>';
+        
+        const openingHour = 8;
+        const closingHour = 20; // 8 PM
+        const durationMinutes = durationHours * 60;
+        
+        let currentHour = openingHour;
+        let currentMinute = 0;
+        
+        while (currentHour < closingHour) {
+            const startTime = new Date();
+            startTime.setHours(currentHour, currentMinute, 0, 0);
+            
+            const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+            
+            // Check if end time doesn't exceed closing hour
+            if (endTime.getHours() <= closingHour) {
+                const startTimeStr = startTime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                const endTimeStr = endTime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                
+                const timeSlot = `${startTimeStr} - ${endTimeStr}`;
+                const option = document.createElement('option');
+                option.value = timeSlot;
+                option.textContent = timeSlot;
+                timeSelect.appendChild(option);
+            }
+            
+            // Increment by 30 minutes
+            currentMinute += 30;
+            if (currentMinute >= 60) {
+                currentMinute = 0;
+                currentHour++;
+            }
+        }
+    }
+    
+    // Handle duration change to update time slots
+    const durationSelect = document.getElementById('duration');
+    if (durationSelect) {
+        durationSelect.addEventListener('change', function() {
+            const selectedDuration = parseInt(this.value);
+            if (selectedDuration) {
+                generateRescheduleTimeSlots(selectedDuration);
+            }
+        });
+        
+        // Initialize with default duration (1 hour)
+        generateRescheduleTimeSlots(1);
+    }
+
+    // Handle form submission
+    if (rescheduleForm) {
+        rescheduleForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const bandName = document.getElementById('bandName').value;
+            const referenceNumber = document.getElementById('referenceNumber').value;
+            const newDate = document.getElementById('newDate').value;
+            const newTime = document.getElementById('newTime').value;
+            const duration = document.getElementById('duration').value;
+            
+            // Simple validation
+            if (!bandName || !referenceNumber || !newDate || !newTime || !duration) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            
+            if (referenceNumber.length !== 4 || !/^[0-9]{4}$/.test(referenceNumber)) {
+                alert('Reference number must be exactly 4 digits.');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = rescheduleForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Prepare form data
+                const formData = {
+                    band_name: bandName,
+                    reference_number: referenceNumber,
+                    new_date: newDate,
+                    new_time_slot: newTime,
+                    duration: parseInt(duration)
+                };
+                
+                // Submit to API (using a generic endpoint since we're sending band name and reference in the body)
+                const response = await fetch('/api/bookings/reschedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Show success modal
+                    showRescheduleSuccessModal(result.message);
+                    
+                    // Reset form and close modal
+                    rescheduleForm.reset();
+                    reschedulePopup.style.display = 'none';
+                    
+                    // Regenerate time slots for default duration
+                    generateRescheduleTimeSlots(1);
+                } else {
+                    // Show error message
+                    alert('❌ ' + (result.error || 'Failed to submit reschedule request. Please try again.'));
+                }
+                
+            } catch (error) {
+                console.error('Error submitting reschedule request:', error);
+                alert('❌ Network error. Please check your connection and try again.');
+            } finally {
+                // Restore button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+});
+</script>
+
+<!-- Reschedule Success Modal -->
+<div id="rescheduleSuccessModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="modal-content" style="
+      max-width: 560px;
+      border-radius: 20px;
+      padding: 30px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    ">
+      
+      <!-- Left Section: Icon and Title -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+      ">
+        <!-- Success Icon -->
+        <div style="
+          width: 60px;
+          height: 60px;
+          margin-bottom: 16px;
+          background: #10b981;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: bounceIn 0.6s ease-out 0.2s both;
+        ">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20,6 9,17 4,12"></polyline>
+          </svg>
+        </div>
+        
+        <!-- Title -->
+        <h2 style="
+          color: #10b981;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: -0.3px;
+          animation: fadeInUp 0.5s ease-out 0.3s both;
+          white-space: nowrap;
+        ">Reschedule<br>Request Sent!</h2>
+      </div>
+      
+      <!-- Right Section: Details -->
+      <div style="
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <!-- Success Message -->
+        <div id="rescheduleSuccessMessage" style="
+          background: #f0fdf4;
+          color: #166534;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #bbf7d0;
+          font-weight: 400;
+          line-height: 1.5;
+          font-size: 14px;
+          animation: fadeInUp 0.5s ease-out 0.4s both;
+        ">
+          <!-- Success message will be populated here -->
+        </div>
+        
+        <!-- Bottom Section -->
+         <div style="
+           display: flex;
+           justify-content: space-between;
+           align-items: flex-start;
+           gap: 20px;
+         ">
+           <!-- Admin review text -->
+           <p style="
+             color: #6b7280;
+             margin: 0;
+             font-size: 14px;
+             font-weight: 400;
+             animation: fadeInUp 0.5s ease-out 0.5s both;
+             flex: 1;
+           ">Admin will review and approve your request.</p>
+           
+           <!-- Countdown -->
+           <div style="
+             color: #6b7280;
+             font-size: 13px;
+             font-weight: 400;
+             animation: fadeInUp 0.5s ease-out 0.6s both;
+             text-align: right;
+             flex-shrink: 0;
+           ">
+             Redirecting in <span id="rescheduleCountdown" style="color: #374151; font-weight: 500;">5</span> seconds...
+           </div>
+         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.modal-container {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+/* Reschedule Modal Styles */
+.reschedule-popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.reschedule-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideInUp 0.4s ease;
+}
+
+.reschedule-modal-header {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  padding: 20px;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.reschedule-modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.close-reschedule {
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.close-reschedule:hover {
+  background: rgba(0, 0, 0, 0.2);
+  transform: scale(1.1);
+}
+
+.reschedule-modal-content {
+  padding: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #333;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #ffd700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.date-picker-icon {
+  position: absolute;
+  right: 12px;
+  color: #666;
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.form-help {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #333;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+</style>
+
+<script>
+// Function to show reschedule success modal with countdown and auto-refresh
+function showRescheduleSuccessModal(message) {
+    const modal = document.getElementById('rescheduleSuccessModal');
+    const messageDiv = document.getElementById('rescheduleSuccessMessage');
+    const countdownSpan = document.getElementById('rescheduleCountdown');
+    
+    if (modal && messageDiv && countdownSpan) {
+        messageDiv.innerHTML = message;
+        modal.style.display = 'flex';
+        
+        let countdown = 5;
+        countdownSpan.textContent = countdown;
+        
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            countdownSpan.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                window.location.reload();
+            }
+        }, 1000);
+    }
+}
+
+// Function to close reschedule success modal
+function closeRescheduleSuccessModal() {
+    const modal = document.getElementById('rescheduleSuccessModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('rescheduleSuccessModal');
+    if (e.target === modal) {
+        closeRescheduleSuccessModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeRescheduleSuccessModal();
     }
 });
 </script>

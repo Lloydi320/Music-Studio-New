@@ -2088,6 +2088,261 @@ a {
 }
 
 /* Services Popup Styles */
+/* Modern Reschedule Booking Popup */
+.reschedule-popup {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reschedule-popup.active {
+  display: flex;
+  animation: modernFadeIn 0.4s ease-out;
+}
+
+@keyframes modernFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.reschedule-modal {
+  background: linear-gradient(145deg, #ffffff 0%, #fafbfc 50%, #f5f7fa 100%);
+  border-radius: 24px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 
+    0 32px 64px rgba(0, 0, 0, 0.12),
+    0 16px 32px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modernFadeIn 0.4s ease-out;
+}
+
+.reschedule-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px 40px 24px;
+  background: linear-gradient(135deg, #ffd700 0%, #f4c200 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.reschedule-modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.reschedule-modal-header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.close-reschedule {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  font-size: 1.5rem;
+  color: #1a1a1a;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 1;
+}
+
+.close-reschedule:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reschedule-modal-content {
+  padding: 40px;
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
+}
+
+.reschedule-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.form-group label {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 1rem;
+  letter-spacing: 0.025em;
+  margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(145deg, #ffffff 0%, #fafbfc 100%);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  color: #2d3748;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #ffd700;
+  box-shadow: 
+    0 0 0 4px rgba(255, 215, 0, 0.15),
+    0 4px 12px rgba(255, 215, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.form-group input::placeholder,
+.form-group select option:first-child {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+.form-help {
+  color: #718096;
+  font-size: 0.875rem;
+  font-weight: 400;
+  margin-top: 4px;
+  line-height: 1.4;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.form-group:focus-within .form-help {
+  opacity: 1;
+  color: #4a5568;
+}
+
+.form-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.cancel-btn,
+.submit-btn {
+  flex: 1;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.025em;
+  position: relative;
+  overflow: hidden;
+}
+
+.cancel-btn {
+  background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(145deg, #edf2f7 0%, #e2e8f0 100%);
+  color: #2d3748;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #f4c200 50%, #e6b800 100%);
+  color: #1a1a1a;
+  border: 2px solid #ffd700;
+  box-shadow: 
+    0 4px 12px rgba(255, 215, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.submit-btn:hover::before {
+  left: 100%;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, #f4c200 0%, #e6b800 50%, #d4a700 100%);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 8px 24px rgba(255, 215, 0, 0.35),
+    0 4px 12px rgba(255, 215, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.submit-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 12px rgba(255, 215, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
 .services-popup {
   position: fixed;
   inset: 0;

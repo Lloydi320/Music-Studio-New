@@ -422,6 +422,122 @@
         to { opacity: 1; }
     }
 
+    /* Reschedule Modal Styles */
+    .reschedule-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .reschedule-modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #2a2a2a;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .reschedule-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #3a3a3a;
+        background: var(--gradient-primary);
+        border-radius: 15px 15px 0 0;
+    }
+
+    .reschedule-modal-header h3 {
+        margin: 0;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .reschedule-modal-close {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .reschedule-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    .reschedule-modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #e0e0e0;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        background: #3a3a3a;
+        border: 2px solid #4a4a4a;
+        border-radius: 8px;
+        color: #e0e0e0;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-control option {
+        background: #3a3a3a;
+        color: #e0e0e0;
+    }
+
+    .reschedule-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-top: 1px solid #3a3a3a;
+        background: #252525;
+        border-radius: 0 0 15px 15px;
+    }
+
     @media (max-width: 768px) {
         .admin-content {
             padding: 1rem;
@@ -684,12 +800,91 @@
     </div>
 </div>
 
+<!-- Reschedule Modal -->
+<div id="rescheduleModal" class="reschedule-modal">
+    <div class="reschedule-modal-content">
+        <div class="reschedule-modal-header">
+            <h3><i class="fas fa-calendar-alt"></i> Reschedule Booking</h3>
+            <span class="reschedule-modal-close" onclick="closeRescheduleModal()">&times;</span>
+        </div>
+        <form id="rescheduleForm" method="POST" action="">
+            @csrf
+            @method('PATCH')
+            <div class="reschedule-modal-body">
+                <div class="form-group">
+                    <label for="reschedule_date">Date</label>
+                    <input type="date" id="reschedule_date" name="date" class="form-control" required min="{{ date('Y-m-d') }}">
+                </div>
+                <div class="form-group">
+                    <label for="reschedule_time_slot">Time Slot</label>
+                    <select id="reschedule_time_slot" name="time_slot" class="form-control" required>
+                        <option value="">Select Time Slot</option>
+                        <option value="09:00-10:00">09:00 - 10:00</option>
+                        <option value="10:00-11:00">10:00 - 11:00</option>
+                        <option value="11:00-12:00">11:00 - 12:00</option>
+                        <option value="12:00-13:00">12:00 - 13:00</option>
+                        <option value="13:00-14:00">13:00 - 14:00</option>
+                        <option value="14:00-15:00">14:00 - 15:00</option>
+                        <option value="15:00-16:00">15:00 - 16:00</option>
+                        <option value="16:00-17:00">16:00 - 17:00</option>
+                        <option value="17:00-18:00">17:00 - 18:00</option>
+                        <option value="18:00-19:00">18:00 - 19:00</option>
+                        <option value="19:00-20:00">19:00 - 20:00</option>
+                        <option value="20:00-21:00">20:00 - 21:00</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reschedule_duration">Duration (hours)</label>
+                    <select id="reschedule_duration" name="duration" class="form-control" required>
+                        <option value="">Select Duration</option>
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                        <option value="5">5 hours</option>
+                        <option value="6">6 hours</option>
+                        <option value="7">7 hours</option>
+                        <option value="8">8 hours</option>
+                    </select>
+                </div>
+            </div>
+            <div class="reschedule-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRescheduleModal()">Cancel</button>
+                <button type="submit" class="btn btn-warning"><i class="fas fa-calendar-alt"></i> Reschedule Booking</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function rescheduleBooking(bookingId) {
-        if (confirm('Are you sure you want to reschedule this booking?')) {
-            // Implement reschedule logic
-            alert('Reschedule functionality will be implemented');
-        }
+        // Set the form action URL
+        const form = document.getElementById('rescheduleForm');
+        form.action = `/admin/bookings/${bookingId}/reschedule`;
+        
+        // Pre-fill current booking data
+        const currentDate = '{{ $booking->date }}';
+        const currentTimeSlot = '{{ $booking->time_slot }}';
+        const currentDuration = '{{ $booking->duration }}';
+        
+        document.getElementById('reschedule_date').value = currentDate;
+        document.getElementById('reschedule_time_slot').value = currentTimeSlot;
+        document.getElementById('reschedule_duration').value = currentDuration;
+        
+        // Show the modal
+        openRescheduleModal();
+    }
+    
+    function openRescheduleModal() {
+        const modal = document.getElementById('rescheduleModal');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeRescheduleModal() {
+        const modal = document.getElementById('rescheduleModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
     }
 
     // Image Modal Functions
@@ -718,6 +913,14 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeImageModal();
+            closeRescheduleModal();
+        }
+    });
+    
+    // Close reschedule modal when clicking outside
+    document.getElementById('rescheduleModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeRescheduleModal();
         }
     });
 

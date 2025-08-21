@@ -28,5 +28,7 @@ Route::prefix('bookings')->group(function () {
     Route::post('/create', [BookingController::class, 'store']);
     Route::get('/user-bookings', [BookingController::class, 'getUserBookings']);
     Route::post('/cancel/{reference}', [BookingController::class, 'cancelByReference']);
+    Route::post('/reschedule/{reference}', [BookingController::class, 'rescheduleByReference']);
+    Route::post('/reschedule', [BookingController::class, 'rescheduleRequest']);
     Route::post('/update-status/{reference}', [BookingController::class, 'updateStatus']);
 });

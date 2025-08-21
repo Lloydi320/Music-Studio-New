@@ -1089,6 +1089,93 @@ class AdminController extends Controller
     }
 
     /**
+     * Reschedule a confirmed booking
+     */
+    public function rescheduleBooking(Request $request, $id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $request->validate([
+            'date' => 'required|date|after_or_equal:today',
+            'time_slot' => 'required|string',
+            'duration' => 'required|integer|min:1|max:8'
+        ]);
+
+        try {
+            $booking = Booking::findOrFail($id);
+            
+            if ($booking->status !== 'confirmed') {
+                return redirect()->back()->with('error', 'Only confirmed bookings can be rescheduled.');
+            }
+            
+            // Check for time slot conflicts
+            $conflictingBooking = Booking::where('date', $request->date)
+                ->where('time_slot', $request->time_slot)
+                ->where('status', 'confirmed')
+                ->where('id', '!=', $id)
+                ->first();
+                
+            if ($conflictingBooking) {
+                return redirect()->back()->with('error', 'The selected time slot is already booked.');
+            }
+            
+            // Store old values for logging
+            $oldValues = $booking->toArray();
+            
+            // Update booking details
+            $booking->update([
+                'date' => $request->date,
+                'time_slot' => $request->time_slot,
+                'duration' => $request->duration
+            ]);
+            
+            // Log booking reschedule
+            ActivityLog::logBooking(
+                'Booking Rescheduled',
+                $booking,
+                $oldValues,
+                $booking->fresh()->toArray()
+            );
+            
+            // Update Google Calendar event if it exists
+            $calendarSyncMessage = '';
+            if ($booking->google_event_id && $this->calendarService) {
+                try {
+                    $result = $this->calendarService->updateBookingEvent($booking);
+                    if ($result) {
+                        $calendarSyncMessage = ' Google Calendar event has been updated.';
+                        Log::info('Google Calendar event updated for rescheduled booking', [
+                            'booking_id' => $booking->id,
+                            'reference' => $booking->reference
+                        ]);
+                    } else {
+                        $calendarSyncMessage = ' Warning: Google Calendar event update failed.';
+                    }
+                } catch (\Exception $e) {
+                    $calendarSyncMessage = ' Warning: Google Calendar sync failed - ' . $e->getMessage();
+                    Log::warning('Failed to update Google Calendar event for rescheduled booking', [
+                        'booking_id' => $booking->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+            
+            return redirect()->back()->with('success', "Booking {$booking->reference} for {$booking->user->name} has been successfully rescheduled.{$calendarSyncMessage}");
+        } catch (\Exception $e) {
+            Log::error('Failed to reschedule booking', [
+                'booking_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return redirect()->back()->with('error', 'Failed to reschedule booking: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Approve a pending instrument rental
      */
     public function approveRental($id)
@@ -1358,22 +1445,55 @@ class AdminController extends Controller
             $newBookings = Booking::where('created_at', '>=', now()->subDay())
                 ->where('status', 'pending')
                 ->orderBy('created_at', 'desc')
-                ->limit(10)
+                ->limit(5)
                 ->get()
                 ->map(function ($booking) {
                     return [
                         'id' => $booking->id,
+                        'type' => 'booking',
                         'customer_name' => $booking->customer_name,
-                        'studio_name' => 'Studio Rental', // You can customize this based on your studio types
+                        'studio_name' => 'New Booking Request',
                         'date' => $booking->date,
                         'time_slot' => $booking->time_slot,
                         'created_at' => $booking->created_at->toISOString(),
                     ];
                 });
+
+            // Get reschedule requests from the last 24 hours
+            $rescheduleRequests = \App\Models\ActivityLog::where('created_at', '>=', now()->subDay())
+                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function ($log) {
+                    $booking = \App\Models\Booking::find($log->resource_id);
+                    if (!$booking) return null;
+                    
+                    $newValues = $log->new_values ?? [];
+                    return [
+                        'id' => $log->id,
+                        'type' => 'reschedule',
+                        'customer_name' => $booking->customer_name,
+                        'studio_name' => 'Reschedule Request',
+                        'date' => $newValues['new_date'] ?? $booking->date,
+                        'time_slot' => $newValues['new_time_slot'] ?? $booking->time_slot,
+                        'original_date' => $booking->date,
+                        'original_time_slot' => $booking->time_slot,
+                        'booking_reference' => $booking->reference,
+                        'created_at' => $log->created_at->toISOString(),
+                    ];
+                })
+                ->filter(); // Remove null values
+
+            // Combine and sort all notifications
+            $allNotifications = $newBookings->concat($rescheduleRequests)
+                ->sortByDesc('created_at')
+                ->take(10)
+                ->values();
             
             return response()->json([
-                'count' => $newBookings->count(),
-                'bookings' => $newBookings
+                'count' => $allNotifications->count(),
+                'bookings' => $allNotifications
             ]);
             
         } catch (\Exception $e) {
@@ -1405,6 +1525,288 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             Log::error('Error marking notifications as read: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to mark notifications as read'], 500);
+        }
+    }
+
+    /**
+     * Show reschedule request details
+     */
+    public function showRescheduleRequest($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            // Find the activity log entry for the reschedule request
+            $activityLog = \App\Models\ActivityLog::where('id', $id)
+                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
+                ->firstOrFail();
+
+            // Get the associated booking
+            $booking = \App\Models\Booking::findOrFail($activityLog->resource_id);
+
+            // Get reschedule data from the activity log
+            $rescheduleData = $activityLog->new_values ?? [];
+
+            // Check for conflicts with the requested time slot
+            $hasConflict = false;
+            $conflictingBooking = null;
+            
+            if (isset($rescheduleData['new_date']) && isset($rescheduleData['new_time_slot'])) {
+                $conflictingBooking = \App\Models\Booking::where('date', $rescheduleData['new_date'])
+                    ->where('time_slot', $rescheduleData['new_time_slot'])
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->where('id', '!=', $booking->id)
+                    ->first();
+                    
+                $hasConflict = $conflictingBooking !== null;
+            }
+
+            return view('admin.reschedule-details', compact(
+                'activityLog',
+                'booking',
+                'rescheduleData',
+                'hasConflict',
+                'conflictingBooking'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Error showing reschedule request details: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')->with('error', 'Reschedule request not found.');
+        }
+    }
+
+    /**
+     * Approve a reschedule request
+     */
+    public function approveRescheduleRequest($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            // Find the activity log entry for the reschedule request
+            $activityLog = \App\Models\ActivityLog::where('id', $id)
+                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
+                ->firstOrFail();
+
+            // Get the associated booking
+            $booking = \App\Models\Booking::findOrFail($activityLog->resource_id);
+
+            // Get reschedule data from the activity log
+            $rescheduleData = $activityLog->new_values ?? [];
+
+            // Validate reschedule data
+            if (!isset($rescheduleData['new_date']) || !isset($rescheduleData['new_time_slot']) || !isset($rescheduleData['new_duration'])) {
+                return redirect()->back()->with('error', 'Invalid reschedule data.');
+            }
+
+            // Check for conflicts again
+            $conflictingBooking = \App\Models\Booking::where('date', $rescheduleData['new_date'])
+                ->where('time_slot', $rescheduleData['new_time_slot'])
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->where('id', '!=', $booking->id)
+                ->first();
+                
+            if ($conflictingBooking) {
+                return redirect()->back()->with('error', 'Cannot approve: The requested time slot is now occupied by another booking.');
+            }
+
+            // Store old values for logging
+            $oldValues = $booking->toArray();
+
+            // Update the booking with new details
+            $booking->update([
+                'date' => $rescheduleData['new_date'],
+                'time_slot' => $rescheduleData['new_time_slot'],
+                'duration' => $rescheduleData['new_duration']
+            ]);
+
+            // Log the approval
+            \App\Models\ActivityLog::logBooking(
+                'Reschedule Request Approved by Admin',
+                $booking,
+                $oldValues,
+                $booking->toArray()
+            );
+
+            // Log admin action
+            \App\Models\ActivityLog::logAdmin(
+                'Admin approved reschedule request for booking ' . $booking->reference,
+                \App\Models\ActivityLog::ACTION_ADMIN_BOOKING
+            );
+
+            // Try to sync with Google Calendar if connected
+            $calendarSyncMessage = '';
+            try {
+                if ($user->google_calendar_id) {
+                    $googleCalendarService = app(\App\Services\GoogleCalendarService::class);
+                    $googleCalendarService->updateBookingEvent($booking, $user);
+                    $calendarSyncMessage = ' The booking has been updated in Google Calendar.';
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to update Google Calendar event after reschedule approval', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage()
+                ]);
+                $calendarSyncMessage = ' Note: Google Calendar sync failed.';
+            }
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => "Reschedule request approved successfully! Booking {$booking->reference} has been updated.{$calendarSyncMessage}"
+                ]);
+            }
+            
+            return redirect()->route('admin.dashboard')
+                ->with('success', "Reschedule request approved successfully! Booking {$booking->reference} has been updated.{$calendarSyncMessage}");
+
+        } catch (\Exception $e) {
+            Log::error('Error approving reschedule request: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to approve reschedule request: ' . $e->getMessage()]);
+            }
+            
+            return redirect()->back()->with('error', 'Failed to approve reschedule request: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reject a reschedule request
+     */
+    public function rejectRescheduleRequest($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            // Find the activity log entry for the reschedule request
+            $activityLog = \App\Models\ActivityLog::where('id', $id)
+                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
+                ->firstOrFail();
+
+            // Get the associated booking
+            $booking = \App\Models\Booking::findOrFail($activityLog->resource_id);
+
+            // Log the rejection
+            \App\Models\ActivityLog::logBooking(
+                'Reschedule Request Rejected by Admin',
+                $booking,
+                $activityLog->new_values ?? [],
+                ['rejection_reason' => 'Admin rejected the reschedule request']
+            );
+
+            // Log admin action
+            \App\Models\ActivityLog::logAdmin(
+                'Admin rejected reschedule request for booking ' . $booking->reference,
+                \App\Models\ActivityLog::ACTION_ADMIN_BOOKING
+            );
+
+            return redirect()->route('admin.dashboard')
+                ->with('success', "Reschedule request for booking {$booking->reference} has been rejected.");
+
+        } catch (\Exception $e) {
+            Log::error('Error rejecting reschedule request: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to reject reschedule request: ' . $e->getMessage()]);
+            }
+            
+            return redirect()->back()->with('error', 'Failed to reject reschedule request: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get reschedule request data for modal display
+     */
+    public function getRescheduleRequestData($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Access denied']);
+        }
+
+        try {
+            // Find the activity log entry for the reschedule request
+            $activityLog = \App\Models\ActivityLog::where('id', $id)
+                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
+                ->firstOrFail();
+
+            // Get the associated booking
+            $booking = \App\Models\Booking::findOrFail($activityLog->resource_id);
+            
+            // Parse the original and requested data from the activity log
+            $originalData = $activityLog->old_values ?? [];
+            $requestedData = $activityLog->new_values ?? [];
+            
+            // Check for conflicts with the requested time slot
+            $conflicts = [];
+            if (isset($requestedData['date']) && isset($requestedData['time_slot'])) {
+                $conflictingBookings = \App\Models\Booking::where('date', $requestedData['date'])
+                    ->where('time_slot', $requestedData['time_slot'])
+                    ->where('id', '!=', $booking->id)
+                    ->where('status', '!=', 'cancelled')
+                    ->get();
+                
+                if ($conflictingBookings->count() > 0) {
+                    $conflicts = $conflictingBookings->toArray();
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'booking' => $booking,
+                    'activityLog' => $activityLog,
+                    'originalData' => $originalData,
+                    'requestedData' => $requestedData,
+                    'conflicts' => $conflicts
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error loading reschedule request data: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error loading reschedule request: ' . $e->getMessage()]);
+        }
+    }
+    
+    /**
+     * Get booking data for modal display
+     */
+    public function getBookingData($id)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Access denied']);
+        }
+
+        try {
+            $booking = \App\Models\Booking::findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $booking
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error loading booking data: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Error loading booking: ' . $e->getMessage()]);
         }
     }
 }
