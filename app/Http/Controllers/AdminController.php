@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
+use Carbon\Carbon;
 use App\Services\GoogleCalendarService;
 use App\Models\User;
 use App\Models\Booking;
@@ -1100,10 +1102,12 @@ class AdminController extends Controller
         return view('admin.booking-details', compact('user', 'booking'));
     }
 
+
+
     /**
-     * Create database backup
+     * Create full system backup
      */
-    public function createBackup()
+    public function createBackup(Request $request)
     {
         // Check if user is admin
         /** @var User $user */
@@ -1113,36 +1117,192 @@ class AdminController extends Controller
         }
 
         try {
-            $databaseName = config('database.connections.mysql.database');
-            $backupFileName = 'backup_' . $databaseName . '_' . date('Y-m-d_H-i-s') . '.sql';
-            $backupPath = storage_path('app/backups/' . $backupFileName);
+            $timestamp = Carbon::now()->format('Y-m-d_H-i-s');
+            $backupName = 'backup_' . $timestamp;
             
-            // Create backups directory if it doesn't exist
-            if (!file_exists(dirname($backupPath))) {
-                mkdir(dirname($backupPath), 0755, true);
+            // Create backup directory
+            $backupPath = storage_path('app\\backups\\' . $backupName);
+            if (!File::exists($backupPath)) {
+                File::makeDirectory($backupPath, 0755, true);
             }
-            
-            // Use mysqldump command (requires mysqldump to be available)
-            $host = config('database.connections.mysql.host');
-            $port = config('database.connections.mysql.port');
-            $username = config('database.connections.mysql.username');
-            $password = config('database.connections.mysql.password');
-            
-            $command = "mysqldump -h{$host} -P{$port} -u{$username}";
-            if ($password) {
-                $command .= " -p{$password}";
-            }
-            $command .= " {$databaseName} > {$backupPath}";
-            
-            exec($command, $output, $returnCode);
-            
-            if ($returnCode === 0 && file_exists($backupPath)) {
-                return response()->download($backupPath)->deleteFileAfterSend(true);
-            } else {
-                return redirect()->back()->with('error', 'Failed to create database backup. Please ensure mysqldump is available.');
-            }
+
+            // 1. Database backup
+            $this->createDatabaseBackup($backupPath, $backupName);
+
+            // 2. Files backup
+            $this->createFilesBackup($backupPath);
+
+            // Calculate backup size
+            $backupSize = $this->getDirectorySize($backupPath);
+            $formattedSize = $this->formatBytes($backupSize);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup created successfully',
+                'backup_name' => $backupName,
+                'backup_size' => $formattedSize
+            ]);
+
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to create backup: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Backup failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download a backup file
+     */
+    public function downloadBackup($filename)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $backupPath = storage_path('app\\backups\\' . $filename);
+        
+        if (!File::exists($backupPath)) {
+            abort(404, 'Backup not found');
+        }
+
+        try {
+            // Create temporary TAR file for download since ZIP extension is not available
+            $tempTarPath = storage_path('app\\temp\\' . $filename . '.tar');
+            
+            // Ensure temp directory exists
+            $tempDir = dirname($tempTarPath);
+            if (!File::exists($tempDir)) {
+                File::makeDirectory($tempDir, 0755, true);
+            }
+
+            // Create TAR archive using PHP's PharData
+            $tar = new \PharData($tempTarPath);
+            $tar->buildFromDirectory($backupPath);
+
+            // Download the TAR file
+            return response()->download($tempTarPath, $filename . '.tar')->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create download: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a backup file
+     */
+    public function deleteBackup($filename)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $backupPath = storage_path('app\\backups\\' . $filename);
+            
+            if (File::exists($backupPath)) {
+                if (File::isDirectory($backupPath)) {
+                    File::deleteDirectory($backupPath);
+                } else {
+                    File::delete($backupPath);
+                }
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Backup deleted successfully'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Backup not found'
+            ], 404);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete backup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get list of available backups
+     */
+    public function getBackups()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $backups = $this->getAvailableBackups();
+        return response()->json($backups);
+    }
+
+    /**
+     * Restore database from uploaded backup file
+     */
+    public function restoreDatabase(Request $request)
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $request->validate([
+            'backup_file' => 'required|file|mimes:sql,zip,tar,gz|max:102400', // 100MB max
+            'confirm_overwrite' => 'required|accepted'
+        ]);
+
+        try {
+            $file = $request->file('backup_file');
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            
+            // Store the uploaded file temporarily
+            $tempPath = $file->store('temp/restore', 'local');
+            $fullTempPath = storage_path('app/' . $tempPath);
+            
+            // Process based on file type
+            if ($extension === 'sql') {
+                $this->restoreFromSqlFile($fullTempPath);
+            } elseif (in_array($extension, ['zip', 'tar', 'gz'])) {
+                $this->restoreFromArchive($fullTempPath, $extension);
+            } else {
+                throw new \Exception('Unsupported file format');
+            }
+            
+            // Clean up temporary file
+            File::delete($fullTempPath);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Database restored successfully from ' . $originalName
+            ]);
+            
+        } catch (\Exception $e) {
+            // Clean up temporary file if it exists
+            if (isset($fullTempPath) && File::exists($fullTempPath)) {
+                File::delete($fullTempPath);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Database restore failed: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -2127,5 +2287,248 @@ class AdminController extends Controller
             Log::error('Error loading booking data: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Error loading booking: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Create database backup
+     */
+    private function createDatabaseBackup($backupPath, $backupName)
+    {
+        $databaseName = config('database.connections.mysql.database');
+        $username = config('database.connections.mysql.username');
+        $password = config('database.connections.mysql.password');
+        $host = config('database.connections.mysql.host');
+        $port = config('database.connections.mysql.port', 3306);
+
+        $sqlFile = $backupPath . '/database.sql';
+
+        // Use mysqldump command
+        $command = sprintf(
+            'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --routines --triggers %s > %s',
+            escapeshellarg($username),
+            escapeshellarg($password),
+            escapeshellarg($host),
+            escapeshellarg($port),
+            escapeshellarg($databaseName),
+            escapeshellarg($sqlFile)
+        );
+
+        $process = \Symfony\Component\Process\Process::fromShellCommandline($command);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            // Fallback to Laravel's database export
+            $this->createLaravelDatabaseBackup($backupPath);
+        }
+    }
+
+    /**
+     * Laravel-based database backup (fallback)
+     */
+    private function createLaravelDatabaseBackup($backupPath)
+    {
+        $tables = DB::select('SHOW TABLES');
+        $sqlContent = "-- Database Backup\n-- Generated: " . Carbon::now() . "\n\n";
+
+        foreach ($tables as $table) {
+            $tableName = array_values((array) $table)[0];
+            
+            // Get table structure
+            $createTable = DB::select("SHOW CREATE TABLE `{$tableName}`")[0];
+            $sqlContent .= "-- Table: {$tableName}\n";
+            $sqlContent .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
+            $sqlContent .= $createTable->{'Create Table'} . ";\n\n";
+
+            // Get table data
+            $rows = DB::table($tableName)->get();
+            if ($rows->count() > 0) {
+                $sqlContent .= "-- Data for table: {$tableName}\n";
+                foreach ($rows as $row) {
+                    $values = array_map(function($value) {
+                        return is_null($value) ? 'NULL' : "'" . addslashes($value) . "'";
+                    }, (array) $row);
+                    $sqlContent .= "INSERT INTO `{$tableName}` VALUES (" . implode(', ', $values) . ");\n";
+                }
+                $sqlContent .= "\n";
+            }
+        }
+
+        File::put($backupPath . '/database.sql', $sqlContent);
+    }
+
+    /**
+     * Create files backup
+     */
+    private function createFilesBackup($backupPath)
+    {
+        $filesToBackup = [
+            'storage/app/public' => 'storage',
+            'public/images' => 'public_images',
+            '.env' => 'env_file'
+        ];
+
+        foreach ($filesToBackup as $source => $destination) {
+            $sourcePath = base_path($source);
+            $destPath = $backupPath . '/' . $destination;
+
+            if (File::exists($sourcePath)) {
+                if (File::isDirectory($sourcePath)) {
+                    File::copyDirectory($sourcePath, $destPath);
+                } else {
+                    File::copy($sourcePath, $destPath);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get list of available backups
+     */
+    private function getAvailableBackups()
+    {
+        $backupDir = storage_path('app\\backups');
+        $backups = [];
+
+        if (File::exists($backupDir)) {
+            $directories = File::directories($backupDir);
+            foreach ($directories as $directory) {
+                $dirName = basename($directory);
+                $backups[] = [
+                    'name' => $dirName,
+                    'size' => $this->formatBytes($this->getDirectorySize($directory)),
+                    'date' => Carbon::createFromTimestamp(filemtime($directory))->format('Y-m-d H:i:s')
+                ];
+            }
+        }
+
+        return collect($backups)->sortByDesc('date')->values()->all();
+    }
+
+    /**
+     * Get directory size recursively
+     */
+    private function getDirectorySize($directory)
+    {
+        $size = 0;
+        if (File::exists($directory)) {
+            foreach (File::allFiles($directory) as $file) {
+                $size += $file->getSize();
+            }
+        }
+        return $size;
+    }
+
+    /**
+     * Format bytes to human readable format
+     */
+    private function formatBytes($bytes, $precision = 2)
+    {
+        $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+
+        return round($bytes, $precision) . ' ' . $units[$i];
+    }
+
+    /**
+     * Restore database from SQL file
+     */
+    private function restoreFromSqlFile($sqlFilePath)
+    {
+        if (!File::exists($sqlFilePath)) {
+            throw new \Exception('SQL file not found');
+        }
+
+        $sqlContent = File::get($sqlFilePath);
+        
+        // Split SQL content into individual statements
+        $statements = array_filter(
+            array_map('trim', explode(';', $sqlContent)),
+            function($statement) {
+                return !empty($statement) && !preg_match('/^\s*--/', $statement);
+            }
+        );
+
+        DB::beginTransaction();
+        try {
+            // Disable foreign key checks
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            
+            foreach ($statements as $statement) {
+                if (!empty(trim($statement))) {
+                    DB::statement($statement);
+                }
+            }
+            
+            // Re-enable foreign key checks
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            throw new \Exception('Failed to execute SQL: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Restore database from archive file (zip, tar, gz)
+     */
+    private function restoreFromArchive($archivePath, $extension)
+    {
+        $extractPath = storage_path('app/temp/extract_' . time());
+        
+        try {
+            // Create extraction directory
+            File::makeDirectory($extractPath, 0755, true);
+            
+            // Extract archive based on type
+            if ($extension === 'zip') {
+                $zip = new \ZipArchive();
+                if ($zip->open($archivePath) === TRUE) {
+                    $zip->extractTo($extractPath);
+                    $zip->close();
+                } else {
+                    throw new \Exception('Failed to open ZIP file');
+                }
+            } elseif (in_array($extension, ['tar', 'gz'])) {
+                $tar = new \PharData($archivePath);
+                $tar->extractTo($extractPath);
+            }
+            
+            // Look for SQL file in extracted content
+            $sqlFile = $this->findSqlFileInDirectory($extractPath);
+            
+            if (!$sqlFile) {
+                throw new \Exception('No SQL file found in the archive');
+            }
+            
+            // Restore from the found SQL file
+            $this->restoreFromSqlFile($sqlFile);
+            
+        } finally {
+            // Clean up extraction directory
+            if (File::exists($extractPath)) {
+                File::deleteDirectory($extractPath);
+            }
+        }
+    }
+
+    /**
+     * Find SQL file in directory recursively
+     */
+    private function findSqlFileInDirectory($directory)
+    {
+        $files = File::allFiles($directory);
+        
+        foreach ($files as $file) {
+            if ($file->getExtension() === 'sql') {
+                return $file->getPathname();
+            }
+        }
+        
+        return null;
     }
 }

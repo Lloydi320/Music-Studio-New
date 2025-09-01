@@ -308,7 +308,7 @@
                 </div>
             </div>
             
-            <div class="action-card">
+            <div class="action-card backup-restore-card">
                 <div class="action-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#34a853" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -317,19 +317,16 @@
                     </svg>
                 </div>
                 <div class="action-content">
-                    <h3>Database Backup</h3>
-                    <p>Create a backup of your current database</p>
-                    <form method="POST" action="{{ route('admin.database.backup') }}" class="action-form">
-                        @csrf
-                        <button type="submit" class="btn-primary">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            Create Backup
-                        </button>
-                    </form>
+                    <h3>Backup & Restore</h3>
+                    <p>Comprehensive backup and restore management</p>
+                    <button onclick="toggleBackupSection()" class="btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Manage Backups
+                    </button>
                 </div>
             </div>
             
@@ -427,6 +424,101 @@
                         Check Sync
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comprehensive Backup & Restore Management -->
+    <div class="modern-card backup-restore-section" id="backup-restore-section" style="display: none;">
+        <div class="card-header">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="14,2 14,8 20,8" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="16" y1="13" x2="8" y2="13" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="16" y1="17" x2="8" y2="17" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polyline points="10,9 9,9 8,9" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="card-title">
+                <h2>Backup & Restore Management</h2>
+                <p>Create, download, and manage complete system backups</p>
+            </div>
+        </div>
+        
+        <div class="backup-restore-content">
+            <!-- Create New Backup -->
+            <div class="backup-section">
+                <h3>Create New Backup</h3>
+                <p>Generate a complete backup including database and files</p>
+                <form id="backup-form" class="backup-form">
+                    @csrf
+                    <div class="backup-options">
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="include_database" value="1" checked>
+                            <span class="checkmark"></span>
+                            Include Database
+                        </label>
+                        <label class="checkbox-option">
+                            <input type="checkbox" name="include_files" value="1" checked>
+                            <span class="checkmark"></span>
+                            Include Files (uploads, images, .env)
+                        </label>
+                    </div>
+                    <button type="button" onclick="createBackup()" class="btn-primary backup-btn" id="backup-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Create Backup
+                    </button>
+                </form>
+            </div>
+
+            <!-- Database Restore Section -->
+            <div class="restore-section">
+                <h3>Database Restore</h3>
+                <p>Restore your database from a backup file</p>
+                <form id="restore-form" class="restore-form">
+                    @csrf
+                    <div class="file-upload-area">
+                        <div class="upload-zone" id="restore-upload-zone">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                                    <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <polyline points="14,2 14,8 20,8" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 18V12M12 12L9 15M12 12L15 15" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <h4>Drop database backup file here or click to browse</h4>
+                            <p>Supported formats: .sql, .zip, .tar, .gz</p>
+                        </div>
+                        <input type="file" id="restore-file" name="restore_file" accept=".sql,.zip,.tar,.gz" style="display: none;">
+                    </div>
+                    <div class="restore-options" style="display: none;" id="restore-options">
+                        <div class="file-info" id="restore-file-info"></div>
+                        <div class="restore-settings">
+                            <label class="checkbox-option">
+                                <input type="checkbox" id="confirm-restore" name="confirm_restore" value="1">
+                                <span class="checkmark"></span>
+                                I understand this will overwrite the current database
+                            </label>
+                        </div>
+                        <div class="restore-actions">
+                            <button type="button" onclick="restoreDatabase()" class="btn-primary restore-btn" id="restore-btn" disabled>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M3 12C3 12 5.5 6 12 6S21 12 21 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 6V2L8 6L12 10V6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Restore Database
+                            </button>
+                            <button type="button" onclick="clearRestoreFile()" class="btn-secondary cancel-btn" id="restore-clear-btn">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1390,5 +1482,572 @@ function copyQuery(button) {
             padding: 12px 8px;
         }
     }
+
+    /* Backup & Restore Section Styles */
+    .backup-restore-section {
+        margin-top: 24px;
+    }
+
+    .backup-restore-content {
+        display: grid;
+        gap: 32px;
+        margin-top: 24px;
+    }
+
+    .backup-section, .backups-list-section, .restore-section {
+        background: #2d2d2d;
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid #555;
+    }
+
+    .backup-section h3, .backups-list-section h3, .restore-section h3 {
+        color: #ffffff;
+        margin-bottom: 12px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .backup-options {
+        display: flex;
+        gap: 24px;
+        margin: 16px 0;
+        flex-wrap: wrap;
+    }
+
+    .checkbox-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #cccccc;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .checkbox-option input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #4285f4;
+    }
+
+    .backup-btn {
+        margin-top: 16px;
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Restore Upload Styles */
+    .file-upload-area {
+        margin: 16px 0;
+    }
+
+    .upload-zone {
+        border: 2px dashed #4285f4;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: #2a2a2a;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .upload-zone:hover {
+        border-color: #5a9cff;
+        background: #333;
+    }
+
+    .upload-zone.dragover {
+        border-color: #5a9cff;
+        background: #333;
+        transform: scale(1.02);
+    }
+
+    .upload-icon {
+        margin-bottom: 16px;
+        opacity: 0.7;
+    }
+
+    .upload-zone h4 {
+        color: #ffffff;
+        margin-bottom: 8px;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .upload-zone p {
+        color: #cccccc;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .restore-options {
+        background: #3a3a3a;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #555;
+        margin-top: 16px;
+    }
+
+    .restore-settings {
+        margin: 16px 0;
+    }
+
+    .restore-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .restore-btn {
+        padding: 12px 24px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .restore-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .backups-grid {
+        display: grid;
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .backup-item {
+        background: #3a3a3a;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #555;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .backup-info h4 {
+        color: #ffffff;
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .backup-meta {
+        color: #9aa0a6;
+        font-size: 13px;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .backup-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-small {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-download {
+        background: #34a853;
+        color: white;
+    }
+
+    .btn-download:hover {
+        background: #2d8f47;
+    }
+
+    .btn-delete {
+        background: #ea4335;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #d33b2c;
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 40px;
+        color: #9aa0a6;
+    }
+
+    .loading-state svg {
+        margin-bottom: 16px;
+    }
+
+    .info-card {
+        background: #3a3a3a;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #555;
+        display: flex;
+        gap: 16px;
+    }
+
+    .info-icon {
+        flex-shrink: 0;
+    }
+
+    .info-content h4 {
+        color: #ffffff;
+        margin: 0 0 12px 0;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .info-content p {
+        color: #cccccc;
+        margin-bottom: 12px;
+        line-height: 1.5;
+    }
+
+    .info-content ol {
+        color: #cccccc;
+        padding-left: 20px;
+        line-height: 1.6;
+    }
+
+    .info-content li {
+        margin-bottom: 8px;
+    }
 </style>
+
+<script>
+// Toggle backup section visibility
+function toggleBackupSection() {
+    const section = document.getElementById('backup-restore-section');
+    if (section.style.display === 'none' || section.style.display === '') {
+        section.style.display = 'block';
+        loadBackups();
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+// Load available backups via AJAX
+function loadBackups() {
+    const grid = document.getElementById('backups-grid');
+    
+    fetch('{{ route("admin.database.backups") }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayBackups(data.backups);
+            } else {
+                grid.innerHTML = '<div class="loading-state"><p>Error loading backups: ' + data.message + '</p></div>';
+            }
+        })
+        .catch(error => {
+            grid.innerHTML = '<div class="loading-state"><p>Error loading backups</p></div>';
+        });
+}
+
+// Display backups in the grid
+function displayBackups(backups) {
+    const grid = document.getElementById('backups-grid');
+    
+    if (backups.length === 0) {
+        grid.innerHTML = '<div class="loading-state"><p>No backups available</p></div>';
+        return;
+    }
+    
+    let html = '';
+    backups.forEach(backup => {
+        html += `
+            <div class="backup-item">
+                <div class="backup-info">
+                    <h4>${backup.name}</h4>
+                    <div class="backup-meta">
+                        <span>📅 ${backup.date}</span>
+                        <span>📦 ${backup.size}</span>
+                    </div>
+                </div>
+                <div class="backup-actions">
+                    <a href="/admin/database/backup/download/${backup.name}" class="btn-small btn-download">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="7,10 12,15 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Download
+                    </a>
+                    <button onclick="deleteBackup('${backup.name}')" class="btn-small btn-delete">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    grid.innerHTML = html;
+}
+
+// Create backup
+function createBackup() {
+    const btn = document.getElementById('backup-btn');
+    const originalText = btn.innerHTML;
+    
+    // Show loading state
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Creating Backup...';
+    btn.disabled = true;
+    
+    // Get form data
+    const form = document.getElementById('backup-form');
+    const formData = new FormData(form);
+    
+    fetch('{{ route("admin.database.backup") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            alert('Backup created successfully! Size: ' + data.backup_size);
+            
+            // Trigger download
+            window.location.href = `/admin/database/backup/download/${data.backup_name}`;
+            
+            // Reload backups list
+            loadBackups();
+        } else {
+            alert('Backup failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating backup. Please try again.');
+    })
+    .finally(() => {
+        // Restore button state
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// Delete backup
+function deleteBackup(backupName) {
+    if (!confirm('Are you sure you want to delete this backup? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch(`/admin/database/backup/delete/${backupName}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadBackups(); // Reload the backups list
+        } else {
+            alert('Error deleting backup: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error deleting backup');
+    });
+}
+
+// Restore functionality
+let selectedRestoreFile = null;
+
+function initializeRestore() {
+    const uploadZone = document.getElementById('restore-upload-zone');
+    const fileInput = document.getElementById('restore-file');
+    const confirmCheckbox = document.getElementById('confirm-restore');
+    const restoreBtn = document.getElementById('restore-btn');
+    
+    // Click to upload
+    uploadZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        handleRestoreFileSelect(e.target.files[0]);
+    });
+    
+    // Drag and drop
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+    
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+    });
+    
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        handleRestoreFileSelect(e.dataTransfer.files[0]);
+    });
+    
+    // Confirm checkbox change
+    confirmCheckbox.addEventListener('change', () => {
+        restoreBtn.disabled = !confirmCheckbox.checked || !selectedRestoreFile;
+    });
+}
+
+function handleRestoreFileSelect(file) {
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['.sql', '.zip', '.tar', '.gz'];
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    
+    if (!allowedTypes.includes(fileExtension)) {
+        alert('Please select a valid backup file (.sql, .zip, .tar, .gz)');
+        return;
+    }
+    
+    selectedRestoreFile = file;
+    const fileInfo = document.getElementById('restore-file-info');
+    const restoreOptions = document.getElementById('restore-options');
+    const confirmCheckbox = document.getElementById('confirm-restore');
+    const restoreBtn = document.getElementById('restore-btn');
+    
+    // Show file info
+    fileInfo.innerHTML = `
+        <div class="file-details">
+            <strong>Selected file:</strong> ${file.name}<br>
+            <strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+            <strong>Type:</strong> ${fileExtension}
+        </div>
+    `;
+    
+    // Show restore options
+    restoreOptions.style.display = 'block';
+    
+    // Reset confirmation
+    confirmCheckbox.checked = false;
+    restoreBtn.disabled = true;
+}
+
+function restoreDatabase() {
+    if (!selectedRestoreFile) {
+        alert('Please select a backup file first.');
+        return;
+    }
+    
+    const confirmCheckbox = document.getElementById('confirm-restore');
+    if (!confirmCheckbox.checked) {
+        alert('Please confirm that you understand this will overwrite the current database.');
+        return;
+    }
+    
+    const btn = document.getElementById('restore-btn');
+    const originalText = btn.innerHTML;
+    
+    // Show loading state
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Restoring...';
+    btn.disabled = true;
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('backup_file', selectedRestoreFile);
+    formData.append('confirm_overwrite', '1');
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    
+    fetch('{{ route("admin.database.restore") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Database restored successfully!');
+            clearRestoreFile();
+            // Optionally reload the page to reflect changes
+            window.location.reload();
+        } else {
+            alert('Restore failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error restoring database. Please try again.');
+    })
+    .finally(() => {
+        // Restore button state
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+function clearRestoreFile() {
+    selectedRestoreFile = null;
+    document.getElementById('restore-file').value = '';
+    document.getElementById('restore-options').style.display = 'none';
+    document.getElementById('confirm-restore').checked = false;
+    document.getElementById('restore-btn').disabled = true;
+}
+
+// Existing functions...
+function showRecentBookings() {
+    const section = document.getElementById('recent-bookings');
+    section.style.display = section.style.display === 'none' ? 'block' : 'none';
+}
+
+function openCalendarQueries() {
+    const section = document.getElementById('calendar-queries');
+    section.style.display = section.style.display === 'none' ? 'block' : 'none';
+}
+
+function showSyncStatus() {
+    const section = document.getElementById('sync-status');
+    if (section) {
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+function copyQuery(button) {
+    const code = button.previousElementSibling;
+    const text = code.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = button.textContent;
+        button.textContent = '✓ Copied!';
+        button.style.background = '#34a853';
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '#ffd700';
+        }, 2000);
+    });
+}
+
+function toggleTheme() {
+    // Theme toggle functionality
+    document.body.classList.toggle('light-theme');
+}
+
+// Initialize restore functionality when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeRestore();
+});
+</script>
+
 @endsection

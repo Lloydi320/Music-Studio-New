@@ -1733,6 +1733,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('admin.database') }}" class="{{ request()->routeIs('admin.database') ? 'active' : '' }}">
+                    <i class="fas fa-download"></i>
+                    Backup & Restore
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt"></i>
                     Sign Out

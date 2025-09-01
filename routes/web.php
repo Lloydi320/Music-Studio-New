@@ -7,6 +7,7 @@ use App\Http\Controllers\InstrumentRentalController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\FeedbackController;
 
+
 Route::get('/', function () {
     return view('home');
 })->name('home');
@@ -92,6 +93,10 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/make-admin', [App\Http\Controllers\AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
     Route::post('/remove-admin', [App\Http\Controllers\AdminController::class, 'removeAdmin'])->name('admin.removeAdmin');
     Route::post('/database/backup', [App\Http\Controllers\AdminController::class, 'createBackup'])->name('admin.database.backup');
+    Route::get('/database/backups', [App\Http\Controllers\AdminController::class, 'getBackups'])->name('admin.database.backups');
+    Route::get('/database/backup/download/{filename}', [App\Http\Controllers\AdminController::class, 'downloadBackup'])->name('admin.database.backup.download');
+    Route::delete('/database/backup/delete/{filename}', [App\Http\Controllers\AdminController::class, 'deleteBackup'])->name('admin.database.backup.delete');
+    Route::post('/database/restore', [App\Http\Controllers\AdminController::class, 'restoreDatabase'])->name('admin.database.restore');
     Route::post('/database/migrate', [App\Http\Controllers\AdminController::class, 'runMigrations'])->name('admin.database.migrate');
     Route::post('/database/clear-cache', [App\Http\Controllers\AdminController::class, 'clearCache'])->name('admin.database.clear-cache');
     Route::get('/instrument-rentals', [App\Http\Controllers\AdminController::class, 'instrumentRentals'])->name('admin.instrument-rentals');
@@ -118,6 +123,9 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     // Modal API routes
     Route::get('/reschedule-requests/{id}/data', [App\Http\Controllers\AdminController::class, 'getRescheduleRequestData'])->name('admin.reschedule-request.data');
     Route::get('/bookings/{id}/data', [App\Http\Controllers\AdminController::class, 'getBookingData'])->name('admin.booking.data');
+    
+    // Backup & Restore routes (consolidated into database management)
+    // All backup functionality is now handled through /admin/database routes above
 
 // Add these new routes for instrument rental approval
 Route::patch('/instrument-rentals/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveRental'])->name('admin.rental.approve');
