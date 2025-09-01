@@ -15,9 +15,7 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
-Route::get('/music-lessons', function () {
-    return view('music-lessons');
-})->name('music-lessons');
+
 
 Route::get('/feedback', function () {
     return view('feedback');
@@ -37,6 +35,7 @@ Route::post('/booking', [BookingController::class, 'store'])->middleware('auth')
 Route::get('/api/booked-dates', [App\Http\Controllers\BookingController::class, 'getBookedDates']);
 Route::get('/api/bookings-by-date', [App\Http\Controllers\BookingController::class, 'getBookingsByDate']);
 Route::get('/api/bookings', [App\Http\Controllers\BookingController::class, 'getByDate']);
+Route::get('/api/validate-reference/{reference}', [App\Http\Controllers\BookingController::class, 'validateReference']);
 
 // Instrument Rental Routes
 Route::get('/instrument-rental', [InstrumentRentalController::class, 'index'])->name('instrument-rental');
@@ -80,6 +79,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/calendar', [App\Http\Controllers\AdminController::class, 'calendar'])->name('admin.calendar');
     Route::get('/database', [App\Http\Controllers\AdminController::class, 'database'])->name('admin.database');
     Route::get('/analytics', [App\Http\Controllers\AdminController::class, 'analytics'])->name('admin.analytics');
+    Route::get('/analytics/export', [App\Http\Controllers\AdminController::class, 'analytics'])->name('admin.analytics.export');
     Route::get('/bookings', [App\Http\Controllers\AdminController::class, 'bookings'])->name('admin.bookings');
     Route::get('/bookings/create', [App\Http\Controllers\AdminController::class, 'createBooking'])->name('admin.bookings.create');
     Route::get('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'showBooking'])->name('admin.bookings.show');
@@ -102,7 +102,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/activity-logs', [App\Http\Controllers\AdminController::class, 'activityLogs'])->name('admin.activity-logs');
     Route::delete('/activity-logs/clear', [App\Http\Controllers\AdminController::class, 'clearActivityLogs'])->name('admin.activity-logs.clear');
     Route::get('/instrument-bookings', [App\Http\Controllers\AdminController::class, 'instrumentBookings'])->name('admin.instrument-bookings');
-    Route::get('/music-lesson-bookings', [App\Http\Controllers\AdminController::class, 'musicLessonBookings'])->name('admin.music-lesson-bookings');
+
     Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');
     Route::patch('/bookings/{id}/reschedule', [App\Http\Controllers\AdminController::class, 'rescheduleBooking'])->name('admin.booking.reschedule');
     

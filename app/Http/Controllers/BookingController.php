@@ -591,4 +591,37 @@ class BookingController extends Controller
             'available' => !$exists
         ]);
     }
+
+    /**
+     * Validate if a reference exists for reschedule
+     */
+    public function validateReference($reference)
+    {
+        // Check both reference and reference_code columns for compatibility
+        $booking = Booking::where(function($query) use ($reference) {
+                $query->where('reference', $reference)
+                      ->orWhere('reference_code', $reference);
+            })
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->first();
+        
+        if ($booking) {
+            return response()->json([
+                'valid' => true,
+                'booking' => [
+                    'id' => $booking->id,
+                    'band_name' => $booking->band_name,
+                    'date' => $booking->date,
+                    'time_slot' => $booking->time_slot,
+                    'duration' => $booking->duration,
+                    'service_type' => $booking->service_type
+                ]
+            ]);
+        }
+        
+        return response()->json([
+            'valid' => false,
+            'message' => 'Reference number not found or booking is not active.'
+        ]);
+    }
 }

@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentMonth = new Date().getMonth();
   const realYear = new Date().getFullYear();
   const realMonth = new Date().getMonth();
+  let selectedDate = null; // Track selected date
 
   // Calendar elements
   const calendarGrid = document.getElementById('calendarGrid');
@@ -122,6 +123,16 @@ document.addEventListener('DOMContentLoaded', function() {
           } else {
             // Add click event for future dates
             dayElement.addEventListener('click', () => {
+              // Remove previous selection
+              const previousSelected = document.querySelector('.calendar-day.selected');
+              if (previousSelected) {
+                previousSelected.classList.remove('selected');
+              }
+              
+              // Add selection to clicked date
+              dayElement.classList.add('selected');
+              selectedDate = dateKey;
+              
               showTimeSlots(dateKey);
             });
           }

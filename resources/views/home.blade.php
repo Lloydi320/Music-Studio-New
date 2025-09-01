@@ -268,71 +268,69 @@
       <button class="close-reschedule" id="closeReschedule" aria-label="Close modal">&times;</button>
     </div>
     <div class="reschedule-modal-content">
-      <form id="rescheduleForm">
-        <div class="form-group">
-          <label for="bandName">🎵 Band Name</label>
-          <input type="text" id="bandName" name="bandName" required placeholder="Enter your band name" aria-describedby="bandName-help">
-          <small id="bandName-help" class="form-help">The name of your band or group</small>
-        </div>
-        
-        <div class="form-group">
-          <label for="referenceNumber">🔢 Reference Number</label>
-          <input type="text" id="referenceNumber" name="referenceNumber" required placeholder="Enter 4-digit reference number" maxlength="4" pattern="[0-9]{4}" aria-describedby="ref-help">
-          <small id="ref-help" class="form-help">4-digit booking reference number</small>
-        </div>
-        
-        <div class="form-group">
-          <label for="newDate">📅 New Date</label>
-          <div class="date-input-wrapper">
-            <input type="date" id="newDate" name="newDate" required aria-describedby="date-help" class="date-picker-input">
-            <div class="date-picker-icon">📅</div>
+      <form id="rescheduleForm" class="reschedule-form-grid">
+        <!-- First Row: Reference Number -->
+        <div class="form-row full-width">
+          <div class="form-group">
+            <label for="referenceNumber">🔢 Reference Number</label>
+            <input type="text" id="referenceNumber" name="referenceNumber" required placeholder="Enter your booking reference number" aria-describedby="ref-help">
+            <small id="ref-help" class="form-help">Enter your booking reference number to verify your booking</small>
+            <div id="reference-validation" class="validation-message"></div>
           </div>
-          <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
         </div>
         
-        <div class="form-group">
-          <label for="duration">⏱️ Duration</label>
-          <select id="duration" name="duration" required aria-describedby="duration-help">
-            <option value="">Select duration</option>
-            <option value="1">1 hour</option>
-            <option value="2">2 hours</option>
-            <option value="3">3 hours</option>
-            <option value="4">4 hours</option>
-            <option value="5">5 hours</option>
-            <option value="6">6 hours</option>
-          </select>
-          <small id="duration-help" class="form-help">How long do you need the studio?</small>
+        <!-- Second Row: Date and Duration -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newDate">📅 New Date</label>
+            <div class="date-input-wrapper">
+              <input type="date" id="newDate" name="newDate" required aria-describedby="date-help" class="date-picker-input">
+              <div class="date-picker-icon">📅</div>
+            </div>
+            <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
+          </div>
+          
+          <div class="form-group">
+            <label for="duration">⏱️ Duration</label>
+            <select id="duration" name="duration" required aria-describedby="duration-help" disabled>
+              <option value="1" selected>1 hour (Fixed)</option>
+            </select>
+            <small id="duration-help" class="form-help">Duration is fixed at 1 hour for rescheduling</small>
+          </div>
         </div>
         
-        <div class="form-group">
-          <label for="newTime">⏰ New Time Slot</label>
-          <select id="newTime" name="newTime" required aria-describedby="time-help">
-            <option value="">Select a time slot</option>
-            <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
-            <option value="08:30 AM - 09:30 AM">08:30 AM - 09:30 AM</option>
-            <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
-            <option value="09:30 AM - 10:30 AM">09:30 AM - 10:30 AM</option>
-            <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
-            <option value="10:30 AM - 11:30 AM">10:30 AM - 11:30 AM</option>
-            <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
-            <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
-            <option value="12:00 PM - 01:00 PM">12:00 PM - 01:00 PM</option>
-            <option value="12:30 PM - 01:30 PM">12:30 PM - 01:30 PM</option>
-            <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM</option>
-            <option value="01:30 PM - 02:30 PM">01:30 PM - 02:30 PM</option>
-            <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
-            <option value="02:30 PM - 03:30 PM">02:30 PM - 03:30 PM</option>
-            <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
-            <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM</option>
-            <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
-            <option value="04:30 PM - 05:30 PM">04:30 PM - 05:30 PM</option>
-            <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
-            <option value="05:30 PM - 06:30 PM">05:30 PM - 06:30 PM</option>
-            <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
-            <option value="06:30 PM - 07:30 PM">06:30 PM - 07:30 PM</option>
-            <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
-          </select>
-          <small id="time-help" class="form-help">Available time slots will update based on duration</small>
+        <!-- Third Row: Time Slot (Full Width) -->
+        <div class="form-row full-width">
+          <div class="form-group">
+            <label for="newTime">⏰ New Time Slot</label>
+            <select id="newTime" name="newTime" required aria-describedby="time-help">
+              <option value="">Select a time slot</option>
+              <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
+              <option value="08:30 AM - 09:30 AM">08:30 AM - 09:30 AM</option>
+              <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+              <option value="09:30 AM - 10:30 AM">09:30 AM - 10:30 AM</option>
+              <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+              <option value="10:30 AM - 11:30 AM">10:30 AM - 11:30 AM</option>
+              <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+              <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
+              <option value="12:00 PM - 01:00 PM">12:00 PM - 01:00 PM</option>
+              <option value="12:30 PM - 01:30 PM">12:30 PM - 01:30 PM</option>
+              <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM</option>
+              <option value="01:30 PM - 02:30 PM">01:30 PM - 02:30 PM</option>
+              <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+              <option value="02:30 PM - 03:30 PM">02:30 PM - 03:30 PM</option>
+              <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
+              <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM</option>
+              <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+              <option value="04:30 PM - 05:30 PM">04:30 PM - 05:30 PM</option>
+              <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
+              <option value="05:30 PM - 06:30 PM">05:30 PM - 06:30 PM</option>
+              <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
+              <option value="06:30 PM - 07:30 PM">06:30 PM - 07:30 PM</option>
+              <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
+            </select>
+            <small id="time-help" class="form-help">Available time slots will update based on duration</small>
+          </div>
         </div>
         
         <div class="form-actions">
@@ -1287,18 +1285,92 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Handle duration change to update time slots
+    // Reference validation
+    let validationTimeout;
+    let isReferenceValid = false;
+    
+    const referenceInput = document.getElementById('referenceNumber');
+    const validationMessage = document.getElementById('reference-validation');
+    const newDateInput = document.getElementById('newDate');
     const durationSelect = document.getElementById('duration');
-    if (durationSelect) {
-        durationSelect.addEventListener('change', function() {
-            const selectedDuration = parseInt(this.value);
-            if (selectedDuration) {
-                generateRescheduleTimeSlots(selectedDuration);
+    const newTimeSelect = document.getElementById('newTime');
+    
+    // Initialize time slots with fixed 1-hour duration
+    generateRescheduleTimeSlots(1);
+    
+    // Function to toggle form fields based on reference validation
+    function toggleFormFields(enabled) {
+        const fields = [newDateInput, newTimeSelect]; // Duration is now permanently disabled
+        fields.forEach(field => {
+            if (field) {
+                field.disabled = !enabled;
+                if (enabled) {
+                    field.classList.remove('disabled-field');
+                } else {
+                    field.classList.add('disabled-field');
+                }
             }
         });
-        
-        // Initialize with default duration (1 hour)
-        generateRescheduleTimeSlots(1);
+    }
+    
+    // Initially disable fields
+    toggleFormFields(false);
+    
+    if (referenceInput && validationMessage) {
+        referenceInput.addEventListener('input', function() {
+            const reference = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(validationTimeout);
+            
+            // Reset validation state
+            isReferenceValid = false;
+            this.classList.remove('valid', 'invalid');
+            validationMessage.className = 'validation-message';
+            
+            // Disable form fields when reference is empty or being validated
+            toggleFormFields(false);
+            
+            if (reference.length === 0) {
+                return;
+            }
+            
+            // Show loading state
+            validationMessage.className = 'validation-message loading';
+            validationMessage.textContent = 'Validating reference...';
+            
+            // Debounce validation
+            validationTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/validate-reference/${encodeURIComponent(reference)}`);
+                    const result = await response.json();
+                    
+                    if (result.valid) {
+                        isReferenceValid = true;
+                        this.classList.add('valid');
+                        validationMessage.className = 'validation-message success';
+                        validationMessage.textContent = `✓ Valid booking found for ${result.booking.band_name}`;
+                        // Enable form fields when reference is valid
+                        toggleFormFields(true);
+                    } else {
+                        isReferenceValid = false;
+                        this.classList.add('invalid');
+                        validationMessage.className = 'validation-message error';
+                        validationMessage.textContent = result.message || 'Reference number not found';
+                        // Keep fields disabled when reference is invalid
+                        toggleFormFields(false);
+                    }
+                } catch (error) {
+                    console.error('Validation error:', error);
+                    isReferenceValid = false;
+                    this.classList.add('invalid');
+                    validationMessage.className = 'validation-message error';
+                    validationMessage.textContent = 'Error validating reference. Please try again.';
+                    // Keep fields disabled on error
+                    toggleFormFields(false);
+                }
+            }, 500);
+        });
     }
 
     // Handle form submission
@@ -1307,20 +1379,19 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             // Get form data
-            const bandName = document.getElementById('bandName').value;
             const referenceNumber = document.getElementById('referenceNumber').value;
             const newDate = document.getElementById('newDate').value;
             const newTime = document.getElementById('newTime').value;
             const duration = document.getElementById('duration').value;
             
             // Simple validation
-            if (!bandName || !referenceNumber || !newDate || !newTime || !duration) {
+            if (!referenceNumber || !newDate || !newTime || !duration) {
                 alert('Please fill in all fields.');
                 return;
             }
             
-            if (referenceNumber.length !== 4 || !/^[0-9]{4}$/.test(referenceNumber)) {
-                alert('Reference number must be exactly 4 digits.');
+            if (!isReferenceValid) {
+                alert('Please enter a valid reference number.');
                 return;
             }
             
@@ -1333,7 +1404,6 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 // Prepare form data
                 const formData = {
-                    band_name: bandName,
                     reference_number: referenceNumber,
                     new_date: newDate,
                     new_time_slot: newTime,

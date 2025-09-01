@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class Booking extends Model
 {
@@ -32,6 +33,42 @@ class Booking extends Model
         'duration' => 'integer',
         'date' => 'date',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($booking) {
+            if (empty($booking->reference)) {
+                $booking->reference = self::generateUniqueReference();
+            }
+        });
+    }
+
+    /**
+     * Generate a unique booking reference
+     * Format: BK-YYYY-XXXXXX (e.g., BK-2025-A1B2C3)
+     */
+    public static function generateUniqueReference()
+    {
+        $year = Carbon::now()->year;
+        $maxAttempts = 100;
+        
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            // Generate 6-character alphanumeric code
+            $code = strtoupper(Str::random(6));
+            $reference = "BK-{$year}-{$code}";
+            
+            // Check if reference already exists
+            if (!self::where('reference', $reference)->exists()) {
+                return $reference;
+            }
+        }
+        
+        // Fallback with timestamp if all attempts fail
+        $timestamp = Carbon::now()->format('His');
+        return "BK-{$year}-{$timestamp}";
+    }
 
     // Add validation rules
     public static function rules()
@@ -64,20 +101,6 @@ class Booking extends Model
         ];
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::creating(function ($booking) {
-            if (empty($booking->reference)) {
-                $booking->reference = 'BK' . strtoupper(Str::random(8));
-            }
-            if (empty($booking->reference_code)) {
-                $booking->reference_code = self::generateReferenceCode();
-            }
-        });
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -96,12 +119,8 @@ class Booking extends Model
     // Service type constants
     const SERVICE_TYPES = [
         'studio_rental' => 'Studio Rental',
-        'recording_session' => 'Recording Session',
-        'music_lesson' => 'Music Lesson',
-        'band_practice' => 'Band Practice',
-        'audio_production' => 'Audio Production',
         'instrument_rental' => 'Instrument Rental',
-        'other' => 'Other Services'
+        'solo_rehearsal' => 'Solo Rehearsal'
     ];
 
     // Get service type options

@@ -168,27 +168,37 @@ class AdminController extends Controller
         // Users per service data for bar chart (using real service_type data)
         $usersPerService = [];
         foreach (Booking::getServiceTypes() as $key => $label) {
-            $usersPerService[$label] = DB::table('bookings')
-                ->join('users', 'bookings.user_id', '=', 'users.id')
-                ->where('bookings.status', 'confirmed')
-                ->where('bookings.service_type', $key)
-                ->distinct('users.id')
-                ->count();
+            if ($key === 'instrument_rental') {
+                // For instrument rentals, get data from instrument_rentals table
+                $usersPerService[$label] = DB::table('instrument_rentals')
+                    ->join('users', 'instrument_rentals.user_id', '=', 'users.id')
+                    ->whereIn('instrument_rentals.status', ['confirmed', 'active'])
+                    ->distinct('users.id')
+                    ->count();
+            } else {
+                // For other services, get data from bookings table
+                $usersPerService[$label] = DB::table('bookings')
+                    ->join('users', 'bookings.user_id', '=', 'users.id')
+                    ->where('bookings.status', 'confirmed')
+                    ->where('bookings.service_type', $key)
+                    ->distinct('users.id')
+                    ->count();
+            }
         }
-        // Add instrument rentals (include both confirmed and active)
-        $usersPerService['Instrument Rentals'] = DB::table('instrument_rentals')
-             ->join('users', 'instrument_rentals.user_id', '=', 'users.id')
-             ->whereIn('instrument_rentals.status', ['confirmed', 'active'])
-             ->distinct('users.id')
-             ->count();
+
 
         // Services distribution for pie chart (using real service_type data)
         $servicesDistribution = [];
         foreach ($serviceTypeAnalytics as $key => $data) {
-            $servicesDistribution[$data['label']] = $data['confirmed'];
+            if ($key === 'instrument_rental') {
+                // For instrument rentals, get data from instrument_rentals table
+                $servicesDistribution[$data['label']] = InstrumentRental::whereIn('status', ['confirmed', 'active'])->count();
+            } else {
+                // For other services, get data from bookings table
+                $servicesDistribution[$data['label']] = $data['confirmed'];
+            }
         }
-        // Add instrument rentals as separate service (include both confirmed and active)
-        $servicesDistribution['Instrument Rentals'] = InstrumentRental::whereIn('status', ['confirmed', 'active'])->count();
+
 
         return view('admin.dashboard', compact(
             'totalRevenue',
@@ -566,7 +576,7 @@ class AdminController extends Controller
     /**
      * Show analytics dashboard with service statistics
      */
-    public function analytics()
+    public function analytics(Request $request)
     {
         // Check if user is admin
         /** @var User $user */
@@ -638,6 +648,19 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
+        // Handle export requests
+        if ($request->has('export')) {
+            $exportType = $request->get('export');
+            
+            if ($exportType === 'csv') {
+                return $this->exportCSV($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals);
+            } elseif ($exportType === 'excel') {
+                return $this->exportExcel($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals);
+            } elseif ($exportType === 'pdf') {
+                return $this->exportPDF($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals);
+            }
+        }
+
         return view('admin.analytics', compact(
             'user',
             'serviceCategories',
@@ -650,6 +673,321 @@ class AdminController extends Controller
             'activeRentals',
             'pendingRentals'
         ));
+    }
+
+    /**
+     * Export analytics data as CSV
+     */
+    private function exportCSV($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals)
+    {
+        $filename = 'analytics_report_' . date('Y-m-d_H-i-s') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for proper UTF-8 encoding in Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Header Section
+            fputcsv($file, ['ANALYTICS SUMMARY REPORT', '', '', '', '', '']);
+            fputcsv($file, ['Generated on: ' . date('Y-m-d H:i:s'), '', '', '', '', '']);
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            
+            // Service Summary Section
+            fputcsv($file, ['SERVICE SUMMARY', '', '', '', '', '']);
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['Service Type', 'Count', 'Revenue', '', '', '']);
+            foreach ($serviceCategories as $service => $count) {
+                fputcsv($file, [
+                    $service, 
+                    $count, 
+                    number_format($revenueByService[$service] ?? 0, 2), 
+                    '', 
+                    '', 
+                    ''
+                ]);
+            }
+            fputcsv($file, ['TOTAL REVENUE', '', number_format($totalRevenue, 2), '', '', '']);
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            
+            // Confirmed Bookings Section
+            fputcsv($file, ['CONFIRMED BOOKINGS', '', '', '', '', '']);
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['Date', 'Client', 'Time Slot', 'Status', 'Duration', '']);
+            foreach ($confirmedBookings->take(20) as $booking) {
+                fputcsv($file, [
+                    $booking->date ?? 'N/A',
+                    $booking->user->name ?? 'N/A',
+                    $booking->time_slot ?? 'N/A',
+                    ucfirst($booking->status ?? 'N/A'),
+                    ($booking->duration ?? 'N/A') . ' hours',
+                    ''
+                ]);
+            }
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            
+            // Pending Bookings Section
+            fputcsv($file, ['PENDING BOOKINGS', '', '', '', '', '']);
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['Date', 'Client', 'Time Slot', 'Status', 'Duration', '']);
+            foreach ($pendingBookings->take(20) as $booking) {
+                fputcsv($file, [
+                    $booking->date ?? 'N/A',
+                    $booking->user->name ?? 'N/A',
+                    $booking->time_slot ?? 'N/A',
+                    ucfirst($booking->status ?? 'N/A'),
+                    ($booking->duration ?? 'N/A') . ' hours',
+                    ''
+                ]);
+            }
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            
+            // Active Rentals Section
+            fputcsv($file, ['ACTIVE RENTALS', '', '', '', '', '']);
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['Start Date', 'End Date', 'Client', 'Instrument', 'Status', '']);
+            foreach ($activeRentals->take(20) as $rental) {
+                fputcsv($file, [
+                    $rental->start_date ?? 'N/A',
+                    $rental->end_date ?? 'N/A',
+                    $rental->user->name ?? 'N/A',
+                    ($rental->instrument_type ?? 'N/A') . ' - ' . ($rental->instrument_name ?? 'N/A'),
+                    ucfirst($rental->status ?? 'N/A'),
+                    ''
+                ]);
+            }
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            
+            // Top Customers Section
+            fputcsv($file, ['TOP CUSTOMERS', '', '', '', '', '']);
+            fputcsv($file, ['', '', '', '', '', '']); // Empty row
+            fputcsv($file, ['Customer Name', 'Email', 'Total Services', 'Total Spent', '', '']);
+            foreach ($topCustomers as $customer) {
+                fputcsv($file, [
+                    $customer->name ?? 'N/A',
+                    $customer->email ?? 'N/A',
+                    ($customer->booking_count ?? 0) + ($customer->rental_count ?? 0),
+                    number_format($customer->total_spent ?? 0, 2),
+                    '',
+                    ''
+                ]);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export analytics data as Excel (HTML format)
+     */
+    private function exportExcel($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals)
+    {
+        $filename = 'analytics_report_' . date('Y-m-d_H-i-s') . '.html';
+        
+        $headers = [
+            'Content-Type' => 'text/html',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $html = $this->generateExcelHTML($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals);
+        
+        return response($html, 200, $headers);
+    }
+
+    /**
+     * Generate well-formatted HTML for Excel export
+     */
+    private function generateExcelHTML($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals)
+    {
+        $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 30px; }
+        .section-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background-color: #3498db; color: white; padding: 12px; text-align: left; font-weight: bold; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #e8f4fd; }
+        .summary-table th { background-color: #27ae60; }
+        .total-row { font-weight: bold; background-color: #ecf0f1 !important; }
+        .currency { text-align: right; }
+        .center { text-align: center; }
+        .status-confirmed { background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; }
+        .status-pending { background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; }
+        .status-active { background-color: #cce5ff; color: #004085; padding: 4px 8px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Music Studio Analytics Report</h1>
+        <p>Generated on: ' . date('F j, Y \a\t g:i A') . '</p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">📊 Summary Overview</h2>
+        <table class="summary-table">
+            <tr>
+                <th>Service Type</th>
+                <th class="center">Count</th>
+                <th class="currency">Revenue</th>
+            </tr>';
+
+        foreach ($serviceCategories as $service => $count) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($service) . '</td>
+                <td class="center">' . $count . '</td>
+                <td class="currency">₱' . number_format($revenueByService[$service] ?? 0, 2) . '</td>
+            </tr>';
+        }
+        
+        $html .= '<tr class="total-row">
+                <td><strong>TOTAL REVENUE</strong></td>
+                <td class="center">-</td>
+                <td class="currency"><strong>₱' . number_format($totalRevenue, 2) . '</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">✅ Confirmed Bookings</h2>
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Time Slot</th>
+                <th class="center">Status</th>
+                <th class="center">Duration</th>
+            </tr>';
+
+        foreach ($confirmedBookings->take(25) as $booking) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($booking->date) . '</td>
+                <td>' . htmlspecialchars($booking->user->name ?? 'N/A') . '</td>
+                <td>' . htmlspecialchars($booking->time_slot) . '</td>
+                <td class="center"><span class="status-confirmed">' . ucfirst($booking->status) . '</span></td>
+                <td class="center">' . htmlspecialchars($booking->duration ?? 'N/A') . ' hours</td>
+            </tr>';
+        }
+        
+        $html .= '</table>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">⏳ Pending Bookings</h2>
+        <table>
+            <tr>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Time Slot</th>
+                <th class="center">Status</th>
+                <th class="center">Duration</th>
+            </tr>';
+
+        foreach ($pendingBookings->take(25) as $booking) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($booking->date) . '</td>
+                <td>' . htmlspecialchars($booking->user->name ?? 'N/A') . '</td>
+                <td>' . htmlspecialchars($booking->time_slot) . '</td>
+                <td class="center"><span class="status-pending">' . ucfirst($booking->status) . '</span></td>
+                <td class="center">' . htmlspecialchars($booking->duration ?? 'N/A') . ' hours</td>
+            </tr>';
+        }
+        
+        $html .= '</table>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">🎸 Active Rentals</h2>
+        <table>
+            <tr>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Client</th>
+                <th>Instrument</th>
+                <th class="center">Status</th>
+            </tr>';
+
+        foreach ($activeRentals->take(25) as $rental) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($rental->start_date) . '</td>
+                <td>' . htmlspecialchars($rental->end_date) . '</td>
+                <td>' . htmlspecialchars($rental->user->name ?? 'N/A') . '</td>
+                <td>' . htmlspecialchars($rental->instrument_type . ' - ' . $rental->instrument_name) . '</td>
+                <td class="center"><span class="status-active">' . ucfirst($rental->status) . '</span></td>
+            </tr>';
+        }
+        
+        $html .= '</table>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">👥 Top Customers</h2>
+        <table>
+            <tr>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th class="center">Total Services</th>
+                <th class="currency">Total Spent</th>
+            </tr>';
+
+        foreach ($topCustomers as $customer) {
+            $html .= '<tr>
+                <td>' . htmlspecialchars($customer->name) . '</td>
+                <td>' . htmlspecialchars($customer->email) . '</td>
+                <td class="center">' . ($customer->booking_count + $customer->rental_count) . '</td>
+                <td class="currency">₱' . number_format($customer->total_spent, 2) . '</td>
+            </tr>';
+        }
+        
+        $html .= '</table>
+    </div>
+
+    <div class="section">
+        <p style="text-align: center; color: #7f8c8d; font-style: italic; margin-top: 40px;">
+            Report generated by Music Studio Management System<br>
+            © ' . date('Y') . ' Music Studio. All rights reserved.
+        </p>
+    </div>
+
+</body>
+</html>';
+
+        return $html;
+    }
+
+    /**
+     * Export analytics data as PDF (placeholder)
+     */
+    private function exportPDF($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals)
+    {
+        // For now, return the same HTML as Excel but with PDF headers
+        $filename = 'analytics_report_' . date('Y-m-d_H-i-s') . '.pdf';
+        
+        $headers = [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $html = $this->generateExcelHTML($serviceCategories, $revenueByService, $totalRevenue, $topCustomers, $confirmedBookings, $pendingBookings, $activeRentals);
+        
+        return response($html, 200, $headers);
     }
 
     /**
@@ -1360,41 +1698,7 @@ class AdminController extends Controller
         return view('admin.instrument-rental-details', compact('rental'));
     }
 
-    public function musicLessonBookings(Request $request)
-    {
-        // Filter bookings that are likely music lessons (duration <= 120 minutes)
-        $query = Booking::with('user')
-            ->where('duration', '<=', 120)
-            ->whereIn('time_slot', ['10:00', '14:00', '16:00', '18:00']) // Common lesson times
-            ->orderBy('created_at', 'desc');
 
-        // Apply filters
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('date', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('date', '<=', $request->date_to);
-        }
-
-        if ($request->filled('user')) {
-            $query->whereHas('user', function($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->user . '%')
-                  ->orWhere('email', 'like', '%' . $request->user . '%');
-            });
-        }
-
-        $musicLessonBookings = $query->paginate(20);
-        $totalLessons = Booking::where('duration', '<=', 120)
-            ->whereIn('time_slot', ['10:00', '14:00', '16:00', '18:00'])
-            ->count();
-
-        return view('admin.music-lesson-bookings', compact('musicLessonBookings', 'totalLessons'));
-    }
 
     /**
      * Clear all activity logs

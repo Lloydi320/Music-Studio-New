@@ -1685,7 +1685,7 @@
                 </a>
             </li>
             <li class="dropdown-nav">
-                <a href="#" class="dropdown-toggle {{ request()->routeIs('admin.bookings', 'admin.instrument-bookings', 'admin.music-lesson-bookings') ? 'active' : '' }}" onclick="toggleDropdown(event)">
+                <a href="#" class="dropdown-toggle {{ request()->routeIs('admin.bookings', 'admin.instrument-bookings') ? 'active' : '' }}" onclick="toggleDropdown(event)">
                     <div>
                         <i class="fas fa-calendar-check"></i>
                         Bookings
@@ -1699,10 +1699,6 @@
                     <a href="{{ route('admin.instrument-bookings') }}" class="{{ request()->routeIs('admin.instrument-bookings') ? 'active' : '' }}">
                         <i class="fas fa-guitar"></i>
                         Instrumental
-                    </a>
-                    <a href="{{ route('admin.music-lesson-bookings') }}" class="{{ request()->routeIs('admin.music-lesson-bookings') ? 'active' : '' }}">
-                        <i class="fas fa-music"></i>
-                        Music Lesson
                     </a>
                 </div>
             </li>

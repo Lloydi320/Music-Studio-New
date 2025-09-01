@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class InstrumentRental extends Model
 {
@@ -54,9 +55,34 @@ class InstrumentRental extends Model
         
         static::creating(function ($rental) {
             if (empty($rental->reference)) {
-                $rental->reference = 'IR' . strtoupper(Str::random(8));
+                $rental->reference = self::generateUniqueReference();
             }
         });
+    }
+
+    /**
+     * Generate a unique instrument rental reference
+     * Format: IR-YYYY-XXXXXX (e.g., IR-2025-A1B2C3)
+     */
+    public static function generateUniqueReference()
+    {
+        $year = Carbon::now()->year;
+        $maxAttempts = 100;
+        
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            // Generate 6-character alphanumeric code
+            $code = strtoupper(Str::random(6));
+            $reference = "IR-{$year}-{$code}";
+            
+            // Check if reference already exists
+            if (!self::where('reference', $reference)->exists()) {
+                return $reference;
+            }
+        }
+        
+        // Fallback with timestamp if all attempts fail
+        $timestamp = Carbon::now()->format('His');
+        return "IR-{$year}-{$timestamp}";
     }
 
     public function user()
