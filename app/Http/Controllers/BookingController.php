@@ -533,7 +533,13 @@ class BookingController extends Controller
      */
     public function getBookedDates()
     {
-        $dates = \App\Models\Booking::pluck('date')->unique()->values();
+        $dates = \App\Models\Booking::whereIn('status', ['pending', 'confirmed'])
+            ->get()
+            ->map(function($booking) {
+                return \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
+            })
+            ->unique()
+            ->values();
         return response()->json(['booked_dates' => $dates]);
     }
 
@@ -567,5 +573,22 @@ class BookingController extends Controller
         }
         
         return response()->json($result);
+    }
+
+    /**
+     * Check if a reference code already exists
+     */
+    public function checkReferenceCode(Request $request)
+    {
+        $request->validate([
+            'reference_code' => 'required|string|size:4'
+        ]);
+
+        $exists = Booking::where('reference_code', $request->reference_code)->exists();
+        
+        return response()->json([
+            'exists' => $exists,
+            'available' => !$exists
+        ]);
     }
 }

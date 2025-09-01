@@ -849,6 +849,7 @@ body, html {
   cursor: pointer;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  position: relative;
 }
 
 .calendar-grid .day-name {
@@ -868,6 +869,16 @@ body, html {
   display: block;
   border-radius: 50%;
   margin: 4px auto 0;
+}
+
+/* Simple day circle indicator */
+.day-circle {
+  width: 6px;
+  height: 6px;
+  background-color: #ddd;
+  border-radius: 50%;
+  margin: 4px auto 0;
+  display: block;
 }
 
 .calendar-grid .selected {

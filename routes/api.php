@@ -14,6 +14,12 @@ Route::get('/my-feedback', [FeedbackController::class, 'myFeedback']);
 Route::post('/feedback', [FeedbackController::class, 'store']);
 Route::get('/feedbacks', [FeedbackController::class, 'index']);
 
+// Reference code validation
+Route::post('/check-reference-code', [BookingController::class, 'checkReferenceCode']);
+
+// Get booked dates for calendar
+Route::get('/booked-dates', [BookingController::class, 'getBookedDates']);
+
 // Booking API routes to match your PHP scripts
 Route::prefix('bookings')->group(function () {
     // Get bookings by date

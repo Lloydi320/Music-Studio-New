@@ -92,10 +92,19 @@ document.addEventListener('DOMContentLoaded', function() {
             dayElement.classList.add('today');
           }
           
-          // Check if date has bookings
-          const dateKey = currentDate.toISOString().split('T')[0];
+          // Check if date has bookings - use local date formatting to avoid timezone issues
+          const year = currentDate.getFullYear();
+          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+          const day = String(currentDate.getDate()).padStart(2, '0');
+          const dateKey = `${year}-${month}-${day}`;
           console.log('Checking date:', dateKey, 'against booked dates:', bookedDates);
           
+          // Add simple circle indicator under each day
+          const circle = document.createElement('div');
+          circle.className = 'day-circle';
+          dayElement.appendChild(circle);
+          
+          // Check if date has bookings
           if (bookedDates.includes(dateKey)) {
             dayElement.classList.add('booked');
             dayElement.title = 'Booked';
@@ -281,4 +290,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-}); 
+});

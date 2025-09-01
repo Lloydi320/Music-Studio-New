@@ -1262,6 +1262,127 @@
 <script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('js/page-transitions.js') }}"></script>
 <script>
+// Reference Code Validation
+document.addEventListener('DOMContentLoaded', function() {
+    const referenceCodeInput = document.getElementById('referenceCode');
+    const studioRentalForm = document.getElementById('studioRentalForm');
+    let validationTimeout;
+    let isValidating = false;
+    
+    if (referenceCodeInput) {
+        // Create validation message element
+        const validationMessage = document.createElement('div');
+        validationMessage.id = 'referenceValidationMessage';
+        validationMessage.style.cssText = 'margin-top: 5px; font-size: 0.9rem; display: none;';
+        referenceCodeInput.parentNode.appendChild(validationMessage);
+        
+        // Real-time validation on input
+        referenceCodeInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(validationTimeout);
+            
+            // Reset validation state
+            validationMessage.style.display = 'none';
+            this.style.borderColor = '';
+            
+            // Only validate if we have 4 digits
+            if (value.length === 4 && /^[0-9]{4}$/.test(value)) {
+                validationTimeout = setTimeout(() => {
+                    validateReferenceCode(value);
+                }, 500); // Debounce for 500ms
+            }
+        });
+        
+        function validateReferenceCode(code) {
+            if (isValidating) return;
+            
+            isValidating = true;
+            validationMessage.textContent = 'Checking reference code...';
+            validationMessage.style.color = '#856404';
+            validationMessage.style.backgroundColor = '#fff3cd';
+            validationMessage.style.border = '1px solid #ffeaa7';
+            validationMessage.style.padding = '8px';
+            validationMessage.style.borderRadius = '5px';
+            validationMessage.style.display = 'block';
+            
+            // Check if reference code exists
+            fetch('/api/check-reference-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ reference_code: code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                isValidating = false;
+                
+                if (data.exists) {
+                    // Reference code already exists
+                    validationMessage.textContent = '❌ This reference code is already taken. Please use a different one.';
+                    validationMessage.style.color = '#721c24';
+                    validationMessage.style.backgroundColor = '#f8d7da';
+                    validationMessage.style.border = '1px solid #f5c6cb';
+                    referenceCodeInput.style.borderColor = '#dc3545';
+                    referenceCodeInput.dataset.valid = 'false';
+                } else {
+                    // Reference code is available
+                    validationMessage.textContent = '✅ Reference code is available.';
+                    validationMessage.style.color = '#155724';
+                    validationMessage.style.backgroundColor = '#d4edda';
+                    validationMessage.style.border = '1px solid #c3e6cb';
+                    referenceCodeInput.style.borderColor = '#28a745';
+                    referenceCodeInput.dataset.valid = 'true';
+                }
+                
+                validationMessage.style.display = 'block';
+            })
+            .catch(error => {
+                isValidating = false;
+                console.error('Reference code validation error:', error);
+                validationMessage.textContent = '⚠️ Unable to validate reference code. Please try again.';
+                validationMessage.style.color = '#856404';
+                validationMessage.style.backgroundColor = '#fff3cd';
+                validationMessage.style.border = '1px solid #ffeaa7';
+                validationMessage.style.display = 'block';
+                referenceCodeInput.dataset.valid = 'unknown';
+            });
+        }
+    }
+    
+    // Prevent form submission if reference code is invalid
+    if (studioRentalForm) {
+        studioRentalForm.addEventListener('submit', function(e) {
+            const referenceCodeInput = document.getElementById('referenceCode');
+            
+            if (referenceCodeInput && referenceCodeInput.dataset.valid === 'false') {
+                e.preventDefault();
+                alert('Please use a different reference code. The current one is already taken.');
+                referenceCodeInput.focus();
+                return false;
+            }
+            
+            // Disable submit button to prevent double submission
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing...';
+                
+                // Re-enable after 3 seconds as fallback
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Confirm Booking';
+                }, 3000);
+            }
+        });
+    }
+});
+
+// Original script content below
 function toggleUserDropdown() {
     const dropdown = document.getElementById('userDropdown');
     const profile = document.getElementById('userProfile');

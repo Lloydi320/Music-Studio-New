@@ -1649,7 +1649,7 @@ class AdminController extends Controller
             try {
                 if ($user->google_calendar_id) {
                     $googleCalendarService = app(\App\Services\GoogleCalendarService::class);
-                    $googleCalendarService->updateBookingEvent($booking, $user);
+                    $googleCalendarService->updateBookingEvent($booking);
                     $calendarSyncMessage = ' The booking has been updated in Google Calendar.';
                 }
             } catch (\Exception $e) {
@@ -1755,11 +1755,26 @@ class AdminController extends Controller
             $originalData = $activityLog->old_values ?? [];
             $requestedData = $activityLog->new_values ?? [];
             
+            // Normalize the data structure for consistent access
+            // Current booking data (what's currently in the database)
+            $currentData = [
+                'date' => $booking->date,
+                'time_slot' => $booking->time_slot,
+                'duration' => $booking->duration
+            ];
+            
+            // Requested changes (from the reschedule request)
+            $normalizedRequestedData = [
+                'date' => $requestedData['new_date'] ?? $requestedData['date'] ?? null,
+                'time_slot' => $requestedData['new_time_slot'] ?? $requestedData['time_slot'] ?? null,
+                'duration' => $requestedData['duration'] ?? $requestedData['new_duration'] ?? null
+            ];
+            
             // Check for conflicts with the requested time slot
             $conflicts = [];
-            if (isset($requestedData['date']) && isset($requestedData['time_slot'])) {
-                $conflictingBookings = \App\Models\Booking::where('date', $requestedData['date'])
-                    ->where('time_slot', $requestedData['time_slot'])
+            if ($normalizedRequestedData['date'] && $normalizedRequestedData['time_slot']) {
+                $conflictingBookings = \App\Models\Booking::where('date', $normalizedRequestedData['date'])
+                    ->where('time_slot', $normalizedRequestedData['time_slot'])
                     ->where('id', '!=', $booking->id)
                     ->where('status', '!=', 'cancelled')
                     ->get();
@@ -1774,8 +1789,8 @@ class AdminController extends Controller
                 'data' => [
                     'booking' => $booking,
                     'activityLog' => $activityLog,
-                    'originalData' => $originalData,
-                    'requestedData' => $requestedData,
+                    'originalData' => $currentData,
+                    'requestedData' => $normalizedRequestedData,
                     'conflicts' => $conflicts
                 ]
             ]);

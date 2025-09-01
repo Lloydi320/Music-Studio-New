@@ -548,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
   
-  // Function to show success modal with countdown and auto-refresh
+  // Function to show success modal with countdown and redirect to home
   function showSuccessModal(message) {
     const modal = document.getElementById('successModal');
     const messageDiv = document.getElementById('successMessage');
@@ -567,7 +567,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
         if (countdown <= 0) {
           clearInterval(countdownInterval);
-          window.location.reload();
+          window.location.href = '/';
         }
       }, 1000);
     }
@@ -654,7 +654,7 @@ function showErrorModal(message) {
       
       if (countdown <= 0) {
         clearInterval(errorCountdownInterval);
-        window.location.reload();
+        window.location.href = '/';
       }
     }, 1000);
   }
