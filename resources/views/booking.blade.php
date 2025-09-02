@@ -594,6 +594,9 @@
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="/feedback">Feedbacks</a></li>
+        @if(Auth::check())
+        <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
+        @endif
       </ul>
     </nav>
     @if(Auth::check())

@@ -29,33 +29,18 @@ class BookingController extends Controller
 
     public function store(Request $request)
     {
-        // Check if reference code already exists
-        if ($request->reference_code) {
-            $existingBooking = Booking::where('reference_code', $request->reference_code)->first();
-            if ($existingBooking) {
-                $errorMessage = 'Reference number "' . $request->reference_code . '" already exists. Please use a different reference number from GCash 4-digits last number to proceed booking.';
-                
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => $errorMessage
-                    ], 422);
-                }
-                
-                return back()->with('error', $errorMessage);
-            }
-        }
-
+        // First, validate all fields including reference code uniqueness
         $request->validate([
             'date' => 'required|date',
             'time_slot' => 'required|string',
             'duration' => 'required|integer|min:1|max:8',
-
             'band_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'contact_number' => 'nullable|string|size:11|regex:/^[0-9]{11}$/',
             'reference_code' => 'nullable|string|size:4|unique:bookings,reference_code',
             'upload_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'reference_code.unique' => 'Reference number "' . $request->reference_code . '" already exists. Please use a different reference number from GCash 4-digits last number to proceed booking.'
         ]);
     
         // Parse the time slot to get start and end times
@@ -597,7 +582,7 @@ class BookingController extends Controller
      */
     public function validateReference($reference)
     {
-        // Check both reference and reference_code columns for compatibility
+        // First check studio bookings
         $booking = Booking::where(function($query) use ($reference) {
                 $query->where('reference', $reference)
                       ->orWhere('reference_code', $reference);
@@ -615,6 +600,28 @@ class BookingController extends Controller
                     'time_slot' => $booking->time_slot,
                     'duration' => $booking->duration,
                     'service_type' => $booking->service_type
+                ]
+            ]);
+        }
+        
+        // If not found in bookings, check instrument rentals
+        $rental = \App\Models\InstrumentRental::where(function($query) use ($reference) {
+                $query->where('reference', $reference)
+                      ->orWhere('four_digit_code', $reference);
+            })
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->first();
+            
+        if ($rental) {
+            return response()->json([
+                'valid' => true,
+                'booking' => [
+                    'id' => $rental->id,
+                    'band_name' => $rental->instrument_name, // Use instrument name as identifier
+                    'date' => $rental->rental_start_date->format('Y-m-d'),
+                    'time_slot' => 'Rental Period',
+                    'duration' => $rental->rental_duration_days,
+                    'service_type' => 'instrument_rental'
                 ]
             ]);
         }

@@ -1709,6 +1709,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('admin.reschedule-requests') }}" class="{{ request()->routeIs('admin.reschedule-requests*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-times"></i>
+                    Reschedule Requests
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'active' : '' }}">
                     <i class="fas fa-users-cog"></i>
                     Admin Users

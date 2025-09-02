@@ -2290,6 +2290,57 @@ class AdminController extends Controller
     }
 
     /**
+     * Show all reschedule requests
+     */
+    public function rescheduleRequests()
+    {
+        // Check if user is admin
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            // Get all reschedule requests from activity logs
+            $rescheduleRequests = \App\Models\ActivityLog::where('description', 'LIKE', 'Reschedule Request Submitted:%')
+                ->with(['booking' => function($query) {
+                    $query->with('user');
+                }])
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            // Process each request to add additional data
+            $rescheduleRequests->getCollection()->transform(function ($log) {
+                $booking = \App\Models\Booking::find($log->resource_id);
+                if ($booking) {
+                    $log->booking_data = $booking;
+                    $log->reschedule_data = $log->new_values ?? [];
+                    
+                    // Check for conflicts
+                    $hasConflict = false;
+                    if (isset($log->reschedule_data['new_date']) && isset($log->reschedule_data['new_time_slot'])) {
+                        $conflictingBooking = \App\Models\Booking::where('date', $log->reschedule_data['new_date'])
+                            ->where('time_slot', $log->reschedule_data['new_time_slot'])
+                            ->whereIn('status', ['pending', 'confirmed'])
+                            ->where('id', '!=', $booking->id)
+                            ->first();
+                        $hasConflict = $conflictingBooking !== null;
+                    }
+                    $log->has_conflict = $hasConflict;
+                }
+                return $log;
+            });
+
+            return view('admin.reschedule-requests', compact('rescheduleRequests'));
+
+        } catch (\Exception $e) {
+            Log::error('Error loading reschedule requests: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')->with('error', 'Error loading reschedule requests.');
+        }
+    }
+
+    /**
      * Create database backup
      */
     private function createDatabaseBackup($backupPath, $backupName)

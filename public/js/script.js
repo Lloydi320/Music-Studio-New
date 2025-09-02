@@ -181,17 +181,25 @@ document.addEventListener('DOMContentLoaded', function() {
           data.bookings.forEach(booking => {
             const bookingDiv = document.createElement('div');
             bookingDiv.className = 'booking-detail';
-            bookingDiv.style.marginBottom = '16px';
-            bookingDiv.style.padding = '10px';
-            bookingDiv.style.borderBottom = '2.5px solid #333';
-            bookingDiv.innerHTML = `
-              <strong>Time Slot:</strong> ${booking.time_slot}<br>
-              <strong>Status:</strong> ${booking.status}
-            `;
+            
+            // Create time slot element
+            const timeElement = document.createElement('div');
+            timeElement.className = 'booking-time';
+            timeElement.textContent = booking.time_slot;
+            
+            // Create status element with appropriate class
+            const statusElement = document.createElement('div');
+            statusElement.className = `booking-status status-${booking.status.toLowerCase()}`;
+            statusElement.textContent = booking.status.charAt(0).toUpperCase() + booking.status.slice(1);
+            
+            // Append elements to booking div
+            bookingDiv.appendChild(timeElement);
+            bookingDiv.appendChild(statusElement);
             timeSlots.appendChild(bookingDiv);
           });
         } else {
-          const message = document.createElement('p');
+          const message = document.createElement('div');
+          message.className = 'no-bookings';
           message.textContent = 'No bookings for this date.';
           timeSlots.appendChild(message);
         }

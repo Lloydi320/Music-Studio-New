@@ -24,6 +24,9 @@
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="#" id="feedbackLink">Feedbacks</a></li>
+        @if(Auth::check())
+        <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
+        @endif
         @if(Auth::check() && Auth::user()->isAdmin())
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
         @endif
@@ -103,15 +106,7 @@
               </svg>
               <span>Book Session</span>
             </a>
-            <a href="#" id="rescheduleBookingLink" class="dropdown-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M3.51 15A9 9 0 0 0 21 12A9 9 0 0 0 11.5 3.04L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M20.49 9A9 9 0 0 0 3 12A9 9 0 0 0 12.5 20.96L17 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Reschedule Booking</span>
-            </a>
+
             <a href="/services" class="dropdown-item">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L3.09 8.26L4 21L12 17L20 21L20.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -260,11 +255,11 @@
   </div>
 </div>
 
-<!-- Modern Reschedule Booking Modal -->
+<!-- Modern Rescheduling Modal -->
 <div id="reschedulePopup" class="reschedule-popup">
   <div class="reschedule-modal">
     <div class="reschedule-modal-header">
-      <h2>✨ Reschedule Booking</h2>
+      <h2>✨ Rescheduling</h2>
       <button class="close-reschedule" id="closeReschedule" aria-label="Close modal">&times;</button>
     </div>
     <div class="reschedule-modal-content">
@@ -279,66 +274,92 @@
           </div>
         </div>
         
-        <!-- Second Row: Date and Duration -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="newDate">📅 New Date</label>
-            <div class="date-input-wrapper">
-              <input type="date" id="newDate" name="newDate" required aria-describedby="date-help" class="date-picker-input">
-              <div class="date-picker-icon">📅</div>
+        <!-- Studio Rental Fields (initially hidden) -->
+        <div id="studioRentalFields" class="booking-fields" style="display: none;">
+          <!-- Second Row: Date and Duration -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="newDate">📅 New Date</label>
+              <div class="date-input-wrapper">
+                <input type="date" id="newDate" name="newDate" aria-describedby="date-help" class="date-picker-input">
+                <div class="date-picker-icon">📅</div>
+              </div>
+              <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
             </div>
-            <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
+            
+            <div class="form-group">
+              <label for="duration">⏱️ Duration</label>
+              <select id="duration" name="duration" aria-describedby="duration-help" disabled>
+                <option value="1" selected>1 hour (Fixed)</option>
+              </select>
+              <small id="duration-help" class="form-help">Duration is fixed at 1 hour for rescheduling</small>
+            </div>
           </div>
           
-          <div class="form-group">
-            <label for="duration">⏱️ Duration</label>
-            <select id="duration" name="duration" required aria-describedby="duration-help" disabled>
-              <option value="1" selected>1 hour (Fixed)</option>
-            </select>
-            <small id="duration-help" class="form-help">Duration is fixed at 1 hour for rescheduling</small>
+          <!-- Third Row: Time Slot (Full Width) -->
+          <div class="form-row full-width">
+            <div class="form-group">
+              <label for="newTime">⏰ New Time Slot</label>
+              <select id="newTime" name="newTime" aria-describedby="time-help">
+                <option value="">Select a time slot</option>
+                <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
+                <option value="08:30 AM - 09:30 AM">08:30 AM - 09:30 AM</option>
+                <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                <option value="09:30 AM - 10:30 AM">09:30 AM - 10:30 AM</option>
+                <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                <option value="10:30 AM - 11:30 AM">10:30 AM - 11:30 AM</option>
+                <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
+                <option value="12:00 PM - 01:00 PM">12:00 PM - 01:00 PM</option>
+                <option value="12:30 PM - 01:30 PM">12:30 PM - 01:30 PM</option>
+                <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM</option>
+                <option value="01:30 PM - 02:30 PM">01:30 PM - 02:30 PM</option>
+                <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                <option value="02:30 PM - 03:30 PM">02:30 PM - 03:30 PM</option>
+                <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
+                <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM</option>
+                <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+                <option value="04:30 PM - 05:30 PM">04:30 PM - 05:30 PM</option>
+                <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
+                <option value="05:30 PM - 06:30 PM">05:30 PM - 06:30 PM</option>
+                <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
+                <option value="06:30 PM - 07:30 PM">06:30 PM - 07:30 PM</option>
+                <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
+              </select>
+              <small id="time-help" class="form-help">Available time slots will update based on duration</small>
+            </div>
           </div>
         </div>
         
-        <!-- Third Row: Time Slot (Full Width) -->
-        <div class="form-row full-width">
-          <div class="form-group">
-            <label for="newTime">⏰ New Time Slot</label>
-            <select id="newTime" name="newTime" required aria-describedby="time-help">
-              <option value="">Select a time slot</option>
-              <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
-              <option value="08:30 AM - 09:30 AM">08:30 AM - 09:30 AM</option>
-              <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
-              <option value="09:30 AM - 10:30 AM">09:30 AM - 10:30 AM</option>
-              <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
-              <option value="10:30 AM - 11:30 AM">10:30 AM - 11:30 AM</option>
-              <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
-              <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
-              <option value="12:00 PM - 01:00 PM">12:00 PM - 01:00 PM</option>
-              <option value="12:30 PM - 01:30 PM">12:30 PM - 01:30 PM</option>
-              <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM</option>
-              <option value="01:30 PM - 02:30 PM">01:30 PM - 02:30 PM</option>
-              <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
-              <option value="02:30 PM - 03:30 PM">02:30 PM - 03:30 PM</option>
-              <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
-              <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM</option>
-              <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
-              <option value="04:30 PM - 05:30 PM">04:30 PM - 05:30 PM</option>
-              <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
-              <option value="05:30 PM - 06:30 PM">05:30 PM - 06:30 PM</option>
-              <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
-              <option value="06:30 PM - 07:30 PM">06:30 PM - 07:30 PM</option>
-              <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
-            </select>
-            <small id="time-help" class="form-help">Available time slots will update based on duration</small>
+        <!-- Instrument Rental Fields (initially hidden) -->
+        <div id="instrumentRentalFields" class="booking-fields" style="display: none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="startDate">📅 Start Date</label>
+              <div class="date-input-wrapper">
+                <input type="date" id="startDate" name="startDate" aria-describedby="start-date-help" class="date-picker-input">
+                <div class="date-picker-icon">📅</div>
+              </div>
+              <small id="start-date-help" class="form-help">Select the new start date for your rental</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="endDate">📅 End Date</label>
+              <div class="date-input-wrapper">
+                <input type="date" id="endDate" name="endDate" aria-describedby="end-date-help" class="date-picker-input">
+                <div class="date-picker-icon">📅</div>
+              </div>
+              <small id="end-date-help" class="form-help">Select the new end date for your rental</small>
+            </div>
           </div>
         </div>
         
-        <div class="form-actions">
+        <div class="form-actions" id="formActions" style="display: none;">
           <button type="button" class="cancel-btn" id="cancelReschedule">
             <span>Cancel</span>
           </button>
           <button type="submit" class="submit-btn">
-            <span>✨ Reschedule Booking</span>
+            <span>✨ Submit Reschedule</span>
           </button>
         </div>
       </form>
@@ -1298,23 +1319,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize time slots with fixed 1-hour duration
     generateRescheduleTimeSlots(1);
     
-    // Function to toggle form fields based on reference validation
-    function toggleFormFields(enabled) {
-        const fields = [newDateInput, newTimeSelect]; // Duration is now permanently disabled
-        fields.forEach(field => {
-            if (field) {
-                field.disabled = !enabled;
-                if (enabled) {
-                    field.classList.remove('disabled-field');
-                } else {
-                    field.classList.add('disabled-field');
-                }
-            }
-        });
+    // Function to show appropriate fields based on booking type
+    function showBookingFields(bookingType) {
+        const studioFields = document.getElementById('studioRentalFields');
+        const instrumentFields = document.getElementById('instrumentRentalFields');
+        const formActions = document.getElementById('formActions');
+        
+        // Hide all fields first
+        if (studioFields) studioFields.style.display = 'none';
+        if (instrumentFields) instrumentFields.style.display = 'none';
+        if (formActions) formActions.style.display = 'none';
+        
+        // Show appropriate fields based on booking type
+        if (bookingType === 'studio_rental') {
+            if (studioFields) studioFields.style.display = 'block';
+            if (formActions) formActions.style.display = 'flex';
+            // Set required attributes for studio rental fields
+            if (newDateInput) newDateInput.required = true;
+            if (newTimeSelect) newTimeSelect.required = true;
+            // Remove required from instrument rental fields
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            if (startDateInput) startDateInput.required = false;
+            if (endDateInput) endDateInput.required = false;
+        } else if (bookingType === 'instrument_rental') {
+            if (instrumentFields) instrumentFields.style.display = 'block';
+            if (formActions) formActions.style.display = 'flex';
+            // Set required attributes for instrument rental fields
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            if (startDateInput) startDateInput.required = true;
+            if (endDateInput) endDateInput.required = true;
+            // Remove required from studio rental fields
+            if (newDateInput) newDateInput.required = false;
+            if (newTimeSelect) newTimeSelect.required = false;
+        }
     }
     
-    // Initially disable fields
-    toggleFormFields(false);
+    // Function to hide all booking fields (initial state)
+    function hideAllBookingFields() {
+        const studioFields = document.getElementById('studioRentalFields');
+        const instrumentFields = document.getElementById('instrumentRentalFields');
+        const formActions = document.getElementById('formActions');
+        
+        if (studioFields) studioFields.style.display = 'none';
+        if (instrumentFields) instrumentFields.style.display = 'none';
+        if (formActions) formActions.style.display = 'none';
+    }
+    
+    // Initially hide all fields except reference number
+    hideAllBookingFields();
     
     if (referenceInput && validationMessage) {
         referenceInput.addEventListener('input', function() {
@@ -1328,8 +1382,8 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.remove('valid', 'invalid');
             validationMessage.className = 'validation-message';
             
-            // Disable form fields when reference is empty or being validated
-            toggleFormFields(false);
+            // Hide all booking fields when reference is empty or being validated
+            hideAllBookingFields();
             
             if (reference.length === 0) {
                 return;
@@ -1350,15 +1404,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.classList.add('valid');
                         validationMessage.className = 'validation-message success';
                         validationMessage.textContent = `✓ Valid booking found for ${result.booking.band_name}`;
-                        // Enable form fields when reference is valid
-                        toggleFormFields(true);
+                        
+                        // Show appropriate fields based on booking type
+                        const bookingType = result.booking.service_type || result.booking.type;
+                        if (bookingType === 'Studio Rental' || bookingType === 'studio_rental') {
+                            showBookingFields('studio_rental');
+                        } else if (bookingType === 'Instrument Rental' || bookingType === 'instrument_rental') {
+                            showBookingFields('instrument_rental');
+                        } else {
+                            // Default to studio rental if type is unclear
+                            showBookingFields('studio_rental');
+                        }
                     } else {
                         isReferenceValid = false;
                         this.classList.add('invalid');
                         validationMessage.className = 'validation-message error';
                         validationMessage.textContent = result.message || 'Reference number not found';
-                        // Keep fields disabled when reference is invalid
-                        toggleFormFields(false);
+                        // Keep fields hidden when reference is invalid
+                        hideAllBookingFields();
                     }
                 } catch (error) {
                     console.error('Validation error:', error);
@@ -1366,8 +1429,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.classList.add('invalid');
                     validationMessage.className = 'validation-message error';
                     validationMessage.textContent = 'Error validating reference. Please try again.';
-                    // Keep fields disabled on error
-                    toggleFormFields(false);
+                    // Keep fields hidden on error
+                    hideAllBookingFields();
                 }
             }, 500);
         });
@@ -1380,13 +1443,54 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Get form data
             const referenceNumber = document.getElementById('referenceNumber').value;
-            const newDate = document.getElementById('newDate').value;
-            const newTime = document.getElementById('newTime').value;
-            const duration = document.getElementById('duration').value;
             
-            // Simple validation
-            if (!referenceNumber || !newDate || !newTime || !duration) {
-                alert('Please fill in all fields.');
+            // Check which type of booking fields are visible
+            const studioFields = document.getElementById('studioRentalFields');
+            const instrumentFields = document.getElementById('instrumentRentalFields');
+            
+            let formData = {
+                reference_number: referenceNumber
+            };
+            
+            // Validate based on visible fields
+            if (studioFields && studioFields.style.display !== 'none') {
+                // Studio rental validation and data
+                const newDate = document.getElementById('newDate').value;
+                const newTime = document.getElementById('newTime').value;
+                const duration = document.getElementById('duration').value;
+                
+                if (!referenceNumber || !newDate || !newTime || !duration) {
+                    alert('Please fill in all fields.');
+                    return;
+                }
+                
+                formData.new_date = newDate;
+                formData.new_time_slot = newTime;
+                formData.duration = parseInt(duration);
+                formData.booking_type = 'studio_rental';
+                
+            } else if (instrumentFields && instrumentFields.style.display !== 'none') {
+                // Instrument rental validation and data
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (!referenceNumber || !startDate || !endDate) {
+                    alert('Please fill in all fields.');
+                    return;
+                }
+                
+                // Validate that end date is after start date
+                if (new Date(endDate) <= new Date(startDate)) {
+                    alert('End date must be after start date.');
+                    return;
+                }
+                
+                formData.start_date = startDate;
+                formData.end_date = endDate;
+                formData.booking_type = 'instrument_rental';
+                
+            } else {
+                alert('Please verify your reference number first.');
                 return;
             }
             
@@ -1402,13 +1506,6 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
             
             try {
-                // Prepare form data
-                const formData = {
-                    reference_number: referenceNumber,
-                    new_date: newDate,
-                    new_time_slot: newTime,
-                    duration: parseInt(duration)
-                };
                 
                 // Submit to API (using a generic endpoint since we're sending band name and reference in the body)
                 const response = await fetch('/api/bookings/reschedule', {
@@ -1753,15 +1850,18 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .cancel-btn {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  background: #6c757d !important;
+  color: white !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+  flex: 1 !important;
+  min-width: 140px !important;
+  margin: 0 !important;
 }
 
 .cancel-btn:hover {
@@ -1770,15 +1870,18 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-  color: #333;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%) !important;
+  color: #333 !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  flex: 1 !important;
+  min-width: 140px !important;
+  margin: 0 !important;
 }
 
 .submit-btn:hover {

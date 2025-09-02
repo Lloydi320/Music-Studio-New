@@ -9,102 +9,283 @@
   <!-- Font Awesome for modern icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-         .rental-container {
-       max-width: 1400px;
-       margin: 0 auto;
-       padding: 20px;
-       background: #fff;
-       border-radius: 10px;
-       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-     }
+    /* Clean Layout Styles */
+    body.booking-page {
+      min-height: calc(100vh + 84px);
+      margin: 0;
+      padding: 0;
+      background: #f7f7f7;
+    }
+    
+    .main-content {
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 84px;
+      margin-bottom: 20px;
+      max-width: calc(100vw - 40px);
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
 
-         .rental-header {
-       text-align: center;
-       margin-bottom: 40px;
-       padding: 40px 30px;
-       background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
-       color: #111;
-       border-radius: 20px;
-       box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.1);
-       position: relative;
-       overflow: hidden;
-     }
+    .page-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 30px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
+      color: #111;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    }
 
-     .rental-header::before {
-       content: '';
-       position: absolute;
-       top: 0;
-       left: 0;
-       right: 0;
-       bottom: 0;
-       background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
-       pointer-events: none;
-     }
+    .page-header h1 {
+      margin: 0 0 10px 0;
+      font-size: 2.2em;
+      font-weight: 700;
+      color: #111;
+    }
 
-         .rental-header h1 {
-       margin: 0;
-       font-size: 3.2em;
-       font-weight: 700;
-       background: linear-gradient(45deg, #111111, #333333);
-       -webkit-background-clip: text;
-       -webkit-text-fill-color: transparent;
-       background-clip: text;
-       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-       letter-spacing: -1px;
-     }
+    .page-header p {
+      margin: 0;
+      font-size: 1.1em;
+      opacity: 0.9;
+      font-weight: 400;
+    }
 
-         .rental-header p {
-       margin: 15px 0 0 0;
-       font-size: 1.3em;
-       opacity: 0.95;
-       font-weight: 300;
-       letter-spacing: 0.5px;
-     }
+    /* Form Grid Layout */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+      max-width: 100%;
+      overflow: hidden;
+    }
 
-         .rental-form {
-       display: grid;
-       grid-template-columns: 1fr 1fr 1fr;
-       gap: 30px;
-       margin-bottom: 40px;
-     }
+    /* Responsive Design */
+    @media (min-width: 1800px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 25px;
+      }
+    }
 
-         .form-section {
-       background: linear-gradient(145deg, #fffbf0 0%, #ffffff 100%);
-       padding: 35px;
-       border-radius: 20px;
-       border: 2px solid #ffd700;
-       box-shadow: 0 10px 30px rgba(255, 215, 0, 0.15), 0 4px 12px rgba(255, 215, 0, 0.08);
-       transition: all 0.3s ease;
-       position: relative;
-       overflow: hidden;
-     }
+    @media (max-width: 1600px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 18px;
+      }
+    }
 
-     .form-section::before {
-       content: '';
-       position: absolute;
-       top: 0;
-       left: 0;
-       right: 0;
-       height: 4px;
-       background: linear-gradient(90deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
-     }
+    @media (max-width: 1400px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+      }
+    }
 
-     .form-section:hover {
-       transform: translateY(-5px);
-       box-shadow: 0 20px 40px rgba(255, 215, 0, 0.25), 0 8px 16px rgba(255, 215, 0, 0.15);
-     }
+    @media (max-width: 1300px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 15px;
+      }
+    }
 
-         .form-section h3 {
-       margin: 0 0 25px 0;
-       color: #2d3748;
-       font-size: 1.4em;
-       font-weight: 600;
-       border-bottom: none;
-       padding-bottom: 0;
-       display: flex;
-       align-items: center;
-       gap: 10px;
-     }
+    @media (max-width: 1150px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 15px;
+      }
+    }
+
+    @media (max-width: 1000px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .main-content {
+        margin: 15px;
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .main-content {
+        margin: 10px;
+        padding: 15px;
+      }
+      
+      .page-header {
+        padding: 20px 15px;
+      }
+      
+      .page-header h1 {
+        font-size: 1.8em;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .form-section {
+        padding: 20px 15px;
+      }
+      
+      .price-summary {
+        padding: 20px 15px;
+      }
+      
+      .main-content {
+        margin: 5px;
+        padding: 10px;
+      }
+    }
+
+
+
+    .form-section {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+
+    .form-section:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .form-section h3 {
+      margin: 0 0 20px 0;
+      color: #2d3748;
+      font-size: 1.3em;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ffd700;
+    }
+
+    .price-summary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+      min-width: 0;
+      overflow-wrap: break-word;
+    }
+
+    .price-summary h3 {
+      margin: 0 0 20px 0;
+      color: white;
+      font-size: 1.3em;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      padding-bottom: 10px;
+    }
+
+    /* Submit Section */
+    .submit-section {
+      text-align: center;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-top: 20px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .price-summary {
+        order: -1;
+      }
+      
+      .compact-terms-section {
+        margin-top: 12px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 15px;
+        margin: 10px;
+      }
+      
+      .page-header {
+        padding: 20px;
+      }
+      
+      .page-header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .form-section {
+        padding: 20px;
+      }
+      
+      .compact-terms-section {
+        margin-top: 12px;
+      }
+      
+      .compact-terms-content {
+        gap: 8px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 10px;
+        margin: 5px;
+      }
+      
+      .form-section {
+        padding: 15px;
+      }
+      
+      .page-header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .compact-terms-section {
+        margin-top: 10px;
+      }
+      
+      .compact-terms-content {
+        gap: 6px;
+      }
+      
+      .compact-terms-container {
+        padding: 10px;
+      }
+    }
 
          .form-group {
        margin-bottom: 25px;
@@ -157,34 +338,7 @@
       line-height: 1.4;
     }
 
-         .price-summary {
-       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-       color: white;
-       padding: 35px;
-       border-radius: 20px;
-       margin-bottom: 40px;
-       box-shadow: 0 15px 35px rgba(102, 126, 234, 0.25), 0 8px 16px rgba(0, 0, 0, 0.1);
-       position: relative;
-       overflow: hidden;
-     }
 
-     .price-summary::before {
-       content: '';
-       position: absolute;
-       top: 0;
-       left: 0;
-       right: 0;
-       bottom: 0;
-       background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
-       pointer-events: none;
-     }
-     
-
-
-         .price-summary h3 {
-       margin: 0 0 15px 0;
-       font-size: 1.4em;
-     }
 
          .price-details {
        display: grid;
@@ -240,29 +394,35 @@
      
 
 
-         .submit-section {
-       text-align: center;
-       padding: 30px;
-       background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-       border-radius: 20px;
-       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-       margin-top: 20px;
-     }
+
 
          .submit-btn {
        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #dbb411 100%);
        color: #111;
        border: none;
-       padding: 18px 50px;
-       font-size: 18px;
+       padding: 12px 30px;
+       font-size: 16px;
        font-weight: 600;
-       border-radius: 50px;
+       border-radius: 25px;
        cursor: pointer;
        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-       box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+       box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
        letter-spacing: 0.5px;
        position: relative;
        overflow: hidden;
+       width: auto;
+       max-width: 280px;
+       margin: 0 auto;
+       justify-content: center;
+       display: flex;
+       align-items: center;
+       gap: 8px;
+     }
+
+     .submit-section-inline {
+       margin-top: 25px;
+       padding-top: 20px;
+       border-top: 2px solid rgba(255, 255, 255, 0.2);
      }
 
      .submit-btn::before {
@@ -281,8 +441,8 @@
      }
 
          .submit-btn:hover {
-       transform: translateY(-3px);
-       box-shadow: 0 15px 40px rgba(255, 215, 0, 0.4);
+       transform: translateY(-2px);
+       box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
        background: linear-gradient(135deg, #dbb411 0%, #ffd700 50%, #ffed4e 100%);
      }
 
@@ -410,11 +570,77 @@
      }
      
             .payment-note li {
-         margin-bottom: 4px;
-         color: #555;
-       }
-       
-       /* Modal Styles */
+       margin-bottom: 4px;
+       color: #555;
+     }
+     
+     /* Compact Terms Section - Below Button */
+      .compact-terms-section {
+        margin-top: 15px;
+        max-width: 100%;
+      }
+      
+      .compact-terms-container {
+        background: rgba(248, 249, 250, 0.8);
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+      
+      .compact-terms-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .compact-terms-content .payment-terms, 
+      .compact-terms-content .key-terms {
+        padding: 8px;
+        border-radius: 6px;
+        font-size: 0.85em;
+      }
+      
+      .compact-terms-content .payment-terms {
+        background: rgba(255, 255, 255, 0.4);
+        border: 1px solid rgba(255, 215, 0, 0.2);
+      }
+      
+      .compact-terms-content .key-terms {
+        background: rgba(255, 248, 220, 0.6);
+        border: 1px solid rgba(255, 215, 0, 0.4);
+      }
+      
+      .compact-terms-content .payment-terms ul {
+        margin: 6px 0 0 0;
+        padding-left: 16px;
+      }
+      
+      .compact-terms-content .payment-terms li {
+        margin-bottom: 3px;
+        color: #666;
+        font-size: 0.8em;
+      }
+      
+      .compact-terms-content .terms-list {
+        margin-top: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      
+      .compact-terms-content .term-item {
+        font-size: 0.75em;
+        color: #666;
+        line-height: 1.2;
+      }
+      
+      .compact-terms-content strong {
+        font-size: 0.9em;
+        color: #495057;
+      }
+     
+     /* Modal Styles */
        .modal {
          display: none;
          position: fixed;
@@ -1437,48 +1663,139 @@
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="/feedback">Feedbacks</a></li>
+        @if(Auth::check())
+        <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
+        @endif
       </ul>
     </nav>
     @if(Auth::check())
-      <div class="user-profile">
-        @php
-          $user = Auth::user();
-          $avatar = session('google_user_avatar') ?? null;
-        @endphp
-        @if($avatar)
-          <img src="{{ $avatar }}" alt="Avatar">
-        @endif
-        <div style="display: flex; flex-direction: column; align-items: flex-end;">
-          <span>{{ $user->name }}</span>
-          <span style="font-size: 0.9em; color: #888;">{{ $user->email }}</span>
-          <form action="/logout" method="POST" style="margin:0;">
-            @csrf
-            <button type="submit">Logout</button>
-          </form>
+        <div class="modern-user-profile" id="userProfile">
+            <div class="profile-trigger" onclick="toggleUserDropdown()">
+                <div class="profile-avatar">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="User Avatar">
+                    @else
+                        <div class="avatar-placeholder">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @endif
+                    @if(Auth::user()->is_admin)
+                        <div class="admin-indicator"></div>
+                    @endif
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name">{{ Auth::user()->name }}</div>
+                    @if(Auth::user()->is_admin)
+                        <div class="profile-role">Admin</div>
+                    @else
+                        <div class="profile-role">Member</div>
+                    @endif
+                </div>
+                <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </div>
+            
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">
+                    <div class="dropdown-avatar">
+                        @if(Auth::user()->avatar)
+                            <img src="{{ Auth::user()->avatar }}" alt="User Avatar">
+                        @else
+                            <div class="avatar-placeholder large">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+                    </div>
+                    <div class="dropdown-user-info">
+                        <h4>{{ Auth::user()->name }}</h4>
+                        <p>{{ Auth::user()->email }}</p>
+                        @if(Auth::user()->is_admin)
+                            <span class="user-badge">Admin</span>
+                        @endif
+                    </div>
+                </div>
+                
+                <div class="dropdown-menu">
+                    @if(Auth::user()->is_admin)
+                        <a href="{{ route('admin.dashboard') }}" class="dropdown-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                            </svg>
+                            Admin Dashboard
+                        </a>
+                    @endif
+                    
+                    <a href="{{ route('home') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                        </svg>
+                        Calendar
+                    </a>
+                    
+                    <a href="{{ route('booking') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Book Session
+                    </a>
+                    
+                    <a href="{{ route('services') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        About Us & Services
+                    </a>
+                    
+                    <a href="{{ route('instrument-rental') }}" class="dropdown-item active">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                        </svg>
+                        Instrument Rental
+                    </a>
+                    
+                    <a href="{{ route('feedback') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/>
+                        </svg>
+                        Feedback
+                    </a>
+                    
+                    <div class="dropdown-divider"></div>
+                    
+                    <form action="{{ route('logout') }}" method="POST" class="dropdown-form">
+                        @csrf
+                        <button type="submit" class="dropdown-item logout-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                            </svg>
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-      </div>
     @else
-      <a href="/auth/google" class="book-btn" style="margin-left: 30px;">Login with Google</a>
+        <a href="{{ route('login') }}" class="book-btn" style="margin-left: 30px;">Login with Google</a>
     @endif
   </header>
 
-  <div class="booking-main">
-    <div class="rental-container">
-      <div class="rental-header">
-        <h1><i class="fas fa-music"></i> Band Equipment Rental</h1>
-        <p>Rent professional-grade band equipment for events, gigs, and performances</p>
+  <main class="main-content">
+    <header class="page-header">
+      <h1><i class="fas fa-music"></i> Band Equipment Rental</h1>
+      <p>Rent professional-grade band equipment for events, gigs, and performances</p>
+    </header>
+
+    @if(session('error'))
+      <div class="alert alert-error">
+        {{ session('error') }}
       </div>
+    @endif
 
-      @if(session('error'))
-        <div class="alert alert-error">
-          {{ session('error') }}
-        </div>
-      @endif
-
-      <form id="rentalForm" action="{{ route('instrument-rental.store') }}" method="POST">
-        @csrf
-        <div class="rental-form">
-          <div class="form-section">
+    <form id="rentalForm" action="{{ route('instrument-rental.store') }}" method="POST">
+      @csrf
+      <div class="form-grid">
+          <section class="form-section">
             <h3><i class="fas fa-music"></i> Instrument Selection</h3>
             
             <div class="form-group">
@@ -1523,9 +1840,9 @@
                 I consent to photos/videos being taken for studio documentation
               </label>
             </div>
-          </div>
+          </section>
 
-          <div class="form-section">
+          <section class="form-section">
             <h3><i class="fas fa-calendar-alt"></i> Rental Period</h3>
             
             <div class="form-group">
@@ -1571,12 +1888,12 @@
               <label for="notes">Special Requirements or Notes:</label>
               <textarea name="notes" id="notes" rows="3" placeholder="Any special requirements, setup needs, or additional information..."></textarea>
             </div>
-          </div>
+          </section>
 
-          <div class="form-section">
+          <section class="price-summary">
             <h3><i class="fas fa-calculator"></i> Price Summary</h3>
-            
-            <div class="price-details">
+              
+              <div class="price-details">
               <div class="price-item">
                 <span>Daily Rate:</span>
                 <span id="summary_daily_rate">₱0.00</span>
@@ -1610,66 +1927,41 @@
               Total: <span id="summary_total">₱0.00</span>
             </div>
             
-            <div class="payment-note">
-              <strong>💳 Payment Terms:</strong>
-              <ul>
-                <li>Security deposit (₱300) must be paid first to confirm booking</li>
-                <li>Full payment will be collected upon pickup/delivery</li>
-                <li>Cash or digital payment accepted</li>
-              </ul>
+            <div class="submit-section-inline">
+              <button type="button" class="submit-btn" id="showSummaryBtn">
+                <i class="fas fa-check-circle"></i> Confirm Instrument Rental
+              </button>
             </div>
-
-            <div class="rental-terms-compact">
-              <h4>⚠️ Key Terms</h4>
-              <div class="terms-compact">
-                <div class="term-compact">• ₱300 Reservation Fee (Refundable Upon Event Completion)</div>
-                <div class="term-compact">• Indoor venues only</div>
-                <div class="term-compact">• Max 7 hours included</div>
-                <div class="term-compact">• ID required for pickup</div>
-                <div class="term-compact">• Full payment before pickup</div>
+            
+            <!-- Compact Terms Section - Below Button -->
+            <div class="compact-terms-section">
+              <div class="compact-terms-container">
+                <div class="compact-terms-content">
+                  <div class="payment-terms">
+                    <strong>💳 Payment Terms:</strong>
+                    <ul>
+                      <li>Security deposit (₱300 for individual items, ₱500 for full package) must be paid first to confirm booking</li>
+                      <li>Full payment will be collected upon pickup/delivery</li>
+                    </ul>
+                  </div>
+                  
+                  <div class="key-terms">
+                    <strong>⚠️ Key Terms:</strong>
+                    <div class="terms-list">
+                      <div class="term-item">• Indoor venues only</div>
+                      <div class="term-item">• Max 7 hours included</div>
+                      <div class="term-item">• ID required for pickup</div>
+                      <div class="term-item">• Full payment before pickup</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
-
-
-
-        <div class="rental-terms">
-          <h3><i class="fas fa-exclamation-triangle"></i> Rental Terms & Conditions</h3>
-          <div class="terms-list">
-            <div class="term-item">
-              <strong>₱300 Reservation Fee & Security Deposit</strong> - Refundable after return of equipment
-            </div>
-            <div class="term-item">
-              <strong>Payment Policy</strong> - Must be paid in full before pickup
-            </div>
-            <div class="term-item">
-              <strong>ID Requirement</strong> - Leave 1 government ID upon receiving the rented instrument/s
-            </div>
-            <div class="term-item">
-              <strong>Venue Restriction</strong> - For safety and preservation, rentals are strictly for indoor venues use only
-            </div>
-            <div class="term-item">
-              <strong>Event Duration</strong> - For single event only maximum of 7 Hours (₱200 charge per exceeding hours)
-            </div>
-            <div class="term-item">
-              <strong>Transportation</strong> - Additional ₱1,000 charge for beyond Laguna area event (Transportation fee not included)
-            </div>
-            <div class="term-item">
-              <strong>Cancellation Policy</strong> - Cancellations will not be eligible for a refund
-            </div>
-            <div class="term-item">
-              <strong>Documentation</strong> - We document with photos/videos for posting. Message us if you prefer not to be shown
-            </div>
-          </div>
-        </div>
-
-        <div class="submit-section">
-          <button type="button" class="submit-btn" id="showSummaryBtn"><i class="fas fa-check-circle"></i> Confirm Instrument Rental</button>
-        </div>
-      </form>
-      
-      <!-- Instrument Rental Payment Modal -->
+    </form>
+    
+    <!-- Instrument Rental Payment Modal -->
       <div id="instrumentRentalModal" class="modal">
         <div class="modal-container">
           <div class="modal-content">
@@ -1683,7 +1975,7 @@
               
               <div class="booking-summary-list">
                 <div class="summary-header">
-                  <h3><i class="fas fa-calendar-check"></i> Booking Summary</h3>
+                  <h3><i class="fas fa-calendar-check"></i> Rental Summary</h3>
                 </div>
                 
                 <div class="summary-list">
@@ -1743,7 +2035,7 @@
                   </div>
                   <div class="price-list-item reservation-fee">
                     <span class="price-label"><i class="fas fa-shield-alt"></i> Reservation Fee</span>
-                    <span class="price-value">₱300.00</span>
+                    <span class="price-value" id="modalReservationFee">₱300.00</span>
                   </div>
                   <div class="price-list-total">
                     <span class="total-label"><i class="fas fa-calculator"></i> Total Amount</span>
@@ -1751,10 +2043,7 @@
                   </div>
                 </div>
                 
-                <div class="payment-note-list">
-                  <i class="fas fa-info-circle"></i>
-                  <span>30% down payment required to secure booking</span>
-                </div>
+
               </div>
             </div>
             
@@ -1803,12 +2092,7 @@
                   </div>
                 </div>
                 
-                <div class="policy-section">
-                  <div class="policy-title">Down Payment Policy</div>
-                  <p class="policy-text">To secure your booking, a non-refundable down payment of 30% of the total service fee is required upon reservation.</p>
-                  <p class="policy-text">This ensures your preferred date and time slot is reserved exclusively for you.</p>
-                  <p class="policy-text">• Rebooking is allowed up to 24 hours before the session, subject to availability.</p>
-                </div>
+
                 
                 <div class="checkbox-group">
                   <input type="checkbox" id="modalAgreement" name="agreement" required>
@@ -1845,10 +2129,8 @@
             </div>
           </div>
         </div>
-      </div>
-      </form>
     </div>
-  </div>
+  </main>
 
   <!-- Add spacing before footer -->
   <div style="height: 100px; margin-top: 50px;"></div>
@@ -1919,7 +2201,22 @@
        endDateInput.addEventListener('change', calculateDuration);
 
        // Add event listeners for full package and transportation
-       document.getElementById('full_package').addEventListener('change', updatePriceSummary);
+       document.getElementById('full_package').addEventListener('change', function() {
+         const fullPackage = this.checked;
+         
+         // Disable/enable instrument selection fields
+         instrumentTypeSelect.disabled = fullPackage;
+         instrumentNameSelect.disabled = fullPackage;
+         
+         // Clear selections when full package is enabled
+         if (fullPackage) {
+           instrumentTypeSelect.value = '';
+           instrumentNameSelect.value = '';
+           instrumentNameSelect.innerHTML = '<option value="">Select instrument type first</option>';
+         }
+         
+         updatePriceSummary();
+       });
        document.getElementById('transportation_select').addEventListener('change', updatePriceSummary);
        
        // Add event listener for event duration hours
@@ -1943,7 +2240,7 @@
          
          const subtotal = dailyRate * duration;
          const transportationFee = transportation === 'delivery' ? 550 : 0; // Average of ₱500-₱600
-         const reservationFee = 300; // Reservation fee & security deposit
+         const reservationFee = fullPackage ? 500 : 300; // ₱500 for full package, ₱300 for individual items
          
          // Calculate extra hour charges (₱200 per exceeding hour after 7 hours)
          const maxIncludedHours = 7;
@@ -1956,6 +2253,13 @@
          document.getElementById('summary_duration').textContent = `${duration} day${duration !== 1 ? 's' : ''}`;
          document.getElementById('summary_subtotal').textContent = `₱${subtotal.toFixed(2)}`;
          document.getElementById('transportation_fee').textContent = `₱${transportationFee.toFixed(2)}`;
+         
+         // Update reservation fee display
+         const reservationFeeElement = document.querySelector('.price-item:nth-child(4) span:last-child');
+         if (reservationFeeElement) {
+           reservationFeeElement.textContent = `₱${reservationFee.toFixed(2)}`;
+         }
+         
          document.getElementById('summary_total').textContent = `₱${total.toFixed(2)}`;
          
          // Update the event duration note to show extra charges if applicable
@@ -2020,6 +2324,12 @@
       
       // Form validation function
       function validateForm() {
+        // Check if dates are filled
+        if (!startDateInput.value || !endDateInput.value) {
+          alert('Please select both start date and end date.');
+          return false;
+        }
+        
         const startDate = new Date(startDateInput.value);
         const endDate = new Date(endDateInput.value);
         const today = new Date();
@@ -2035,7 +2345,9 @@
           return false;
         }
         
-        if (!instrumentTypeSelect.value || !instrumentNameSelect.value) {
+        const fullPackage = document.getElementById('full_package').checked;
+        
+        if (!fullPackage && (!instrumentTypeSelect.value || !instrumentNameSelect.value)) {
           alert('Please select both instrument type and specific instrument.');
           return false;
         }
@@ -2069,10 +2381,11 @@
         
         const subtotal = dailyRate * duration;
         const transportationFee = transportation === 'delivery' ? 550 : 0;
+        const reservationFee = fullPackage ? 500 : 300; // ₱500 for full package, ₱300 for individual items
         const maxIncludedHours = 7;
         const extraHours = Math.max(0, eventDurationHours - maxIncludedHours);
         const extraHourCharges = extraHours * 200;
-        const total = subtotal + transportationFee + 300 + extraHourCharges; // 300 is reservation fee
+        const total = subtotal + transportationFee + reservationFee + extraHourCharges;
         
         // Format dates for display
         const startDate = new Date(startDateInput.value);
@@ -2118,6 +2431,9 @@
           extraHoursRow.style.display = 'none';
         }
         
+        // Update reservation fee
+        document.getElementById('modalReservationFee').textContent = '₱' + reservationFee.toFixed(2);
+        
         document.getElementById('modalTotalPrice').textContent = '₱' + total.toFixed(2);
         
         // Get additional form values
@@ -2142,7 +2458,7 @@
         document.getElementById('modalDocumentationConsentInput').value = documentationConsent ? '1' : '0';
         
         // Update GCash amount (security deposit)
-        document.getElementById('modalGcashAmount').textContent = '300.00';
+        document.getElementById('modalGcashAmount').textContent = reservationFee.toFixed(2);
       }
 
       // Set minimum end date based on start date
@@ -2350,5 +2666,23 @@
   @endif
 
   <script src="{{ asset('js/page-transitions.js') }}"></script>
+  
+  <script>
+    // User dropdown functionality
+    function toggleUserDropdown() {
+      const dropdown = document.getElementById('userDropdown');
+      dropdown.classList.toggle('show');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const userProfile = document.getElementById('userProfile');
+      const dropdown = document.getElementById('userDropdown');
+      
+      if (userProfile && dropdown && !userProfile.contains(event.target)) {
+        dropdown.classList.remove('show');
+      }
+    });
+  </script>
 </body>
 </html>

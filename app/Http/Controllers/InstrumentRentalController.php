@@ -25,9 +25,9 @@ class InstrumentRentalController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'instrument_type' => 'required|string',
-            'instrument_name' => 'required|string',
+        $validationRules = [
+            'instrument_type' => $request->full_package ? 'nullable|string' : 'required|string',
+            'instrument_name' => $request->full_package ? 'nullable|string' : 'required|string',
             'rental_start_date' => 'required|date|after_or_equal:today',
             'rental_end_date' => 'required|date|after:rental_start_date',
             'notes' => 'nullable|string|max:500',
@@ -40,7 +40,9 @@ class InstrumentRentalController extends Controller
             'documentation_consent' => 'nullable|boolean',
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
             'reference_code' => 'required|string|size:4|regex:/^[0-9]{4}$/',
-        ]);
+        ];
+
+        $request->validate($validationRules);
 
         // Calculate rental duration
         $startDate = Carbon::parse($request->rental_start_date);
@@ -59,7 +61,7 @@ class InstrumentRentalController extends Controller
         
         // Calculate transportation fee
         $transportationFee = ($request->transportation === 'delivery') ? 550.00 : 0.00;
-        $reservationFee = 300.00; // Reservation fee & security deposit
+        $reservationFee = $isFullPackage ? 500.00 : 300.00; // ₱500 for full package, ₱300 for individual items
         $totalAmount = ($dailyRate * $durationDays) + $transportationFee + $reservationFee;
 
         // Check if instrument is available for the selected dates

@@ -960,6 +960,12 @@
         border-radius: 0 0 15px 15px;
     }
 
+    .reschedule-modal-footer .btn {
+        min-width: 140px;
+        flex: 1;
+        max-width: 180px;
+    }
+
     .date-picker {
         position: relative;
         cursor: pointer;
@@ -1141,7 +1147,7 @@
                                         </button>
                                     </form>
                                 @elseif($booking->status === 'confirmed')
-                                    <button class="btn btn-reschedule" onclick="rescheduleBooking({{ $booking->id }})" title="Reschedule Booking">
+                                    <button class="btn btn-reschedule" onclick="rescheduleBooking({{ $booking->id }})" title="Rescheduling">
                                         <i class="fas fa-calendar-alt"></i> Reschedule
                                     </button>
                                 @endif
@@ -1171,7 +1177,7 @@
 <div id="rescheduleModal" class="reschedule-modal">
     <div class="reschedule-modal-content">
         <div class="reschedule-modal-header">
-            <h3><i class="fas fa-calendar-alt"></i> Reschedule Booking</h3>
+            <h3><i class="fas fa-calendar-alt"></i> Rescheduling</h3>
             <span class="reschedule-modal-close" onclick="closeRescheduleModal()">&times;</span>
         </div>
         <form id="rescheduleForm" method="POST" action="">
@@ -1218,7 +1224,7 @@
             </div>
             <div class="reschedule-modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeRescheduleModal()">Cancel</button>
-                <button type="submit" class="btn btn-warning"><i class="fas fa-calendar-alt"></i> Reschedule Booking</button>
+                <button type="submit" class="btn btn-warning"><i class="fas fa-calendar-alt"></i> Submit Reschedule</button>
             </div>
         </form>
     </div>

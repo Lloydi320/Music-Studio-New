@@ -16,6 +16,10 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
+Route::get('/music-lessons', function () {
+    return view('music-lessons');
+})->name('music-lessons');
+
 
 
 Route::get('/feedback', function () {
@@ -116,6 +120,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\AdminController::class, 'markAllNotificationsAsRead'])->name('admin.notifications.mark-all-read');
     
     // Reschedule request routes
+    Route::get('/reschedule-requests', [App\Http\Controllers\AdminController::class, 'rescheduleRequests'])->name('admin.reschedule-requests');
     Route::get('/reschedule-requests/{id}', [App\Http\Controllers\AdminController::class, 'showRescheduleRequest'])->name('admin.reschedule-request.show');
     Route::post('/reschedule-requests/{id}/approve', [App\Http\Controllers\AdminController::class, 'approveRescheduleRequest'])->name('admin.reschedule-request.approve');
     Route::post('/reschedule-requests/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectRescheduleRequest'])->name('admin.reschedule-request.reject');
