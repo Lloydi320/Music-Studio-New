@@ -26,6 +26,10 @@ Route::get('/feedback', function () {
     return view('feedback');
 })->name('feedback');
 
+Route::get('/map', function () {
+    return view('map');
+})->name('map');
+
 
 
 Route::get('/booking', function () {

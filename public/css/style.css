@@ -2375,6 +2375,48 @@ a {
   color: #2d3748;
 }
 
+/* Make date inputs fully clickable */
+.form-group input[type="date"],
+.date-picker-input {
+  cursor: pointer;
+  position: relative;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator,
+.date-picker-input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  color: transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.form-group input[type="date"]::-webkit-inner-spin-button,
+.date-picker-input::-webkit-inner-spin-button {
+  display: none;
+}
+
+.form-group input[type="date"]::-webkit-clear-button,
+.date-picker-input::-webkit-clear-button {
+  display: none;
+}
+
+/* Hide the separate calendar icon since the entire input is now clickable */
+.date-picker-icon {
+  display: none;
+}
+
+/* Make date input wrapper fully clickable */
+.date-input-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
@@ -2731,6 +2773,169 @@ a {
   .service-box-popup {
     max-width: 100%;
   }
+}
+
+/* Floating Action Button for Calendar */
+.calendar-fab {
+  position: fixed;
+  top: 100px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  color: #333;
+}
+
+.calendar-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 215, 0, 0.6);
+  background: linear-gradient(135deg, #ffed4e, #ffd700);
+}
+
+.calendar-fab:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 15px rgba(255, 215, 0, 0.4);
+}
+
+.calendar-fab svg {
+  transition: transform 0.3s ease;
+}
+
+.calendar-fab:hover svg {
+  transform: scale(1.1);
+}
+
+/* Calendar Container Toggle States */
+.calendar-container {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top right;
+}
+
+.calendar-container.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.8) translateY(20px);
+  pointer-events: none;
+}
+
+/* Carousel Styles */
+.carousel-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px 0 20px auto;
+  margin-right: 50px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top right;
+}
+
+.carousel-container.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.8) translateY(20px);
+  pointer-events: none;
+}
+
+.carousel-wrapper {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+  min-width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 237, 78, 0.1));
+}
+
+.carousel-slide img {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-right: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: #ffd700;
+  transform: scale(1.2);
+}
+
+.indicator:hover {
+  background: rgba(255, 215, 0, 0.8);
+}
+
+/* Responsive adjustments for FAB and Carousel */
+@media (max-width: 768px) {
+  .calendar-fab {
+    width: 50px;
+    height: 50px;
+    top: 80px;
+    right: 20px;
+  }
+  
+  .calendar-fab svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .carousel-slide {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .carousel-slide img {
+    width: 100%;
+    max-width: 250px;
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+  
+
+  
+
 }
 
 

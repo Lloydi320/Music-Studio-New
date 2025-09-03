@@ -356,6 +356,7 @@
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="/feedback">Feedbacks</a></li>
+        <li><a href="/map">Map</a></li>
         <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
       </ul>
     </nav>

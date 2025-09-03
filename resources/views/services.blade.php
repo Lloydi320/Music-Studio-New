@@ -23,6 +23,7 @@
         <li><a href="/services" class="active">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="#" id="feedbackLink">Feedbacks</a></li>
+        <li><a href="/map">Map</a></li>
         @if(Auth::check())
         <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
         @endif
@@ -235,8 +236,158 @@
   </div>
 </div>
 
+<!-- Feedback Modal -->
+<div id="feedbackPopup" class="feedback-popup">
+  <div class="feedback-modal-card">
+    <div class="feedback-modal-header">
+      <h2>Feedback</h2>
+      <button class="close-feedback" id="closeFeedback">&times;</button>
+    </div>
+    <div class="feedback-modal-content">
+      <div class="feedback-list">
+        <div id="feedbackEntries">
+          <p class="placeholder">No feedback shared yet.</p>
+        </div>
+      </div>
+      <div class="feedback-form">
+        <form id="feedbackForm">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" required />
 
- 
+          <label for="rating">Rating</label>
+          <div class="rating-stars">
+            <span data-value="1">★</span>
+            <span data-value="2">★</span>
+            <span data-value="3">★</span>
+            <span data-value="4">★</span>
+            <span data-value="5">★</span>
+          </div>
+
+          <label for="comment">Comment</label>
+          <textarea id="comment" rows="5" required></textarea>
+
+          <label for="photo">Upload a Photo (optional)</label>
+          <input type="file" id="photo" accept="image/*" />
+
+          <button type="submit" class="submit-btn">Submit Feedback</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modern Rescheduling Modal -->
+<div id="reschedulePopup" class="reschedule-popup">
+  <div class="reschedule-modal">
+    <div class="reschedule-modal-header">
+      <h2>✨ Rescheduling</h2>
+      <button class="close-reschedule" id="closeReschedule" aria-label="Close modal">&times;</button>
+    </div>
+    <div class="reschedule-modal-content">
+      <form id="rescheduleForm" class="reschedule-form-grid">
+        <!-- First Row: Reference Number -->
+        <div class="form-row full-width">
+          <div class="form-group">
+            <label for="referenceNumber">🔢 Reference Number</label>
+            <input type="text" id="referenceNumber" name="referenceNumber" required placeholder="Enter your booking reference number" aria-describedby="ref-help">
+            <small id="ref-help" class="form-help">Enter your booking reference number to verify your booking</small>
+            <div id="reference-validation" class="validation-message"></div>
+          </div>
+        </div>
+        
+        <!-- Studio Rental Fields (initially hidden) -->
+        <div id="studioRentalFields" class="booking-fields" style="display: none;">
+          <!-- Second Row: Date and Duration -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="newDate">📅 New Date</label>
+              <div class="date-input-wrapper">
+                <input type="date" id="newDate" name="newDate" aria-describedby="date-help" class="date-picker-input">
+                <div class="date-picker-icon">📅</div>
+              </div>
+              <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="duration">⏱️ Duration</label>
+              <select id="duration" name="duration" aria-describedby="duration-help" disabled>
+                <option value="1" selected>1 hour (Fixed)</option>
+              </select>
+              <small id="duration-help" class="form-help">Duration is fixed at 1 hour for rescheduling</small>
+            </div>
+          </div>
+          
+          <!-- Third Row: Time Slot (Full Width) -->
+          <div class="form-row full-width">
+            <div class="form-group">
+              <label for="newTime">⏰ New Time Slot</label>
+              <select id="newTime" name="newTime" aria-describedby="time-help">
+                <option value="">Select a time slot</option>
+                <option value="08:00 AM - 09:00 AM">08:00 AM - 09:00 AM</option>
+                <option value="08:30 AM - 09:30 AM">08:30 AM - 09:30 AM</option>
+                <option value="09:00 AM - 10:00 AM">09:00 AM - 10:00 AM</option>
+                <option value="09:30 AM - 10:30 AM">09:30 AM - 10:30 AM</option>
+                <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                <option value="10:30 AM - 11:30 AM">10:30 AM - 11:30 AM</option>
+                <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                <option value="11:30 AM - 12:30 PM">11:30 AM - 12:30 PM</option>
+                <option value="12:00 PM - 01:00 PM">12:00 PM - 01:00 PM</option>
+                <option value="12:30 PM - 01:30 PM">12:30 PM - 01:30 PM</option>
+                <option value="01:00 PM - 02:00 PM">01:00 PM - 02:00 PM</option>
+                <option value="01:30 PM - 02:30 PM">01:30 PM - 02:30 PM</option>
+                <option value="02:00 PM - 03:00 PM">02:00 PM - 03:00 PM</option>
+                <option value="02:30 PM - 03:30 PM">02:30 PM - 03:30 PM</option>
+                <option value="03:00 PM - 04:00 PM">03:00 PM - 04:00 PM</option>
+                <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM</option>
+                <option value="04:00 PM - 05:00 PM">04:00 PM - 05:00 PM</option>
+                <option value="04:30 PM - 05:30 PM">04:30 PM - 05:30 PM</option>
+                <option value="05:00 PM - 06:00 PM">05:00 PM - 06:00 PM</option>
+                <option value="05:30 PM - 06:30 PM">05:30 PM - 06:30 PM</option>
+                <option value="06:00 PM - 07:00 PM">06:00 PM - 07:00 PM</option>
+                <option value="06:30 PM - 07:30 PM">06:30 PM - 07:30 PM</option>
+                <option value="07:00 PM - 08:00 PM">07:00 PM - 08:00 PM</option>
+              </select>
+              <small id="time-help" class="form-help">Available time slots will update based on duration</small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Instrument Rental Fields (initially hidden) -->
+        <div id="instrumentRentalFields" class="booking-fields" style="display: none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="startDate">📅 Start Date</label>
+              <div class="date-input-wrapper">
+                <input type="date" id="startDate" name="startDate" aria-describedby="start-date-help" class="date-picker-input">
+                <div class="date-picker-icon">📅</div>
+              </div>
+              <small id="start-date-help" class="form-help">Select the new start date for your rental</small>
+            </div>
+            
+            <div class="form-group">
+              <label for="endDate">📅 End Date</label>
+              <div class="date-input-wrapper">
+                <input type="date" id="endDate" name="endDate" aria-describedby="end-date-help" class="date-picker-input">
+                <div class="date-picker-icon">📅</div>
+              </div>
+              <small id="end-date-help" class="form-help">Select the new end date for your rental</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-actions" id="formActions" style="display: none;">
+          <button type="button" class="cancel-btn" id="cancelReschedule">
+            <span>Cancel</span>
+          </button>
+          <button type="submit" class="submit-btn">
+            <span>✨ Submit Reschedule</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
   <!-- Footer -->
   <footer class="services-footer">
     <div class="footer-content">

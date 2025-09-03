@@ -24,6 +24,7 @@
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
         <li><a href="#" id="feedbackLink">Feedbacks</a></li>
+        <li><a href="/map">Map</a></li>
         @if(Auth::check())
         <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
         @endif
@@ -163,7 +164,18 @@
           <a href="/auth/google" class="book-btn">Login to Book Now!</a>
         @endif
       </div>
-      <div class="calendar-container">
+      
+      <!-- Floating Action Button for Calendar -->
+      <button class="calendar-fab" id="calendarFab" title="Toggle Calendar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+      
+      <div class="calendar-container" id="calendarContainer">
         <div id="calendar-header">
           <button id="prevMonth">&#9664;</button>
           <span id="monthYear"></span>
@@ -171,6 +183,28 @@
         </div>
         <div class="calendar-grid" id="calendarGrid"></div>
         <div class="time-slots" id="timeSlots"></div>
+      </div>
+      
+      <!-- Carousel Component (shows when calendar is hidden) -->
+      <div class="carousel-container hidden" id="carouselContainer">
+        <div class="carousel-wrapper">
+          <div class="carousel-track" id="carouselTrack">
+            <div class="carousel-slide active">
+              <img src="{{ asset('images/studio.jpg') }}" alt="Studio Rental" />
+            </div>
+            <div class="carousel-slide">
+              <img src="{{ asset('images/instruments.png') }}" alt="Instruments Rental" />
+            </div>
+            <div class="carousel-slide">
+              <img src="{{ asset('images/lessons.jpg') }}" alt="Music Lessons" />
+            </div>
+          </div>
+          <div class="carousel-indicators">
+            <span class="indicator active" data-slide="0"></span>
+            <span class="indicator" data-slide="1"></span>
+            <span class="indicator" data-slide="2"></span>
+          </div>
+        </div>
       </div>
     </div>
   </section>

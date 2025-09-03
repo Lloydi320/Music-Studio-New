@@ -278,6 +278,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Rescheduling popup functionality
+document.addEventListener("DOMContentLoaded", () => {
+  const rescheduleBookingLink = document.getElementById("rescheduleBookingLink");
+  const reschedulePopup = document.getElementById("reschedulePopup");
+  const closeReschedule = document.getElementById("closeReschedule");
+
+  if (rescheduleBookingLink && reschedulePopup && closeReschedule) {
+    rescheduleBookingLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+
+      reschedulePopup.classList.add("active");
+    });
+
+    closeReschedule.addEventListener("click", () => {
+      reschedulePopup.classList.remove("active");
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    });
+
+    window.addEventListener("click", (e) => {
+      if (e.target === reschedulePopup) {
+        reschedulePopup.classList.remove("active");
+        document.body.style.overflow = "";
+        document.body.style.paddingRight = "";
+      }
+    });
+   }
+ });
+
 // Feedback popup functionality
 document.addEventListener("DOMContentLoaded", () => {
   const feedbackLink = document.getElementById("feedbackLink");
@@ -308,5 +341,125 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.style.paddingRight = "";
       }
     });
+  }
+
+  // Floating Action Button for Calendar/Carousel Toggle
+  const calendarFab = document.getElementById('calendarFab');
+  const calendarContainer = document.getElementById('calendarContainer');
+  const carouselContainer = document.getElementById('carouselContainer');
+  
+  if (calendarFab && calendarContainer && carouselContainer) {
+    console.log('✅ Calendar FAB and Carousel elements found, setting up toggle functionality...');
+    
+    calendarFab.addEventListener('click', function() {
+      console.log('🎯 Calendar FAB clicked!');
+      
+      if (calendarContainer.classList.contains('hidden')) {
+        // Show calendar, hide carousel
+        calendarContainer.classList.remove('hidden');
+        carouselContainer.classList.add('hidden');
+        calendarFab.title = 'Hide Calendar';
+        console.log('📅 Calendar shown, carousel hidden');
+      } else {
+        // Hide calendar, show carousel
+        calendarContainer.classList.add('hidden');
+        carouselContainer.classList.remove('hidden');
+        calendarFab.title = 'Show Calendar';
+        console.log('🎠 Carousel shown, calendar hidden');
+      }
+    });
+    
+    // Initially hide the calendar and show carousel
+    calendarContainer.classList.add('hidden');
+    carouselContainer.classList.remove('hidden');
+    calendarFab.title = 'Show Calendar';
+    console.log('🎠 Carousel initially shown, calendar hidden');
+  } else {
+    console.log('❌ Calendar FAB or Carousel elements not found:', {
+      calendarFab: !!calendarFab,
+      calendarContainer: !!calendarContainer,
+      carouselContainer: !!carouselContainer
+    });
+  }
+  
+  // Carousel Functionality
+  const carouselTrack = document.getElementById('carouselTrack');
+  const indicators = document.querySelectorAll('.indicator');
+  
+  if (carouselTrack) {
+    let currentSlide = 0;
+    const totalSlides = document.querySelectorAll('.carousel-slide').length;
+    
+    function updateCarousel() {
+      const translateX = -currentSlide * 100;
+      carouselTrack.style.transform = `translateX(${translateX}%)`;
+      
+      // Update indicators
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentSlide);
+      });
+    }
+    
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      updateCarousel();
+    }
+    
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      updateCarousel();
+    }
+    
+    // Event listeners for indicators
+    indicators.forEach((indicator, index) => {
+      indicator.addEventListener('click', () => {
+        currentSlide = index;
+        updateCarousel();
+      });
+    });
+    
+    // Touch/Swipe functionality
+    let startX = 0;
+    let endX = 0;
+    
+    carouselTrack.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    });
+    
+    carouselTrack.addEventListener('touchend', (e) => {
+      endX = e.changedTouches[0].clientX;
+      handleSwipe();
+    });
+    
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diff = startX - endX;
+      
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          nextSlide(); // Swipe left - next slide
+        } else {
+          prevSlide(); // Swipe right - previous slide
+        }
+      }
+    }
+    
+    // Auto-play carousel (optional)
+    let autoPlayInterval = setInterval(nextSlide, 5000);
+    
+    // Pause auto-play on hover
+    if (carouselContainer) {
+      carouselContainer.addEventListener('mouseenter', () => {
+        clearInterval(autoPlayInterval);
+      });
+      
+      carouselContainer.addEventListener('mouseleave', () => {
+        autoPlayInterval = setInterval(nextSlide, 5000);
+      });
+    }
+    
+    console.log('🎠 Carousel functionality initialized with swipe support');
+  } else {
+    console.log('❌ Carousel elements not found');
   }
 });
