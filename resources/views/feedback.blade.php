@@ -536,18 +536,40 @@
 
   <header class="navbar">
     <div class="logo">
-      <a href="/" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
-        <img src="{{ asset('images/studio-logo.png') }}" alt="Logo" />
-        <span>LEMON HUB STUDIO</span>
-      </a>
+      <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
+      <span>LEMON HUB STUDIO</span>
     </div>
-    <nav>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    
+    <nav class="nav-container">
       <ul class="nav-links">
         <li><a href="/">Home</a></li>
         <li><a href="/services">About Us & Our Services</a></li>
         <li><a href="#" id="contactLink">Contact</a></li>
-        <li><a href="/feedback">Feedbacks</a></li>
+        <li><a href="#" id="feedbackLink" class="active">Feedbacks</a></li>
         <li><a href="/map">Map</a></li>
+        @if(Auth::check())
+        <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
+        @endif
+        @if(Auth::check() && Auth::user()->isAdmin())
+        <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
+        @endif
+        @if(Auth::check())
+        <li>
+          <form action="/logout" method="POST" style="margin: 0;">
+            @csrf
+            <button type="submit" style="background: none; border: none; color: #fff; padding: 15px 20px; font-size: 1.1rem; cursor: pointer; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+               Sign Out
+            </button>
+          </form>
+        </li>
+        @endif
       </ul>
     </nav>
     @if(Auth::check())

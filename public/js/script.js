@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Starting initial calendar generation...');
     generateCalendar(currentYear, currentMonth);
   } else {
-    console.error('❌ Calendar elements not found!');
+    console.log('ℹ️ Calendar elements not found - skipping calendar initialization (this is normal for non-home pages)');
   }
 });
 
