@@ -163,7 +163,7 @@
                         <td>{{ $customer->email }}</td>
                         <td><strong>₱{{ number_format($customer->total_spent, 2) }}</strong></td>
                         <td>{{ $customer->booking_count }}</td>
-                        <td>₱{{ number_format($customer->total_spent / $customer->booking_count, 2) }}</td>
+                        <td>₱{{ $customer->booking_count > 0 ? number_format($customer->total_spent / $customer->booking_count, 2) : '0.00' }}</td>
                     </tr>
                     @empty
                     <tr>

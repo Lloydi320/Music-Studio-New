@@ -18,7 +18,15 @@
       <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
       <span>LEMON HUB STUDIO</span>
     </div>
-    <nav>
+    
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    
+    <nav class="nav-container">
       <ul class="nav-links">
         <li><a href="/" class="active">Home</a></li>
         <li><a href="/services">About Us & Our Services</a></li>
@@ -30,6 +38,16 @@
         @endif
         @if(Auth::check() && Auth::user()->isAdmin())
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
+        @endif
+        @if(Auth::check())
+        <li>
+          <form action="/logout" method="POST" style="margin: 0;">
+            @csrf
+            <button type="submit" style="background: none; border: none; color: #fff; padding: 15px 20px; font-size: 1.1rem; cursor: pointer; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+               Sign Out
+            </button>
+          </form>
+        </li>
         @endif
       </ul>
     </nav>
@@ -165,6 +183,18 @@
         @endif
       </div>
       
+      <!-- Image Display Component (shows when calendar is hidden) -->
+      <div class="image-display" id="carouselContainer">
+        <img src="{{ asset('images/feedback-bg.png') }}" alt="Placeholder Image 1" class="display-image active" data-slide="0" />
+        <img src="{{ asset('images/feedback-bg.png') }}" alt="Placeholder Image 2" class="display-image" data-slide="1" />
+        <img src="{{ asset('images/feedback-bg.png') }}" alt="Placeholder Image 3" class="display-image" data-slide="2" />
+        <div class="carousel-indicators">
+          <span class="indicator active" data-slide="0"></span>
+          <span class="indicator" data-slide="1"></span>
+          <span class="indicator" data-slide="2"></span>
+        </div>
+      </div>
+      
       <!-- Floating Action Button for Calendar -->
       <button class="calendar-fab" id="calendarFab" title="Toggle Calendar">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -175,7 +205,7 @@
         </svg>
       </button>
       
-      <div class="calendar-container" id="calendarContainer">
+      <div class="calendar-container hidden" id="calendarContainer">
         <div id="calendar-header">
           <button id="prevMonth">&#9664;</button>
           <span id="monthYear"></span>
@@ -183,28 +213,6 @@
         </div>
         <div class="calendar-grid" id="calendarGrid"></div>
         <div class="time-slots" id="timeSlots"></div>
-      </div>
-      
-      <!-- Carousel Component (shows when calendar is hidden) -->
-      <div class="carousel-container hidden" id="carouselContainer">
-        <div class="carousel-wrapper">
-          <div class="carousel-track" id="carouselTrack">
-            <div class="carousel-slide active">
-              <img src="{{ asset('images/studio.jpg') }}" alt="Studio Rental" />
-            </div>
-            <div class="carousel-slide">
-              <img src="{{ asset('images/instruments.png') }}" alt="Instruments Rental" />
-            </div>
-            <div class="carousel-slide">
-              <img src="{{ asset('images/lessons.jpg') }}" alt="Music Lessons" />
-            </div>
-          </div>
-          <div class="carousel-indicators">
-            <span class="indicator active" data-slide="0"></span>
-            <span class="indicator" data-slide="1"></span>
-            <span class="indicator" data-slide="2"></span>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -412,8 +420,15 @@
       <div class="service-grid-popup">
         <a href="/booking" class="service-box-popup">
           <img src="{{ asset('images/studio.jpg') }}" alt="Studio Rental" />
-          <h3>Studio Rental</h3>
+          <h3>Band Rental</h3>
           <p>Book our acoustically treated studios for jamming, rehearsals, or recording. Fully equipped and flexible.</p>
+          <small class="service-hint">Click to Book</small>
+        </a>
+
+        <a href="/booking" class="service-box-popup">
+          <img src="{{ asset('images/studio.jpg') }}" alt="Solo Rehearsal" />
+          <h3>Solo Rehearsal</h3>
+          <p>Perfect for individual practice sessions. Book our acoustically treated studios for solo rehearsals and personal music development.</p>
           <small class="service-hint">Click to Book</small>
         </a>
 
@@ -1972,6 +1987,49 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeRescheduleSuccessModal();
+    }
+});
+
+// Mobile Menu Toggle Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const navContainer = document.querySelector('.nav-container');
+    
+    if (mobileMenuToggle && navContainer) {
+        mobileMenuToggle.addEventListener('click', function() {
+            mobileMenuToggle.classList.toggle('active');
+            navContainer.classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking on a nav link
+        const navLinks = document.querySelectorAll('.nav-links a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuToggle.classList.remove('active');
+                navContainer.classList.remove('active');
+            });
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuToggle.contains(e.target) && !navContainer.contains(e.target)) {
+                mobileMenuToggle.classList.remove('active');
+                navContainer.classList.remove('active');
+            }
+        });
+    }
+});
+
+// Handle window resize to close mobile menu on desktop
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navContainer = document.querySelector('.nav-container');
+        
+        if (mobileMenuToggle && navContainer) {
+            mobileMenuToggle.classList.remove('active');
+            navContainer.classList.remove('active');
+        }
     }
 });
 </script>

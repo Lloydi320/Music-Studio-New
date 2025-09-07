@@ -3,10 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Book a Studio</title>
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
   <style>
+    /* Bubble Animation */
+    @keyframes bubbleIn {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px) scale(0.8);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+    }
+    
     /* Modal Styles */
     .modal {
       display: none;
@@ -724,7 +737,7 @@
     <div class="booking-content">
       <div class="info-section fixed-info-section">
         <p class="studio-name">Lemon Hub Studio</p>
-        <h2><span id="serviceType">STUDIO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
+        <h2><span id="serviceType">BAND/SOLO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
         <p class="duration">🕒 <span id="selectedDurationLabel">1 hr</span></p>
         <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
         <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
@@ -845,41 +858,25 @@
           <div class="form-group">
             <label class="form-label" for="bandName">Band Name *</label>
             <input type="text" id="bandName" name="band_name" class="form-input" required>
-            @error('band_name')
-              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
-                {{ $message }}
-              </div>
-            @enderror
           </div>
           
           <div class="form-group">
             <label class="form-label" for="email">Email *</label>
             <input type="email" id="email" name="email" class="form-input" required>
-            @error('email')
-              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
-                {{ $message }}
-              </div>
-            @enderror
           </div>
           
           <div class="form-group">
             <label class="form-label" for="contactNumber">Contact Number *</label>
             <input type="tel" id="contactNumber" name="contact_number" class="form-input" maxlength="11" required>
-            @error('contact_number')
-              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
-                {{ $message }}
-              </div>
-            @enderror
           </div>
           
           <div class="form-group">
-            <label class="form-label" for="referenceCode">Reference Code (4 digits) *</label>
+            <label class="form-label" for="referenceCode">LAST 4 DIGITS OF GCASH PAYMENT *</label>
             <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
-            @error('reference_code')
-              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
-                {{ $message }}
-              </div>
-            @enderror
+            <!-- Error message container for inline validation -->
+            <div id="referenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
+              <span id="referenceErrorText">Reference number already exists.</span>
+            </div>
           </div>
           
           <div class="form-group">
@@ -907,11 +904,6 @@
             <label class="checkbox-label" for="agreeTerms">
               I agree to <a href="#">User Agreement</a> and <a href="#">Privacy Policy</a>
             </label>
-            @error('agree_terms')
-              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
-                {{ $message }}
-              </div>
-            @enderror
           </div>
           
           <div class="modal-buttons">
@@ -965,7 +957,7 @@
 <div id="successModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
   <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
     <div class="modal-content" style="
-      max-width: 560px;
+      max-width: 720px;
       border-radius: 20px;
       padding: 30px;
       background: #ffffff;
@@ -1070,126 +1062,7 @@
   </div>
 </div>
 
-<!-- Error Modal -->
-<div id="errorModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
-  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
-    <div class="modal-content" style="
-      max-width: 560px;
-      border-radius: 20px;
-      padding: 30px;
-      background: #ffffff;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      border: none;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-    ">
-      
-      <!-- Left Section: Icon and Title -->
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        flex-shrink: 0;
-      ">
-        <!-- Error Icon -->
-        <div style="
-          width: 60px;
-          height: 60px;
-          margin-bottom: 16px;
-          background: #ef4444;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: bounceIn 0.6s ease-out 0.2s both;
-        ">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-          </svg>
-        </div>
-        
-        <!-- Title -->
-        <h2 style="
-          color: #ef4444;
-          margin: 0;
-          font-size: 24px;
-          font-weight: 600;
-          letter-spacing: -0.3px;
-          animation: fadeInUp 0.5s ease-out 0.3s both;
-          white-space: nowrap;
-        ">Booking<br>Error!</h2>
-      </div>
-      
-      <!-- Right Section: Details -->
-      <div style="
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      ">
-        <!-- Error Message -->
-        <div id="errorMessage" style="
-          background: #fef2f2;
-          color: #991b1b;
-          padding: 20px;
-          border-radius: 12px;
-          border: 1px solid #fecaca;
-          font-weight: 400;
-          line-height: 1.5;
-          font-size: 14px;
-          animation: fadeInUp 0.5s ease-out 0.4s both;
-        ">
-          <!-- Error message will be populated here -->
-        </div>
-        
-        <!-- Bottom Section -->
-        <div style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 20px;
-        ">
-          <!-- Try again text -->
-          <p style="
-            color: #6b7280;
-            margin: 0;
-            font-size: 14px;
-            font-weight: 400;
-            animation: fadeInUp 0.5s ease-out 0.5s both;
-            flex: 1;
-          ">Please try again or contact support if the problem persists.</p>
-          
-          <!-- Countdown and Close button -->
-          <div style="
-            display: flex;
-            align-items: center;
-            gap: 12px;
-          ">
-            <div style="
-              color: #6b7280;
-              font-size: 13px;
-              font-weight: 400;
-              animation: fadeInUp 0.5s ease-out 0.6s both;
-            ">
-              Refreshing in <span id="errorCountdown" style="color: #374151; font-weight: 500;">3</span> seconds...
-            </div>
-            <button onclick="closeErrorModal()" style="
-              background: #ef4444;
-              color: white;
-              border: none;
-              padding: 8px 16px;
-              border-radius: 8px;
-              font-size: 14px;
-              font-weight: 500;
-              cursor: pointer;
-              animation: fadeInUp 0.5s ease-out 0.6s both;
-              transition: background-color 0.2s ease;
-            " onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Close</button>
+
           </div>
         </div>
       </div>
@@ -1277,7 +1150,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create validation message element
         const validationMessage = document.createElement('div');
         validationMessage.id = 'referenceValidationMessage';
-        validationMessage.style.cssText = 'margin-top: 5px; font-size: 0.9rem; display: none;';
+        validationMessage.style.cssText = `
+            margin-top: 5px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: none;
+        `;
         referenceCodeInput.parentNode.appendChild(validationMessage);
         
         // Real-time validation on input
@@ -1290,6 +1170,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset validation state
             validationMessage.style.display = 'none';
             this.style.borderColor = '';
+            
+            // Clear validation state when user is typing
+            if (value.length < 4) {
+                delete this.dataset.valid;
+            }
             
             // Only validate if we have 4 digits
             if (value.length === 4 && /^[0-9]{4}$/.test(value)) {
@@ -1304,12 +1189,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             isValidating = true;
             validationMessage.textContent = 'Checking reference code...';
-            validationMessage.style.color = '#856404';
-            validationMessage.style.backgroundColor = '#fff3cd';
-            validationMessage.style.border = '1px solid #ffeaa7';
-            validationMessage.style.padding = '8px';
-            validationMessage.style.borderRadius = '5px';
-            validationMessage.style.display = 'block';
+            validationMessage.style.cssText += `
+                display: block;
+                background-color: #f3f4f6;
+                color: #6b7280;
+                border: 1px solid #d1d5db;
+            `;
             
             // Check if reference code exists
             fetch('/api/check-reference-code', {
@@ -1327,19 +1212,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (data.exists) {
                     // Reference code already exists
-                    validationMessage.textContent = '❌ This reference code is already taken. Please use a different one.';
-                    validationMessage.style.color = '#721c24';
-                    validationMessage.style.backgroundColor = '#f8d7da';
-                    validationMessage.style.border = '1px solid #f5c6cb';
-                    referenceCodeInput.style.borderColor = '#dc3545';
+                    validationMessage.textContent = 'This reference code is already existing. Please use a different reference number from GCash 4-digits last number.';
+                    validationMessage.style.cssText += `
+                        display: block;
+                        background-color: #fef2f2;
+                        color: #dc2626;
+                        border: 1px solid #fecaca;
+                    `;
                     referenceCodeInput.dataset.valid = 'false';
                 } else {
                     // Reference code is available
-                    validationMessage.textContent = '✅ Reference code is available.';
-                    validationMessage.style.color = '#155724';
-                    validationMessage.style.backgroundColor = '#d4edda';
-                    validationMessage.style.border = '1px solid #c3e6cb';
-                    referenceCodeInput.style.borderColor = '#28a745';
+                    validationMessage.textContent = 'Reference code is available!';
+                    validationMessage.style.cssText += `
+                        display: block;
+                        background-color: #f0fdf4;
+                        color: #16a34a;
+                        border: 1px solid #bbf7d0;
+                    `;
                     referenceCodeInput.dataset.valid = 'true';
                 }
                 
@@ -1348,42 +1237,20 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 isValidating = false;
                 console.error('Reference code validation error:', error);
-                validationMessage.textContent = '⚠️ Unable to validate reference code. Please try again.';
-                validationMessage.style.color = '#856404';
-                validationMessage.style.backgroundColor = '#fff3cd';
-                validationMessage.style.border = '1px solid #ffeaa7';
-                validationMessage.style.display = 'block';
+                validationMessage.textContent = 'Error checking reference code. Please try again.';
+                validationMessage.style.cssText += `
+                    display: block;
+                    background-color: #fef2f2;
+                    color: #dc2626;
+                    border: 1px solid #fecaca;
+                `;
                 referenceCodeInput.dataset.valid = 'unknown';
             });
         }
     }
     
-    // Prevent form submission if reference code is invalid
-    if (studioRentalForm) {
-        studioRentalForm.addEventListener('submit', function(e) {
-            const referenceCodeInput = document.getElementById('referenceCode');
-            
-            if (referenceCodeInput && referenceCodeInput.dataset.valid === 'false') {
-                e.preventDefault();
-                alert('Please use a different reference code. The current one is already taken.');
-                referenceCodeInput.focus();
-                return false;
-            }
-            
-            // Disable submit button to prevent double submission
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Processing...';
-                
-                // Re-enable after 3 seconds as fallback
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Confirm Booking';
-                }, 3000);
-            }
-        });
-    }
+    // Note: Form submission handling is now managed by booking.js
+    // This prevents conflicts between inline handlers and external JS file
 });
 
 // Original script content below
@@ -1427,6 +1294,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
+
+<style>
+.error-field {
+  border: 2px solid #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+  background-color: #fef2f2 !important;
+}
+
+.error-field:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+}
+</style>
 
 </body>
 </html>

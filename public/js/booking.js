@@ -30,13 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function blockBookedSlots(bookings) {
-    console.log('=== blockBookedSlots called ===');
-    console.log('Bookings from database:', bookings);
-    console.log('Number of bookings:', bookings.length);
-    
     const slotButtons = document.querySelectorAll('.slots button');
-    console.log('Found slot buttons:', slotButtons.length);
-    console.log('Slot button texts:', Array.from(slotButtons).map(btn => btn.textContent));
     
     // First, make ALL slots available by default
     slotButtons.forEach(btn => {
@@ -408,8 +402,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   if (nextBtn) {
     nextBtn.addEventListener('click', function() {
-      console.log('Next button clicked!');
-      
       // Get selected date, time slot, and duration
       const selectedDate = document.getElementById('selectedDateLabel').textContent;
       const selectedSlotBtn = document.querySelector('.slots button.selected, .slots button[style*="background: #FFD700"]');
@@ -508,8 +500,36 @@ document.addEventListener("DOMContentLoaded", function () {
   function handleFormSubmission(form, e) {
     e.preventDefault();
     
-    console.log('Submitting booking form via AJAX...');
-    console.log('Form action:', form.action);
+    // Check reference code validation for both booking and studio rental forms
+    if (form.id === 'studioRentalForm' || form.id === 'bookingForm') {
+      const referenceCodeInput = document.getElementById('referenceCode');
+      
+      if (referenceCodeInput) {
+        const validationState = referenceCodeInput.dataset.valid;
+        const referenceValue = referenceCodeInput.value.trim();
+        
+        // Check if reference code is empty - show warning but allow submission
+        if (!referenceValue || referenceValue.length !== 4) {
+          showReferenceWarning('Please enter a valid 4-digit GCash reference number.', form.id);
+        }
+        
+        // Check if validation failed (duplicate reference) - allow submission but show warning
+        if (validationState === 'false') {
+          // Show warning message but allow form submission to proceed
+          showErrorModal('Reference number already exists.');
+        }
+        
+        // Check if validation is still in progress or unknown - show warning but allow submission
+        if (validationState === undefined || validationState === 'unknown') {
+          showReferenceWarning('Please wait for reference code validation to complete or try again.', form.id);
+        }
+        
+        // Check if validation hasn't been performed yet (no dataset.valid set) - show warning but allow submission
+        if (validationState !== 'true' && validationState !== 'false') {
+          showReferenceWarning('Please wait for reference code validation to complete.', form.id);
+        }
+      }
+    }
     
     const formData = new FormData(form);
     
@@ -527,12 +547,12 @@ document.addEventListener("DOMContentLoaded", function () {
       if (data.success) {
         showSuccessModal(data.message);
       } else {
-        showErrorModal('Error: ' + data.message);
+        showReferenceWarning('Error: ' + data.message, form.id);
       }
     })
     .catch(error => {
       console.error('Error:', error);
-      showErrorModal('An error occurred while processing your booking. Please try again.');
+      showReferenceWarning('An error occurred while processing your booking. Please try again.', form.id);
     });
   }
   
@@ -573,6 +593,47 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   
+  // Function to show inline error for reference field
+  function showErrorModal(message) {
+    const referenceField = document.getElementById('referenceCode');
+    const errorMessage = document.getElementById('referenceErrorMessage');
+    const errorText = document.getElementById('referenceErrorText');
+    
+    if (referenceField && errorMessage && errorText) {
+      // Add error styling to the field
+      referenceField.classList.add('error-field');
+      
+      // Show error message
+      errorText.textContent = message;
+      errorMessage.style.display = 'block';
+      
+      // Auto-hide error after 5 seconds
+      setTimeout(() => {
+        hideReferenceError();
+      }, 5000);
+    }
+  }
+  
+  // Function to hide reference field error
+  function hideReferenceError() {
+    const referenceField = document.getElementById('referenceCode');
+    const errorMessage = document.getElementById('referenceErrorMessage');
+    
+    if (referenceField) {
+      referenceField.classList.remove('error-field');
+    }
+    
+    if (errorMessage) {
+      errorMessage.style.display = 'none';
+    }
+  }
+  
+  // Clear error when user starts typing in reference field
+  const referenceField = document.getElementById('referenceCode');
+  if (referenceField) {
+    referenceField.addEventListener('input', hideReferenceError);
+  }
+  
   // Initialize booking summary as empty
   const bookingSummary = document.getElementById('bookingSummary');
   if (bookingSummary) {
@@ -593,8 +654,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Refresh every 10 seconds
     autoRefreshInterval = setInterval(() => {
-      console.log('Auto-refreshing booking data...');
-      
       // Only refresh if a date is selected
       if (selectedDate) {
         fetchBookings(selectedDate);
@@ -636,38 +695,3 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Global functions for error modal (accessible from HTML onclick)
-function showErrorModal(message) {
-  const modal = document.getElementById('errorModal');
-  const messageDiv = document.getElementById('errorMessage');
-  const countdownSpan = document.getElementById('errorCountdown');
-  
-  if (modal && messageDiv && countdownSpan) {
-    messageDiv.innerHTML = message;
-    modal.style.display = 'block';
-    
-    let countdown = 3;
-    countdownSpan.textContent = countdown;
-    
-    errorCountdownInterval = setInterval(() => {
-      countdown--;
-      countdownSpan.textContent = countdown;
-      
-      if (countdown <= 0) {
-        clearInterval(errorCountdownInterval);
-        window.location.href = '/';
-      }
-    }, 1000);
-  }
-}
-
-let errorCountdownInterval;
-
-function closeErrorModal() {
-  const modal = document.getElementById('errorModal');
-  if (modal) {
-    modal.style.display = 'none';
-    if (errorCountdownInterval) {
-      clearInterval(errorCountdownInterval);
-    }
-  }
-}

@@ -343,109 +343,117 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Floating Action Button for Calendar/Carousel Toggle
-  const calendarFab = document.getElementById('calendarFab');
+  // FAB functionality - toggle between calendar and carousel
+  const calendarFab = document.querySelector('.calendar-fab');
   const calendarContainer = document.getElementById('calendarContainer');
   const carouselContainer = document.getElementById('carouselContainer');
   
+  let isCalendarVisible = true; // Calendar is visible by default
+  
   if (calendarFab && calendarContainer && carouselContainer) {
-    console.log('✅ Calendar FAB and Carousel elements found, setting up toggle functionality...');
+    console.log('✅ Calendar FAB and containers found, setting up toggle functionality...');
+    
+    // Set initial state - calendar visible, carousel hidden
+    calendarContainer.classList.remove('hidden');
+    carouselContainer.classList.add('hidden');
+    
+    // Update FAB title based on current state
+    calendarFab.title = isCalendarVisible ? 'Show Image Carousel' : 'Show Calendar';
     
     calendarFab.addEventListener('click', function() {
-      console.log('🎯 Calendar FAB clicked!');
+      console.log('FAB clicked, current state:', isCalendarVisible ? 'calendar' : 'carousel');
       
-      if (calendarContainer.classList.contains('hidden')) {
-        // Show calendar, hide carousel
-        calendarContainer.classList.remove('hidden');
-        carouselContainer.classList.add('hidden');
-        calendarFab.title = 'Hide Calendar';
-        console.log('📅 Calendar shown, carousel hidden');
-      } else {
+      if (isCalendarVisible) {
         // Hide calendar, show carousel
         calendarContainer.classList.add('hidden');
         carouselContainer.classList.remove('hidden');
         calendarFab.title = 'Show Calendar';
-        console.log('🎠 Carousel shown, calendar hidden');
+        isCalendarVisible = false;
+        console.log('Switched to carousel view');
+      } else {
+        // Hide carousel, show calendar
+        carouselContainer.classList.add('hidden');
+        calendarContainer.classList.remove('hidden');
+        calendarFab.title = 'Show Image Carousel';
+        isCalendarVisible = true;
+        console.log('Switched to calendar view');
       }
     });
     
-    // Initially hide the calendar and show carousel
-    calendarContainer.classList.add('hidden');
-    carouselContainer.classList.remove('hidden');
-    calendarFab.title = 'Show Calendar';
-    console.log('🎠 Carousel initially shown, calendar hidden');
+    console.log('📅 Calendar is visible by default, FAB toggles to carousel');
   } else {
-    console.log('❌ Calendar FAB or Carousel elements not found:', {
+    console.log('❌ Calendar FAB or containers not found:', {
       calendarFab: !!calendarFab,
       calendarContainer: !!calendarContainer,
       carouselContainer: !!carouselContainer
     });
   }
   
-  // Carousel Functionality
-  const carouselTrack = document.getElementById('carouselTrack');
+  // Image Display Functionality
+  const displayImages = document.querySelectorAll('.display-image');
   const indicators = document.querySelectorAll('.indicator');
-  
-  if (carouselTrack) {
-    let currentSlide = 0;
-    const totalSlides = document.querySelectorAll('.carousel-slide').length;
-    
-    function updateCarousel() {
-      const translateX = -currentSlide * 100;
-      carouselTrack.style.transform = `translateX(${translateX}%)`;
+
+  if (displayImages.length > 0) {
+    let currentImage = 0;
+    const totalImages = displayImages.length;
+
+    function updateImageDisplay() {
+      // Hide all images
+      displayImages.forEach((image, index) => {
+        image.classList.toggle('active', index === currentImage);
+      });
       
       // Update indicators
       indicators.forEach((indicator, index) => {
-        indicator.classList.toggle('active', index === currentSlide);
+        indicator.classList.toggle('active', index === currentImage);
       });
     }
-    
-    function nextSlide() {
-      currentSlide = (currentSlide + 1) % totalSlides;
-      updateCarousel();
+
+    function nextImage() {
+      currentImage = (currentImage + 1) % totalImages;
+      updateImageDisplay();
     }
-    
-    function prevSlide() {
-      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-      updateCarousel();
+
+    function prevImage() {
+      currentImage = (currentImage - 1 + totalImages) % totalImages;
+      updateImageDisplay();
     }
-    
+
     // Event listeners for indicators
     indicators.forEach((indicator, index) => {
       indicator.addEventListener('click', () => {
-        currentSlide = index;
-        updateCarousel();
+        currentImage = index;
+        updateImageDisplay();
       });
     });
-    
-    // Touch/Swipe functionality
+
+    // Touch/swipe support
     let startX = 0;
     let endX = 0;
-    
-    carouselTrack.addEventListener('touchstart', (e) => {
-      startX = e.touches[0].clientX;
-    });
-    
-    carouselTrack.addEventListener('touchend', (e) => {
-      endX = e.changedTouches[0].clientX;
-      handleSwipe();
-    });
-    
-    function handleSwipe() {
-      const swipeThreshold = 50;
-      const diff = startX - endX;
-      
-      if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-          nextSlide(); // Swipe left - next slide
-        } else {
-          prevSlide(); // Swipe right - previous slide
+
+    if (carouselContainer) {
+      carouselContainer.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+      });
+
+      carouselContainer.addEventListener('touchend', (e) => {
+        endX = e.changedTouches[0].clientX;
+        
+        const threshold = 50; // Minimum swipe distance
+        const diff = startX - endX;
+        
+        if (Math.abs(diff) > threshold) {
+          if (diff > 0) {
+            nextImage(); // Swipe left - next image
+          } else {
+            prevImage(); // Swipe right - previous image
+          }
         }
-      }
+      });
     }
-    
-    // Auto-play carousel (optional)
-    let autoPlayInterval = setInterval(nextSlide, 5000);
+
+    // Auto-play images (optional)
+    let autoPlayInterval = setInterval(nextImage, 5000);
     
     // Pause auto-play on hover
     if (carouselContainer) {
@@ -454,12 +462,101 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       
       carouselContainer.addEventListener('mouseleave', () => {
-        autoPlayInterval = setInterval(nextSlide, 5000);
+        autoPlayInterval = setInterval(nextImage, 5000);
       });
     }
-    
-    console.log('🎠 Carousel functionality initialized with swipe support');
+
+    // Initialize display
+    updateImageDisplay();
+
+    console.log('🖼️ Image display functionality initialized with swipe support');
   } else {
-    console.log('❌ Carousel elements not found');
+    console.log('❌ Display image elements not found');
+  }
+});
+
+// Mobile Menu Toggle Functionality
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+const navContainer = document.querySelector('.nav-container');
+
+if (mobileMenuToggle && navContainer) {
+  mobileMenuToggle.addEventListener('click', function() {
+    // Toggle active class on button for animation
+    mobileMenuToggle.classList.toggle('active');
+    
+    // Toggle active class on nav container to show/hide menu
+    navContainer.classList.toggle('active');
+    
+    console.log('Mobile menu toggled:', navContainer.classList.contains('active'));
+  });
+  
+  // Close mobile menu when clicking on nav links
+  const navLinks = document.querySelectorAll('.nav-links a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+      mobileMenuToggle.classList.remove('active');
+      navContainer.classList.remove('active');
+    });
+  });
+  
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', function(event) {
+    if (!mobileMenuToggle.contains(event.target) && !navContainer.contains(event.target)) {
+      mobileMenuToggle.classList.remove('active');
+      navContainer.classList.remove('active');
+    }
+  });
+  
+  console.log('Mobile menu toggle initialized');
+} else {
+  console.log('Mobile menu elements not found:', {
+    toggle: !!mobileMenuToggle,
+    navContainer: !!navContainer
+  });
+}
+
+// Floating Action Button for Calendar Toggle
+document.addEventListener('DOMContentLoaded', function() {
+  const calendarFab = document.querySelector('.calendar-fab');
+  const calendarContainer = document.getElementById('calendarContainer');
+  const carouselContainer = document.getElementById('carouselContainer');
+  
+  let isCalendarVisible = true; // Calendar is visible by default
+  
+  if (calendarFab && calendarContainer && carouselContainer) {
+    console.log('✅ FAB and containers found, initializing toggle functionality...');
+    
+    // Set initial state - calendar visible, carousel hidden
+    calendarContainer.classList.remove('hidden');
+    carouselContainer.classList.add('hidden');
+    
+    // Update FAB title
+    calendarFab.title = 'Show Image Carousel';
+    
+    calendarFab.addEventListener('click', function() {
+      console.log('Calendar FAB toggle clicked');
+      
+      if (isCalendarVisible) {
+        // Switch to carousel
+        calendarContainer.classList.add('hidden');
+        carouselContainer.classList.remove('hidden');
+        calendarFab.title = 'Show Calendar';
+        isCalendarVisible = false;
+      } else {
+        // Switch to calendar
+        carouselContainer.classList.add('hidden');
+        calendarContainer.classList.remove('hidden');
+        calendarFab.title = 'Show Image Carousel';
+        isCalendarVisible = true;
+      }
+    });
+    
+    console.log('📅 Calendar visible by default, FAB toggles to carousel');
+  } else {
+    console.log('❌ FAB or container elements not found:', {
+      calendarFab: !!calendarFab,
+      calendarContainer: !!calendarContainer,
+      carouselContainer: !!carouselContainer
+    });
   }
 });

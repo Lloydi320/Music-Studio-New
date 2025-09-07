@@ -173,8 +173,15 @@
     <div class="service-grid">
      <a href="/booking" class="service-box">
         <img src="{{ asset('images/studio.jpg') }}" alt="Studio Rental" />
-        <h3>Studio Rental</h3>
+        <h3>Band Rehearsal</h3>
         <p>Book our acoustically treated studios for jamming, rehearsals, or recording. Fully equipped and flexible.</p>
+        <small class="service-hint">Click to Book</small>
+      </a>
+
+      <a href="/booking" class="service-box">
+        <img src="{{ asset('images/SoloRehearsal.jpg') }}" alt="Solo Rehearsal" />
+        <h3>Solo Rehearsal</h3>
+        <p>Perfect for individual practice sessions. Book our acoustically treated studios for solo rehearsals and personal music development.</p>
         <small class="service-hint">Click to Book</small>
       </a>
 

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Band Equipment Rental - Lemon Hub Studio</title>
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
@@ -1646,6 +1647,27 @@
        position: relative !important;
        bottom: auto !important;
      }
+
+     /* Error field styling for inline validation */
+     .error-field {
+       border: 2px solid #dc2626 !important;
+       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+       background-color: #fef2f2 !important;
+     }
+     
+     /* Success field styling for inline validation */
+     .success-field {
+       border: 2px solid #10b981 !important;
+       box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+       background-color: #f0fdf4 !important;
+     }
+     
+     /* Success message styling */
+     .success-message {
+       background-color: #d1fae5 !important;
+       color: #065f46 !important;
+       border: 1px solid #a7f3d0 !important;
+     }
   </style>
 </head>
 <body class="booking-page">
@@ -2081,8 +2103,12 @@
                 </div>
                 
                 <div class="form-group">
-                  <label class="form-label" for="modalReferenceCode">REFERENCE CODE (4 DIGITS) *</label>
+                  <label class="form-label" for="modalReferenceCode">LAST 4 DIGITS OF GCASH PAYMENT *</label>
                   <input type="text" id="modalReferenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
+                  <!-- Error message container for inline validation -->
+                  <div id="modalReferenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
+                    <span id="modalReferenceErrorText">Reference number already exists.</span>
+                  </div>
                 </div>
                 
                 <div class="form-group">
@@ -2469,6 +2495,127 @@
         minEndDate.setDate(minEndDate.getDate() + 1);
         endDateInput.min = minEndDate.toISOString().split('T')[0];
       });
+      
+      // Reference code validation functionality
+      const referenceCodeInput = document.getElementById('modalReferenceCode');
+      const referenceErrorMessage = document.getElementById('modalReferenceErrorMessage');
+      const referenceErrorText = document.getElementById('modalReferenceErrorText');
+      let validationTimeout;
+      let isReferenceValid = false;
+      
+      // Function to show reference error
+      function showReferenceError(message) {
+        referenceCodeInput.classList.add('error-field');
+        referenceErrorText.textContent = message;
+        referenceErrorMessage.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          hideReferenceError();
+        }, 5000);
+      }
+      
+      // Function to hide reference error
+      function hideReferenceError() {
+        referenceCodeInput.classList.remove('error-field');
+        referenceErrorMessage.style.display = 'none';
+      }
+      
+      // Function to show reference success
+      function showReferenceSuccess(message) {
+        referenceCodeInput.classList.remove('error-field');
+        referenceCodeInput.classList.add('success-field');
+        referenceErrorText.textContent = message;
+        referenceErrorMessage.style.display = 'block';
+        referenceErrorMessage.classList.add('success-message');
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          hideReferenceSuccess();
+        }, 5000);
+      }
+      
+      // Function to hide reference success
+      function hideReferenceSuccess() {
+        referenceCodeInput.classList.remove('success-field');
+        referenceErrorMessage.classList.remove('success-message');
+        referenceErrorMessage.style.display = 'none';
+      }
+      
+      if (referenceCodeInput) {
+          // Add input event listener with debounce for real-time validation
+          referenceCodeInput.addEventListener('input', function() {
+            // Clear error and success when user starts typing
+            hideReferenceError();
+            hideReferenceSuccess();
+          const referenceCode = this.value.trim();
+          
+          // Clear previous timeout
+          if (validationTimeout) {
+            clearTimeout(validationTimeout);
+          }
+          
+          // Hide error message if input is empty
+          if (referenceCode === '') {
+            hideReferenceError();
+            isReferenceValid = false;
+            return;
+          }
+          
+          // Only validate if we have 4 digits
+          if (referenceCode.length === 4 && /^\d{4}$/.test(referenceCode)) {
+            // Show loading state (optional - you can remove this if you don't want loading indication)
+            // For now, we'll just proceed with validation
+            
+            // Debounce the API call
+            validationTimeout = setTimeout(() => {
+              fetch('/api/check-reference-code', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ reference_code: referenceCode })
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.exists) {
+                  // Reference code already exists - show inline error
+                  showReferenceError('Reference number already exists.');
+                  isReferenceValid = false;
+                } else {
+                  // Reference code is available - show success message
+                  showReferenceSuccess('Reference code is available.');
+                  isReferenceValid = true;
+                }
+              })
+              .catch(error => {
+                console.error('Error checking reference code:', error);
+                showReferenceError('Error checking reference code. Please try again.');
+                isReferenceValid = false;
+              });
+            }, 500); // 500ms debounce
+          } else {
+            hideReferenceError();
+            isReferenceValid = false;
+          }
+        });
+        
+        // Prevent form submission if reference is invalid
+        const form = document.getElementById('instrumentRentalForm');
+        if (form) {
+          form.addEventListener('submit', function(e) {
+            const referenceCode = referenceCodeInput.value.trim();
+            
+            if (referenceCode.length === 4 && /^\d{4}$/.test(referenceCode) && !isReferenceValid) {
+              e.preventDefault();
+              showReferenceError('Please use a different reference code. The current one is already taken.');
+              referenceCodeInput.focus();
+              return false;
+            }
+          });
+        }
+      }
     });
   </script>
 

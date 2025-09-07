@@ -569,7 +569,11 @@ class BookingController extends Controller
             'reference_code' => 'required|string|size:4'
         ]);
 
-        $exists = Booking::where('reference_code', $request->reference_code)->exists();
+        // Check both bookings and instrument rentals tables
+        $existsInBookings = Booking::where('reference_code', $request->reference_code)->exists();
+        $existsInRentals = \App\Models\InstrumentRental::where('four_digit_code', $request->reference_code)->exists();
+        
+        $exists = $existsInBookings || $existsInRentals;
         
         return response()->json([
             'exists' => $exists,
