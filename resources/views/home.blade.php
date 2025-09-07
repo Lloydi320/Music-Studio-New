@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Lemon Hub Studio</title>
-  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ time() }}">
   <link rel="preload" href="{{ asset('images/studio-bg.jpg') }}" as="image">
 
 </head>
@@ -1990,48 +1990,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Mobile Menu Toggle Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const navContainer = document.querySelector('.nav-container');
-    
-    if (mobileMenuToggle && navContainer) {
-        mobileMenuToggle.addEventListener('click', function() {
-            mobileMenuToggle.classList.toggle('active');
-            navContainer.classList.toggle('active');
-        });
-        
-        // Close mobile menu when clicking on a nav link
-        const navLinks = document.querySelectorAll('.nav-links a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                mobileMenuToggle.classList.remove('active');
-                navContainer.classList.remove('active');
-            });
-        });
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!mobileMenuToggle.contains(e.target) && !navContainer.contains(e.target)) {
-                mobileMenuToggle.classList.remove('active');
-                navContainer.classList.remove('active');
-            }
-        });
-    }
-});
-
-// Handle window resize to close mobile menu on desktop
-window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        const navContainer = document.querySelector('.nav-container');
-        
-        if (mobileMenuToggle && navContainer) {
-            mobileMenuToggle.classList.remove('active');
-            navContainer.classList.remove('active');
-        }
-    }
-});
+// Mobile menu functionality is handled by script.js
 </script>
 
 </body>

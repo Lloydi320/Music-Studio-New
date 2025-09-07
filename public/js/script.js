@@ -348,14 +348,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const calendarContainer = document.getElementById('calendarContainer');
   const carouselContainer = document.getElementById('carouselContainer');
   
-  let isCalendarVisible = true; // Calendar is visible by default
+  let isCalendarVisible = false; // Carousel is visible by default
   
   if (calendarFab && calendarContainer && carouselContainer) {
     console.log('✅ Calendar FAB and containers found, setting up toggle functionality...');
     
-    // Set initial state - calendar visible, carousel hidden
-    calendarContainer.classList.remove('hidden');
-    carouselContainer.classList.add('hidden');
+    // Set initial state - carousel visible, calendar hidden
+    calendarContainer.classList.add('hidden');
+    carouselContainer.classList.remove('hidden');
     
     // Update FAB title based on current state
     calendarFab.title = isCalendarVisible ? 'Show Image Carousel' : 'Show Calendar';
@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    console.log('📅 Calendar is visible by default, FAB toggles to carousel');
+    console.log('🎠 Carousel is visible by default, FAB toggles to calendar');
   } else {
     console.log('❌ Calendar FAB or containers not found:', {
       calendarFab: !!calendarFab,
@@ -476,44 +476,46 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Mobile Menu Toggle Functionality
-const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-const navContainer = document.querySelector('.nav-container');
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const navContainer = document.querySelector('.nav-container');
 
-if (mobileMenuToggle && navContainer) {
-  mobileMenuToggle.addEventListener('click', function() {
-    // Toggle active class on button for animation
-    mobileMenuToggle.classList.toggle('active');
-    
-    // Toggle active class on nav container to show/hide menu
-    navContainer.classList.toggle('active');
-    
-    console.log('Mobile menu toggled:', navContainer.classList.contains('active'));
-  });
-  
-  // Close mobile menu when clicking on nav links
-  const navLinks = document.querySelectorAll('.nav-links a');
-  navLinks.forEach(link => {
-    link.addEventListener('click', function() {
-      mobileMenuToggle.classList.remove('active');
-      navContainer.classList.remove('active');
+  if (mobileMenuToggle && navContainer) {
+    mobileMenuToggle.addEventListener('click', function() {
+      // Toggle active class on button for animation
+      mobileMenuToggle.classList.toggle('active');
+      
+      // Toggle active class on nav container to show/hide menu
+      navContainer.classList.toggle('active');
+      
+      console.log('Mobile menu toggled:', navContainer.classList.contains('active'));
     });
-  });
-  
-  // Close mobile menu when clicking outside
-  document.addEventListener('click', function(event) {
-    if (!mobileMenuToggle.contains(event.target) && !navContainer.contains(event.target)) {
-      mobileMenuToggle.classList.remove('active');
-      navContainer.classList.remove('active');
-    }
-  });
-  
-  console.log('Mobile menu toggle initialized');
-} else {
-  console.log('Mobile menu elements not found:', {
-    toggle: !!mobileMenuToggle,
-    navContainer: !!navContainer
-  });
-}
+    
+    // Close mobile menu when clicking on nav links
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        mobileMenuToggle.classList.remove('active');
+        navContainer.classList.remove('active');
+      });
+    });
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!mobileMenuToggle.contains(event.target) && !navContainer.contains(event.target)) {
+        mobileMenuToggle.classList.remove('active');
+        navContainer.classList.remove('active');
+      }
+    });
+    
+    console.log('Mobile menu toggle initialized');
+  } else {
+    console.log('Mobile menu elements not found:', {
+      toggle: !!mobileMenuToggle,
+      navContainer: !!navContainer
+    });
+  }
+});
 
 // Floating Action Button for Calendar Toggle
 document.addEventListener('DOMContentLoaded', function() {
@@ -521,17 +523,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const calendarContainer = document.getElementById('calendarContainer');
   const carouselContainer = document.getElementById('carouselContainer');
   
-  let isCalendarVisible = true; // Calendar is visible by default
+  let isCalendarVisible = false; // Carousel is visible by default
   
   if (calendarFab && calendarContainer && carouselContainer) {
     console.log('✅ FAB and containers found, initializing toggle functionality...');
     
-    // Set initial state - calendar visible, carousel hidden
-    calendarContainer.classList.remove('hidden');
-    carouselContainer.classList.add('hidden');
+    // Set initial state - carousel visible, calendar hidden
+    calendarContainer.classList.add('hidden');
+    carouselContainer.classList.remove('hidden');
     
     // Update FAB title
-    calendarFab.title = 'Show Image Carousel';
+    calendarFab.title = 'Show Calendar';
     
     calendarFab.addEventListener('click', function() {
       console.log('Calendar FAB toggle clicked');
@@ -551,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('📅 Calendar visible by default, FAB toggles to carousel');
+    console.log('🎠 Carousel visible by default, FAB toggles to calendar');
   } else {
     console.log('❌ FAB or container elements not found:', {
       calendarFab: !!calendarFab,
