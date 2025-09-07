@@ -175,18 +175,103 @@
     @media (max-width: 768px) {
       .feedback-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1rem;
+      }
+      
+      .feedback-header {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
       }
       
       .feedback-header h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .feedback-header p {
+        font-size: 1rem;
       }
       
       .modern-feedback-container {
-        padding: 1rem;
-        max-width: 98vw;
+        padding: 0.75rem;
+        max-width: 100vw;
+        margin-top: 70px;
+        border-radius: 10px;
       }
-    }
+      
+      .card-content {
+        padding: 1.5rem;
+        max-height: 60vh;
+      }
+      
+      .card-header {
+        padding: 1rem 1.5rem;
+      }
+      
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+      
+      .form-input {
+        padding: 0.875rem 1rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+        border-radius: 8px;
+      }
+      
+      .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+      
+      .submit-btn {
+        padding: 1rem 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+      }
+      
+      .card-title {
+        font-size: 1.25rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      
+      .refresh-btn {
+         padding: 0.5rem 0.75rem;
+         font-size: 0.9rem;
+         margin-left: 0 !important;
+         margin-top: 0.5rem;
+       }
+       
+       .rating-input {
+         font-size: 2.5rem;
+         gap: 0.25rem;
+         justify-content: center;
+         margin: 1rem 0;
+       }
+       
+       .rating-input span {
+         padding: 0.25rem;
+         min-width: 44px; /* Minimum touch target size */
+         min-height: 44px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         border-radius: 4px;
+         transition: all 0.2s ease;
+       }
+       
+       .rating-input span:hover,
+       .rating-input span:active {
+         background: rgba(255, 215, 0, 0.2);
+         transform: scale(1.1);
+       }
+       
+       .rating-text {
+         text-align: center;
+         font-size: 0.9rem;
+       }
+     }
     
     @media (min-width: 1400px) {
       .feedback-grid {
@@ -1072,20 +1157,24 @@
         // Notification system
         function showNotification(message, type = 'info') {
           const notification = document.createElement('div');
+          const isMobile = window.innerWidth <= 768;
+          
           notification.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
+            top: ${isMobile ? '10px' : '20px'};
+            right: ${isMobile ? '10px' : '20px'};
+            left: ${isMobile ? '10px' : 'auto'};
+            padding: ${isMobile ? '0.75rem 1rem' : '1rem 1.5rem'};
             border-radius: var(--radius-md);
             color: white;
             font-weight: 500;
             z-index: 10000;
-            max-width: 400px;
+            max-width: ${isMobile ? 'calc(100vw - 20px)' : '400px'};
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
             animation: slideIn 0.3s ease;
             border: 1px solid rgba(255, 215, 0, 0.3);
             backdrop-filter: blur(10px);
+            font-size: ${isMobile ? '0.9rem' : '1rem'};
           `;
           
           const colors = {

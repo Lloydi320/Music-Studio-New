@@ -1109,4 +1109,193 @@ body.booking-page, html {
     border-bottom: 3px solid #fd7e14; /* Orange for mixed status */
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    body, html {
+        overflow-x: hidden;
+        overflow-y: scroll !important;
+        height: auto !important;
+        min-height: 100vh;
+        position: relative;
+    }
+    
+    /* Override global styles that prevent scrolling */
+    body {
+        height: auto !important;
+        overflow-y: scroll !important;
+        position: relative !important;
+    }
+    
+    body::before, body::after {
+        position: absolute !important;
+        height: 100% !important;
+    }
+    
+    .booking-main {
+        margin: 10px;
+        padding-bottom: 40px;
+        min-height: auto;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        position: relative;
+        width: calc(100% - 20px);
+    }
+    
+    .booking-content {
+        flex-direction: column;
+        min-height: auto;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        position: relative;
+        width: 100%;
+    }
+    
+    .info-section, .booking-right {
+        flex: none;
+        width: 100%;
+        padding: 15px;
+        border: none;
+        min-height: auto;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        position: relative;
+    }
+    
+    .info-section {
+        order: 1;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 20px;
+    }
+    
+    .booking-right {
+        order: 2;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-section h2 {
+        font-size: 20px;
+    }
+    
+    .info-section .studio-image {
+        max-width: 100%;
+        max-height: 300px;
+    }
+    
+    .calendar-section {
+        padding: 15px;
+        width: 100%;
+        min-height: auto;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+        display: block;
+        position: relative;
+    }
+    
+    .calendar-time-layout {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .calendar-side, .time-side {
+        width: 100%;
+        margin-bottom: 20px;
+        flex: none;
+    }
+    
+    .calendar-grid {
+        width: 100%;
+        max-width: none;
+        min-width: 280px;
+        overflow-x: auto;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .calendar-grid div {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .time-side {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    
+    #durationSelect {
+        width: 100%;
+        margin-bottom: 15px;
+        padding: 12px;
+        font-size: 16px;
+    }
+    
+    .next-btn {
+        width: 100%;
+        margin-top: 15px;
+        padding: 15px;
+        font-size: 16px;
+    }
+    
+    .slots {
+        margin-bottom: 15px;
+    }
+    
+    .scrollable-time-slots {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .calendar-header {
+        padding: 15px;
+        font-size: 20px;
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .date-selectors {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .month-select, .year-select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+    }
+    
+    /* Ensure booking summary is visible */
+    .booking-summary {
+        margin: 15px 0;
+        padding: 15px;
+    }
+    
+    /* Fix viewport and scrolling issues */
+    body.booking-page {
+        overflow-x: hidden;
+        overflow-y: scroll !important;
+        min-height: 100vh;
+        height: auto !important;
+        position: relative;
+    }
+    
+    /* Ensure proper viewport behavior */
+    .booking-main {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Make sure calendar is fully accessible */
+    .calendar-time-layout {
+        margin-bottom: 30px;
+    }
+}
+
 

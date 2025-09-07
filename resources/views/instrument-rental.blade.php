@@ -238,6 +238,7 @@
       .main-content {
         padding: 15px;
         margin: 10px;
+        margin-top: 80px;
       }
       
       .page-header {
@@ -264,7 +265,8 @@
     @media (max-width: 480px) {
       .main-content {
         padding: 10px;
-        margin: 5px;
+        margin: 20px;
+        margin-top: 75px;
       }
       
       .form-section {
@@ -1603,6 +1605,23 @@
     }
 
          @media (max-width: 768px) {
+       .form-grid {
+         display: flex;
+         flex-direction: column;
+       }
+       
+       .form-section:nth-child(1) {
+         order: 1;
+       }
+       
+       .form-section:nth-child(2) {
+         order: 2;
+       }
+       
+       .price-summary {
+         order: 3;
+       }
+       
        .rental-form {
          grid-template-columns: 1fr;
        }

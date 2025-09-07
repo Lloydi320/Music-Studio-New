@@ -38,77 +38,83 @@
       justify-content: center;
       align-items: center;
       height: 100%;
-      padding: 20px;
+      padding: 15px;
+      overflow: hidden;
+      touch-action: none;
     }
 
     .modal-content {
       background: white;
-      border-radius: 20px;
-      width: 95%;
-      max-width: 1200px;
-      max-height: 85vh;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 1000px;
+      max-height: 80vh;
       overflow-y: auto;
       overflow-x: hidden;
       display: flex;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
       scroll-behavior: smooth;
+      touch-action: pan-y;
     }
 
     .modal-left {
       flex: 1;
-      padding: 25px;
+      padding: 18px;
       background: #f8f9fa;
       border-radius: 20px 0 0 20px;
       overflow-y: auto;
-      max-height: 85vh;
+      max-height: 80vh;
+      order: 1;
     }
 
     .modal-center {
-      flex: 1.2;
-      padding: 25px;
+      flex: 1.3;
+      padding: 12px;
       background: white;
       border-left: 1px solid #e9ecef;
       border-right: 1px solid #e9ecef;
       overflow-y: auto;
-      max-height: 85vh;
+      max-height: 80vh;
+      order: 3;
     }
 
     .modal-right {
-      flex: 1;
-      padding: 25px;
+      flex: 0.8;
+      padding: 18px;
       background: white;
       border-radius: 0 20px 20px 0;
       display: flex;
       align-items: flex-start;
       justify-content: center;
       overflow-y: auto;
-      max-height: 85vh;
-      padding-top: 15px;
+      max-height: 80vh;
+      padding-top: 12px;
+      order: 2;
     }
 
     .modal-header {
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .modal-title {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: bold;
       color: #333;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .modal-subtitle {
       color: #666;
-      font-size: 14px;
-      margin-bottom: 15px;
+      font-size: 13px;
+      margin-bottom: 12px;
     }
 
     .booking-details {
       background: white;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .detail-item {
@@ -131,30 +137,30 @@
 
     .studio-image-modal {
       width: 100%;
-      height: 200px;
+      height: 150px;
       object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px;
     }
 
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
 
     .form-label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       font-weight: 500;
       color: #333;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .form-input {
       width: 100%;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid #ddd;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 13px;
       transition: border-color 0.3s ease;
       box-sizing: border-box;
     }
@@ -167,10 +173,10 @@
 
     .file-input {
       width: 100%;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px dashed #ddd;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 13px;
       background: #f8f9fa;
       cursor: pointer;
       transition: border-color 0.3s ease;
@@ -183,31 +189,31 @@
 
     .policy-section {
       background: #f8f9fa;
-      padding: 12px;
+      padding: 8px;
       border-radius: 6px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
       border-left: 3px solid #007bff;
     }
 
     .policy-title {
       font-weight: 600;
       color: #333;
-      margin-bottom: 8px;
-      font-size: 14px;
+      margin-bottom: 4px;
+      font-size: 13px;
     }
 
     .policy-text {
-      font-size: 12px;
+      font-size: 11px;
       color: #555;
-      line-height: 1.4;
-      margin-bottom: 6px;
+      line-height: 1.3;
+      margin-bottom: 3px;
     }
 
     .checkbox-group {
       display: flex;
       align-items: flex-start;
-      margin-bottom: 16px;
-      gap: 8px;
+      margin-bottom: 10px;
+      gap: 6px;
     }
 
     .checkbox-group input[type="checkbox"] {
@@ -241,6 +247,8 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
     .gcash-logo {
@@ -255,7 +263,7 @@
 
     .gcash-qr {
       background: white;
-      padding: 12px;
+      padding: 1px;
       border-radius: 8px;
       margin: 15px auto;
       display: inline-block;
@@ -263,8 +271,8 @@
     }
 
     .gcash-qr img {
-      width: 250px;
-      height: 250px;
+      width: 180px;
+      height: 180px;
       display: block;
     }
 
@@ -367,8 +375,8 @@
       }
 
       .gcash-qr img {
-        width: 200px;
-        height: 200px;
+        width: 150px;
+        height: 150px;
       }
 
       .modal-title {
@@ -461,6 +469,10 @@
       .gcash-details {
         font-size: 11px;
         margin-top: 8px;
+      }
+
+      .gcash-container {
+        padding: 15px;
       }
 
       .btn-cancel,
@@ -830,7 +842,7 @@
 <div id="studioRentalModal" class="modal">
   <div class="modal-container">
     <div class="modal-content">
-      <!-- Left Side - Booking Details and Form -->
+      <!-- Left Side - Booking Details (First) -->
       <div class="modal-left">
         <div class="modal-header">
           <h2 class="modal-title">STUDIO RENTAL</h2>
@@ -893,7 +905,7 @@
             <label class="form-label" for="referenceCode">LAST 4 DIGITS OF GCASH PAYMENT *</label>
             <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
             <!-- Error message container for inline validation -->
-            <div id="referenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
+            <div id="referenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 6px 8px; margin: 3px 0 0 0; border-radius: 4px; border-left: 3px solid #dc2626; font-size: 0.8rem;">
               <span id="referenceErrorText">Reference number already exists.</span>
             </div>
           </div>
@@ -901,11 +913,11 @@
           <div class="form-group">
             <label class="form-label" for="uploadPicture">Upload Picture</label>
             <input type="file" id="uploadPicture" name="upload_picture" class="file-input" accept="image/*">
-            <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ffeaa7; font-size: 0.85rem;">
+            <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 6px 8px; margin: 3px 0; border-radius: 4px; border: 1px solid #ffeaa7; font-size: 0.8rem;">
               ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
             </div>
             @error('upload_picture')
-              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 6px 8px; margin: 3px 0; border-radius: 4px; border: 1px solid #f5c6cb; font-size: 0.8rem;">
                 {{ $message }}
               </div>
             @enderror
@@ -932,7 +944,7 @@
         </form>
       </div>
       
-      <!-- Right Side - GCash Payment Section -->
+      <!-- Right Side - GCash Payment Section (Last) -->
       <div class="modal-right">
         <div class="gcash-container">
           <div class="gcash-logo">
@@ -940,7 +952,7 @@
           </div>
           
           <div class="gcash-qr">
-            <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code">
+            <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code" id="qrCodeImage" style="cursor: pointer;" onclick="openQRModal()">
           </div>
           
           <div class="gcash-details">
@@ -1312,9 +1324,36 @@ document.addEventListener('DOMContentLoaded', function() {
         // Contact functionality handled by other contact methods
     });
 });
+
+// QR Code Modal Functions
+function openQRModal() {
+    document.getElementById('qrModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeQRModal() {
+    document.getElementById('qrModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal when clicking outside the image
+document.addEventListener('DOMContentLoaded', function() {
+    const qrModal = document.getElementById('qrModal');
+    if (qrModal) {
+        qrModal.addEventListener('click', function(e) {
+            if (e.target === qrModal) {
+                closeQRModal();
+            }
+        });
+    }
+});
 </script>
 
-
+<!-- QR Code Modal -->
+<div id="qrModal" class="qr-modal" style="display: none;">
+    <span class="qr-close" onclick="closeQRModal()">&times;</span>
+    <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code - Click to close" class="qr-modal-image">
+</div>
 
 <style>
 .error-field {
@@ -1326,6 +1365,77 @@ document.addEventListener('DOMContentLoaded', function() {
 .error-field:focus {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+}
+
+/* QR Modal Styles */
+.qr-modal {
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.qr-close {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    z-index: 10001;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-close:hover {
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+}
+
+.qr-modal-image {
+    width: 80vw;
+    height: 80vw;
+    max-width: 400px;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 15px;
+    background: white;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: slideInUp 0.4s ease-out;
+}
+
+/* Responsive design for QR modal */
+@media (max-width: 768px) {
+    .qr-close {
+        top: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+        font-size: 28px;
+    }
+    
+    .qr-modal-image {
+        width: 90vw;
+        height: 90vw;
+        max-width: 350px;
+        max-height: 350px;
+        padding: 15px;
+    }
 }
 </style>
 
