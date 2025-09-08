@@ -1008,6 +1008,7 @@ class AdminController extends Controller
         $status = $request->get('status', 'all');
         $search = $request->get('search', '');
         $dateFilter = $request->get('date_filter', 'all');
+        $serviceType = $request->get('service_type', 'all');
 
         // Build query
         $query = Booking::with(['user'])
@@ -1029,6 +1030,11 @@ class AdminController extends Controller
                 ->orWhere('service_type', 'like', '%' . $search . '%')
                 ->orWhere('notes', 'like', '%' . $search . '%');
             });
+        }
+
+        // Apply service type filter
+        if ($serviceType !== 'all') {
+            $query->where('service_type', $serviceType);
         }
 
         // Apply date filter
@@ -1063,7 +1069,8 @@ class AdminController extends Controller
             'statusCounts',
             'status',
             'search',
-            'dateFilter'
+            'dateFilter',
+            'serviceType'
         ));
     }
 
@@ -2062,8 +2069,8 @@ class AdminController extends Controller
                 ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
                 ->firstOrFail();
 
-            // Get the associated booking
-            $booking = \App\Models\Booking::findOrFail($activityLog->resource_id);
+            // Get the associated original booking
+            $originalBooking = \App\Models\Booking::findOrFail($activityLog->resource_id);
 
             // Get reschedule data from the activity log
             $rescheduleData = $activityLog->new_values ?? [];
@@ -2077,7 +2084,7 @@ class AdminController extends Controller
             $conflictingBooking = \App\Models\Booking::where('date', $rescheduleData['new_date'])
                 ->where('time_slot', $rescheduleData['new_time_slot'])
                 ->whereIn('status', ['pending', 'confirmed'])
-                ->where('id', '!=', $booking->id)
+                ->where('id', '!=', $originalBooking->id)
                 ->first();
                 
             if ($conflictingBooking) {
@@ -2085,40 +2092,90 @@ class AdminController extends Controller
             }
 
             // Store old values for logging
-            $oldValues = $booking->toArray();
+            $oldValues = $originalBooking->toArray();
 
-            // Update the booking with new details
-            $booking->update([
+            // Generate new unique reference for rescheduled booking
+            $newReference = 'BK-' . date('Y') . '-' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 6));
+            
+            // Generate a unique 4-character reference code for the new booking
+            $newReferenceCode = null;
+            $maxAttempts = 100;
+            for ($i = 0; $i < $maxAttempts; $i++) {
+                $code = str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
+                if (!\App\Models\Booking::where('reference_code', $code)->exists()) {
+                    $newReferenceCode = $code;
+                    break;
+                }
+            }
+            
+            // Fallback if no unique code found
+            if (!$newReferenceCode) {
+                $newReferenceCode = str_pad(time() % 10000, 4, '0', STR_PAD_LEFT);
+            }
+            
+            // Create a new booking with the rescheduled details
+            $newBooking = \App\Models\Booking::create([
+                'user_id' => $originalBooking->user_id,
+                'service_type' => $originalBooking->service_type,
                 'date' => $rescheduleData['new_date'],
                 'time_slot' => $rescheduleData['new_time_slot'],
-                'duration' => $rescheduleData['new_duration']
+                'duration' => $rescheduleData['new_duration'],
+                'status' => 'confirmed',
+                'reference' => $newReference,
+                'reference_code' => $newReferenceCode,
+                'band_name' => $originalBooking->band_name,
+                'email' => $originalBooking->email,
+                'contact_number' => $originalBooking->contact_number,
+                'image_path' => $originalBooking->image_path,
+                'price' => $originalBooking->price,
+                'total_amount' => $originalBooking->total_amount,
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
 
-            // Log the approval
+            // Update the original booking status to 'rescheduled'
+            $originalBooking->update(['status' => 'rescheduled']);
+
+            // Log the approval and new booking creation
             \App\Models\ActivityLog::logBooking(
-                'Reschedule Request Approved by Admin',
-                $booking,
+                'Reschedule Request Approved - New Booking Created',
+                $newBooking,
                 $oldValues,
-                $booking->toArray()
+                $newBooking->toArray()
+            );
+
+            // Log the original booking status change
+            \App\Models\ActivityLog::logBooking(
+                'Original Booking Rescheduled',
+                $originalBooking,
+                ['status' => $oldValues['status']],
+                ['status' => 'rescheduled']
             );
 
             // Log admin action
             \App\Models\ActivityLog::logAdmin(
-                'Admin approved reschedule request for booking ' . $booking->reference,
-                \App\Models\ActivityLog::ACTION_ADMIN_BOOKING
+                'Admin approved reschedule request - created new booking ' . $newBooking->reference . ' and marked original as rescheduled',
+                \App\Models\ActivityLog::ACTION_ADMIN_ACCESS
             );
 
-            // Try to sync with Google Calendar if connected
+            // Handle Google Calendar sync
             $calendarSyncMessage = '';
             try {
                 if ($user->google_calendar_id) {
                     $googleCalendarService = app(\App\Services\GoogleCalendarService::class);
-                    $googleCalendarService->updateBookingEvent($booking);
-                    $calendarSyncMessage = ' The booking has been updated in Google Calendar.';
+                    
+                    // Delete the original booking event from Google Calendar
+                    $googleCalendarService->deleteBookingEvent($originalBooking);
+                    
+                    // Create a new event for the rescheduled booking
+                    $googleCalendarService->createBookingEvent($newBooking);
+                    
+                    $calendarSyncMessage = ' The original booking has been removed and the new booking has been added to Google Calendar.';
                 }
             } catch (\Exception $e) {
-                Log::warning('Failed to update Google Calendar event after reschedule approval', [
-                    'booking_id' => $booking->id,
+                Log::warning('Failed to sync Google Calendar events after reschedule approval', [
+                    'original_booking_id' => $originalBooking->id,
+                    'new_booking_id' => $newBooking->id,
                     'error' => $e->getMessage()
                 ]);
                 $calendarSyncMessage = ' Note: Google Calendar sync failed.';
@@ -2127,12 +2184,12 @@ class AdminController extends Controller
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => true, 
-                    'message' => "Reschedule request approved successfully! Booking {$booking->reference} has been updated.{$calendarSyncMessage}"
+                    'message' => "Reschedule request approved successfully! A new booking {$newBooking->reference} has been created with the new schedule.{$calendarSyncMessage}"
                 ]);
             }
             
             return redirect()->route('admin.dashboard')
-                ->with('success', "Reschedule request approved successfully! Booking {$booking->reference} has been updated.{$calendarSyncMessage}");
+                ->with('success', "Reschedule request approved successfully! A new booking {$newBooking->reference} has been created with the new schedule.{$calendarSyncMessage}");
 
         } catch (\Exception $e) {
             Log::error('Error approving reschedule request: ' . $e->getMessage());
@@ -2304,9 +2361,7 @@ class AdminController extends Controller
         try {
             // Get all reschedule requests from activity logs
             $rescheduleRequests = \App\Models\ActivityLog::where('description', 'LIKE', 'Reschedule Request Submitted:%')
-                ->with(['booking' => function($query) {
-                    $query->with('user');
-                }])
+                ->where('resource_type', 'Booking')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 

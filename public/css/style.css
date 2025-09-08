@@ -2509,8 +2509,10 @@ a {
   .feedback-modal-card {
     width: 95vw;
     padding: 0;
-    margin: 20px 0;
+    margin: 10px 0;
     border-radius: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
   .feedback-modal-content {
     flex-direction: column;
@@ -2522,6 +2524,10 @@ a {
     min-width: 0;
     padding: 16px 14px 14px 14px;
     border-radius: 12px;
+  }
+  .feedback-list {
+    max-height: none;
+    height: auto;
   }
   .feedback-modal-header {
     padding: 20px 24px 16px 24px;
@@ -3431,6 +3437,20 @@ a {
     max-width: calc(100vw - 20px) !important;
     transform: none !important;
     z-index: 9999 !important;
+  }
+}
+
+/* Ensure no scrolling on home page only */
+.home-page {
+  overflow: hidden !important;
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    overflow: hidden !important;
+    height: 100vh !important;
+    position: fixed !important;
+    width: 100% !important;
   }
 }
 

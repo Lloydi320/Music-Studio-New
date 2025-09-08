@@ -12,8 +12,10 @@
  
     <header class="navbar">
     <div class="logo">
-      <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
-      <span>LEMON HUB STUDIO</span>
+      <a href="/" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+        <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
+        <span>LEMON HUB STUDIO</span>
+      </a>
     </div>
     
     <!-- Mobile Menu Toggle -->
@@ -194,7 +196,7 @@
         <small class="service-hint">Click to Book</small>
       </a>
 
-      <a href="/booking" class="service-box">
+      <a href="/solo-rehearsal" class="service-box">
         <img src="{{ asset('images/SoloRehearsal.jpg') }}" alt="Solo Rehearsal" />
         <h3>Solo Rehearsal</h3>
         <p>Perfect for individual practice sessions. Book our acoustically treated studios for solo rehearsals and personal music development.</p>

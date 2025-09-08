@@ -10,13 +10,15 @@
 
 </head>
 
-<body>
+<body class="home-page">
 
 
   <header class="navbar">
     <div class="logo">
-      <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
-      <span>LEMON HUB STUDIO</span>
+      <a href="/" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+        <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
+        <span>LEMON HUB STUDIO</span>
+      </a>
     </div>
     
     <!-- Mobile Menu Toggle -->
@@ -425,8 +427,8 @@
           <small class="service-hint">Click to Book</small>
         </a>
 
-        <a href="/booking" class="service-box-popup">
-          <img src="{{ asset('images/studio.jpg') }}" alt="Solo Rehearsal" />
+        <a href="/solo-rehearsal" class="service-box-popup">
+          <img src="{{ asset('images/SoloRehearsal.jpg') }}" alt="Solo Rehearsal" />
           <h3>Solo Rehearsal</h3>
           <p>Perfect for individual practice sessions. Book our acoustically treated studios for solo rehearsals and personal music development.</p>
           <small class="service-hint">Click to Book</small>
@@ -618,42 +620,12 @@
               <p style="margin: 0; color: #555; line-height: 1.5; font-style: italic; font-size: 0.9em;">"${feedback.comment || feedback.content || ''}"</p>
             </div>
             ${photoHtml}
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <small style="color: #888; font-size: 0.75em;">📅 ${formattedDate}</small>
-                <small style="color: #6c757d; font-size: 0.75em;">🆔 ID: ${feedback.id}</small>
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <small style="color: #28a745; font-weight: bold; font-size: 0.75em;">✅ Saved to Database</small>
-                <small style="color: #17a2b8; font-weight: bold; font-size: 0.75em;">📊 From phpMyAdmin</small>
-              </div>
-            </div>
+
           `;
           container.appendChild(entry);
         });
         
-        // Show success message
-        const successMsg = document.createElement('div');
-        successMsg.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #28a745;
-          color: white;
-          padding: 8px 12px;
-          border-radius: 6px;
-          font-size: 0.8em;
-          z-index: 1000;
-          animation: slideIn 0.3s ease;
-        `;
-        successMsg.innerHTML = `✅ Loaded ${data.feedbacks.length} feedback entries from database`;
-        document.body.appendChild(successMsg);
-        
-        setTimeout(() => {
-          if (successMsg.parentNode) {
-            successMsg.parentNode.removeChild(successMsg);
-          }
-        }, 3000);
+
       })
       .catch(error => {
         console.error('❌ Error loading feedback:', error);

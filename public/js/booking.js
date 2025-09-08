@@ -428,22 +428,32 @@ document.addEventListener("DOMContentLoaded", function () {
       const year = dateParts[3];
       const dateISO = `${year}-${month}-${day}`;
       
-      // Show the studio rental modal
-      const modal = document.getElementById('studioRentalModal');
+      // Show the booking modal (works for both studio rental and solo rehearsal)
+      const modal = document.getElementById('studioRentalModal') || document.getElementById('bookingModal');
       if (modal) {
         modal.style.display = 'block';
         
         // Populate modal with booking details
-        document.getElementById('modalSelectedDate').textContent = selectedDate;
-        document.getElementById('modalSelectedTime').textContent = selectedTimeSlot;
-        document.getElementById('modalSelectedDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;
-        document.getElementById('modalDurationLabel').textContent = durationSelect.options[durationSelect.selectedIndex].text;
+        const modalSelectedDate = document.getElementById('modalSelectedDate');
+        const modalSelectedTime = document.getElementById('modalSelectedTime');
+        const modalSelectedDuration = document.getElementById('modalSelectedDuration');
+        const modalDurationLabel = document.getElementById('modalDurationLabel');
+        const modalTotalPrice = document.getElementById('modalTotalPrice');
+        const gcashAmount = document.querySelector('.gcash-amount');
         
-        // Calculate and display price (₱100 per hour)
+        if (modalSelectedDate) modalSelectedDate.textContent = selectedDate;
+        if (modalSelectedTime) modalSelectedTime.textContent = selectedTimeSlot;
+        if (modalSelectedDuration) modalSelectedDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
+        if (modalDurationLabel) modalDurationLabel.textContent = durationSelect.options[durationSelect.selectedIndex].text;
+        
+        // Calculate and display price - check if it's solo rehearsal or studio rental
         const duration = parseInt(durationSelect.value);
-        const totalPrice = duration * 100;
-        document.getElementById('modalTotalPrice').textContent = `₱${totalPrice}.00`;
-        document.querySelector('.gcash-amount').textContent = `₱ ${totalPrice}.00`;
+        const isSoloRehearsal = window.location.pathname.includes('solo-rehearsal');
+        const hourlyRate = isSoloRehearsal ? 300 : 100; // ₱300 for solo rehearsal, ₱100 for studio rental
+        const totalPrice = duration * hourlyRate;
+        
+        if (modalTotalPrice) modalTotalPrice.textContent = `₱${totalPrice}.00`;
+        if (gcashAmount) gcashAmount.textContent = `₱${totalPrice}.00`;
         
         // Set hidden form values
         document.getElementById('modalBookingDate').value = dateISO;
@@ -455,10 +465,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Modal close functionality
-  const modal = document.getElementById('studioRentalModal');
+  const modal = document.getElementById('studioRentalModal') || document.getElementById('bookingModal');
   const cancelBtn = document.getElementById('cancelModal');
   
-  if (cancelBtn) {
+  if (cancelBtn && modal) {
     cancelBtn.addEventListener('click', function() {
       modal.style.display = 'none';
     });

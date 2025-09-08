@@ -340,7 +340,6 @@ class BookingController extends Controller
     public function rescheduleRequest(Request $request)
     {
         $request->validate([
-            'band_name' => 'required|string|max:255',
             'reference_number' => 'required|string|size:4',
             'new_date' => 'required|date|after_or_equal:today',
             'new_time_slot' => 'required|string',
@@ -348,9 +347,9 @@ class BookingController extends Controller
         ]);
 
         try {
-            // Find booking by band name and reference code (4-digit number)
-            $booking = Booking::where('band_name', $request->band_name)
-                             ->where('reference_code', $request->reference_number)
+            // Find booking by reference code (4-digit number) only
+            $booking = Booking::where('reference_code', $request->reference_number)
+                             ->whereIn('status', ['pending', 'confirmed'])
                              ->first();
             
             if (!$booking) {
@@ -410,7 +409,6 @@ class BookingController extends Controller
     public function rescheduleByReference(Request $request, $reference)
     {
         $request->validate([
-            'band_name' => 'required|string|max:255',
             'reference_number' => 'required|string|size:4',
             'new_date' => 'required|date|after_or_equal:today',
             'new_time_slot' => 'required|string',
@@ -418,9 +416,9 @@ class BookingController extends Controller
         ]);
 
         try {
-            // Find booking by band name and reference code (4-digit number)
-            $booking = Booking::where('band_name', $request->band_name)
-                             ->where('reference_code', $request->reference_number)
+            // Find booking by reference code (4-digit number) only
+            $booking = Booking::where('reference_code', $request->reference_number)
+                             ->whereIn('status', ['pending', 'confirmed'])
                              ->first();
             
             if (!$booking) {

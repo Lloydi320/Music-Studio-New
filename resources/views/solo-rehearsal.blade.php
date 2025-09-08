@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Book a Studio</title>
+  <title>Book Solo Rehearsal</title>
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
   <style>
@@ -538,7 +538,7 @@
       }
     }
 
-    /* Fixed footer styles */
+    /* Footer styles - shows at bottom of content */
     .booking-footer {
       position: relative;
       bottom: auto;
@@ -705,8 +705,6 @@
                         Contact
                     </a>
                     
-
-                    
                     <div class="dropdown-divider"></div>
                     
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
@@ -738,10 +736,10 @@
     <div class="booking-content">
       <div class="info-section fixed-info-section">
         <p class="studio-name">Lemon Hub Studio</p>
-        <h2><span id="serviceType">BAND REHEARSAL</span> <span class="light-text">SELECT DATE</span></h2>
+        <h2><span id="serviceType">SOLO REHEARSAL</span> <span class="light-text">SELECT DATE</span></h2>
         <p class="duration">🕒 <span id="selectedDurationLabel">1 hr</span></p>
         <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
-        <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
+        <img src="{{ asset('images/SoloRehearsal.jpg') }}" alt="Solo Rehearsal Studio" class="studio-image">
       </div>
       <div class="booking-right">
         <div class="calendar-section">
@@ -771,7 +769,7 @@
               </select>
               <div class="slots scrollable-time-slots"></div>
               <button class="next-btn" id="nextBtn">Next</button>
-              <form id="bookingForm" action="{{ route('booking.store') }}" method="POST" style="display:none;">
+              <form id="bookingForm" action="{{ route('solo-rehearsal.store') }}" method="POST" style="display:none;">
                 @csrf
                 <input type="hidden" name="date" id="bookingDate">
                 <input type="hidden" name="time_slot" id="bookingTimeSlot">
@@ -808,145 +806,139 @@
     </div>
   </div>
 
-<!-- Studio Rental Modal -->
-<div id="studioRentalModal" class="modal">
-  <div class="modal-container">
-    <div class="modal-content">
-      <!-- Left Side - Booking Details (First) -->
-      <div class="modal-left">
-        <div class="modal-header">
-          <h2 class="modal-title">BAND REHEARSAL</h2>
-          <p class="modal-subtitle">SELECT DATE</p>
-          <p class="duration">🕒 <span id="modalDurationLabel">3 hrs</span></p>
-          <p class="location">📍 288H Sto.Domingo Street 2nd Filmont Homes Subdivision, Calamba, 4027 Laguna</p>
-        </div>
-        
-        <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image-modal">
-        
-        <div class="booking-details">
-          <div class="detail-item">
-            <span class="detail-label">Date:</span>
-            <span class="detail-value" id="modalSelectedDate">Thursday, August 21, 2025</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Time:</span>
-            <span class="detail-value" id="modalSelectedTime">09:00 AM - 10:00 AM</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Duration:</span>
-            <span class="detail-value" id="modalSelectedDuration">1 hour</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Total Price:</span>
-            <span class="detail-value" id="modalTotalPrice">₱100.00</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Center - Form Section -->
-      <div class="modal-center">
-        <div class="modal-header">
-          <h3>Enter Details</h3>
-        </div>
-        
-        <form id="studioRentalForm" action="{{ route('booking.store') }}" method="POST" enctype="multipart/form-data">
-          @csrf
-          <input type="hidden" name="date" id="modalBookingDate">
-          <input type="hidden" name="time_slot" id="modalBookingTimeSlot">
-          <input type="hidden" name="duration" id="modalBookingDuration">
-          <input type="hidden" name="price" id="modalBookingPrice">
-          
-          <div class="form-group">
-            <label class="form-label" for="bandName">Band Name *</label>
-            <input type="text" id="bandName" name="band_name" class="form-input" required>
+  <!-- Booking Modal -->
+  <div id="bookingModal" class="modal">
+    <div class="modal-container">
+      <div class="modal-content">
+        <div class="modal-left">
+          <div class="modal-header">
+            <h3 class="modal-title">Solo Rehearsal Booking</h3>
+            <p class="modal-subtitle">Booking Summary</p>
           </div>
           
-          <div class="form-group">
-            <label class="form-label" for="email">Email *</label>
-            <input type="email" id="email" name="email" class="form-input" required>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="contactNumber">Contact Number *</label>
-            <input type="tel" id="contactNumber" name="contact_number" class="form-input" maxlength="11" required>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label" for="referenceCode">LAST 4 DIGITS OF GCASH PAYMENT *</label>
-            <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
-            <!-- Error message container for inline validation -->
-            <div id="referenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 6px 8px; margin: 3px 0 0 0; border-radius: 4px; border-left: 3px solid #dc2626; font-size: 0.8rem;">
-              <span id="referenceErrorText">Reference number already exists.</span>
+          <div class="booking-details">
+            <div class="detail-item">
+              <span class="detail-label">📅 Date:</span>
+              <span class="detail-value" id="modalSelectedDate">-</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">⏰ Time:</span>
+              <span class="detail-value" id="modalSelectedTime">-</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">⏱️ Duration:</span>
+              <span class="detail-value" id="modalSelectedDuration">-</span>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">💰 Total Price:</span>
+              <span class="detail-value" id="modalTotalPrice">₱300.00</span>
             </div>
           </div>
           
-          <div class="form-group">
-            <label class="form-label" for="uploadPicture">Upload Picture</label>
-            <input type="file" id="uploadPicture" name="upload_picture" class="file-input" accept="image/*">
-            <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 6px 8px; margin: 3px 0; border-radius: 4px; border: 1px solid #ffeaa7; font-size: 0.8rem;">
-              ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
+          <div class="studio-image">
+            <img src="{{ asset('images/solo-rehearsal-studio.jpg') }}" alt="Solo Rehearsal Studio" class="studio-img">
+          </div>
+          
+          <div class="warning-message">
+            <p>⚠️ Please ensure all details are correct before proceeding with payment.</p>
+          </div>
+        </div>
+        
+        <div class="modal-center">
+          <div class="modal-header">
+            <h3>Enter Details</h3>
+          </div>
+          
+          <form id="soloRehearsalForm" action="{{ route('booking.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="service_type" value="solo_rehearsal">
+            <input type="hidden" name="date" id="modalBookingDate">
+            <input type="hidden" name="time_slot" id="modalBookingTimeSlot">
+            <input type="hidden" name="duration" id="modalBookingDuration">
+            <input type="hidden" name="price" id="modalBookingPrice">
+            
+            <div class="form-group">
+              <label class="form-label" for="artistName">Artist/Band Name *</label>
+              <input type="text" id="artistName" name="band_name" class="form-input" required>
             </div>
-            @error('upload_picture')
-              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 6px 8px; margin: 3px 0; border-radius: 4px; border: 1px solid #f5c6cb; font-size: 0.8rem;">
-                {{ $message }}
+            
+            <div class="form-group">
+              <label class="form-label" for="email">Email *</label>
+              <input type="email" id="email" name="email" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="contactNumber">Contact Number *</label>
+              <input type="tel" id="contactNumber" name="contact_number" class="form-input" maxlength="11" required>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="referenceCode">LAST 4 DIGITS OF GCASH PAYMENT *</label>
+              <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
+              <div id="referenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 6px 8px; margin: 3px 0 0 0; border-radius: 4px; border-left: 3px solid #dc2626; font-size: 0.8rem;">
+                <span id="referenceErrorText">Reference number already exists.</span>
               </div>
-            @enderror
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="uploadPicture">Upload Picture</label>
+              <input type="file" id="uploadPicture" name="upload_picture" class="file-input" accept="image/*">
+              <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 6px 8px; margin: 3px 0; border-radius: 4px; border: 1px solid #ffeaa7; font-size: 0.8rem;">
+                ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
+              </div>
+            </div>
+            
+            <div class="policy-section">
+              <div class="policy-title">Down Payment Policy</div>
+              <p class="policy-text">To secure your booking, a non-refundable down payment of 30% of the total service fee is required upon reservation.</p>
+              <p class="policy-text">This ensures your preferred date and time slot is reserved exclusively for you.</p>
+              <p class="policy-text">• Rebooking is allowed up to 24 hours before the session, subject to availability.</p>
+            </div>
+            
+            <div class="checkbox-group">
+              <input type="checkbox" id="agreeTerms" name="agree_terms" required>
+              <label class="checkbox-label" for="agreeTerms">
+                I agree to <a href="#">User Agreement</a> and <a href="#">Privacy Policy</a>
+              </label>
+            </div>
+            
+            <div class="modal-buttons">
+              <button type="button" class="btn-cancel" id="cancelModal">Cancel</button>
+              <button type="submit" class="btn-confirm">Confirm Booking</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="modal-right">
+          <div class="gcash-container">
+            <div class="gcash-logo">
+              💳 GCash Payment
+            </div>
+            <div class="gcash-qr">
+              <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code">
+            </div>
+            <div class="gcash-merchant">Lemon Hub Studio</div>
+            <div class="gcash-amount" id="gcashAmount">₱500</div>
+            <div class="gcash-details">
+              Scan QR code with GCash app<br>
+              or send to: <strong>09123456789</strong><br>
+              <small>Please keep your receipt for verification</small>
+            </div>
           </div>
-          
-          <div class="policy-section">
-            <div class="policy-title">Down Payment Policy</div>
-            <p class="policy-text">To secure your booking, a non-refundable down payment of 30% of the total service fee is required upon reservation.</p>
-            <p class="policy-text">This ensures your preferred date and time slot is reserved exclusively for you.</p>
-            <p class="policy-text">• Rebooking is allowed up to 24 hours before the session, subject to availability.</p>
-          </div>
-          
-          <div class="checkbox-group">
-            <input type="checkbox" id="agreeTerms" name="agree_terms" required>
-            <label class="checkbox-label" for="agreeTerms">
-              I agree to <a href="#">User Agreement</a> and <a href="#">Privacy Policy</a>
-            </label>
-          </div>
-          
-          <div class="modal-buttons">
-            <button type="button" class="btn-cancel" id="cancelModal">Cancel</button>
-            <button type="submit" class="btn-confirm">Confirm Booking</button>
-          </div>
-        </form>
-      </div>
-      
-      <!-- Right Side - GCash Payment Section (Last) -->
-      <div class="modal-right">
-        <div class="gcash-container">
-          <div class="gcash-logo">
-            <span>💳</span> GCash
-          </div>
-          
-          <div class="gcash-qr">
-            <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code" id="qrCodeImage" style="cursor: pointer;" onclick="openQRModal()">
-          </div>
-          
-          <div class="gcash-details">
-            <div>Scan to pay with GCash</div>
-            <div class="gcash-merchant">LEMON HUB</div>
-            <div>Mobile No: 0995...217</div>
-            <div>Account ID: ...60JPSU</div>
-          </div>
-          
-          <div class="gcash-amount">₱ 100.00</div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Success and error messages will be handled in the booking summary container -->
+  <!-- Success/Error Messages -->
+  <div id="messageContainer"></div>
 
-<!-- Removed the form from the bottom. It will only show in the modal after clicking Next. -->
-
-<!-- Footer trigger area -->
-<div class="footer-trigger"></div>
-
-<!-- Footer -->
+  <!-- Footer trigger for auto-hide -->
+  <div class="footer-trigger"></div>
+  
 <footer class="booking-footer">
   <div class="footer-content">
     <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
@@ -954,197 +946,10 @@
   </div>
 </footer>
 
-<!-- Success Confirmation Modal -->
-<div id="successModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
-  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
-    <div class="modal-content" style="
-      max-width: 720px;
-      border-radius: 20px;
-      padding: 30px;
-      background: #ffffff;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      border: none;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-    ">
-      
-      <!-- Left Section: Icon and Title -->
-      <div style="
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        flex-shrink: 0;
-      ">
-        <!-- Success Icon -->
-        <div style="
-          width: 60px;
-          height: 60px;
-          margin-bottom: 16px;
-          background: #10b981;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: bounceIn 0.6s ease-out 0.2s both;
-        ">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20,6 9,17 4,12"></polyline>
-          </svg>
-        </div>
-        
-        <!-- Title -->
-        <h2 style="
-          color: #10b981;
-          margin: 0;
-          font-size: 24px;
-          font-weight: 600;
-          letter-spacing: -0.3px;
-          animation: fadeInUp 0.5s ease-out 0.3s both;
-          white-space: nowrap;
-        ">Booking<br>Confirmed!</h2>
-      </div>
-      
-      <!-- Right Section: Details -->
-      <div style="
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      ">
-        <!-- Success Message -->
-        <div id="successMessage" style="
-          background: #f0fdf4;
-          color: #166534;
-          padding: 20px;
-          border-radius: 12px;
-          border: 1px solid #bbf7d0;
-          font-weight: 400;
-          line-height: 1.5;
-          font-size: 14px;
-          animation: fadeInUp 0.5s ease-out 0.4s both;
-        ">
-          <!-- Success message will be populated here -->
-        </div>
-        
-        <!-- Bottom Section -->
-        <div style="
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 20px;
-        ">
-          <!-- Email confirmation text -->
-          <p style="
-            color: #6b7280;
-            margin: 0;
-            font-size: 14px;
-            font-weight: 400;
-            animation: fadeInUp 0.5s ease-out 0.5s both;
-            flex: 1;
-          ">You will receive an email confirmation shortly.</p>
-          
-          <!-- Countdown -->
-          <div style="
-            color: #6b7280;
-            font-size: 13px;
-            font-weight: 400;
-            animation: fadeInUp 0.5s ease-out 0.6s both;
-            text-align: right;
-            flex-shrink: 0;
-          ">
-            Redirecting in <span id="countdown" style="color: #374151; font-weight: 500;">5</span> seconds...
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- Modern CSS Animations -->
-<style>
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes bounceIn {
-  0% {
-    transform: scale(0.3);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  70% {
-    transform: scale(0.9);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  #successModal .modal-content {
-    max-width: 90% !important;
-    margin: 20px !important;
-    padding: 30px 20px !important;
-  }
-  
-  #successModal h2 {
-    font-size: 24px !important;
-  }
-  
-  #successModal .modal-container {
-    padding: 20px !important;
-  }
-}
-</style>
-
-<script src="{{ asset('js/script.js') }}"></script>
-<script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
-<script src="{{ asset('js/page-transitions.js') }}"></script>
-<script>
+  <script>
 // Reference Code Validation
 document.addEventListener('DOMContentLoaded', function() {
     const referenceCodeInput = document.getElementById('referenceCode');
-    const studioRentalForm = document.getElementById('studioRentalForm');
     let validationTimeout;
     let isValidating = false;
     
@@ -1250,165 +1055,60 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
-    // Note: Form submission handling is now managed by booking.js
-    // This prevents conflicts between inline handlers and external JS file
 });
 
-// Original script content below
-function toggleUserDropdown() {
-    const dropdown = document.getElementById('userDropdown');
-    const profile = document.getElementById('userProfile');
-    
-    dropdown.classList.toggle('show');
-    profile.classList.toggle('active');
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const profile = document.getElementById('userProfile');
-    const dropdown = document.getElementById('userDropdown');
-    
-    if (profile && !profile.contains(event.target)) {
-        dropdown.classList.remove('show');
-        profile.classList.remove('active');
-    }
-});
-
-// Prevent dropdown from closing when clicking inside it
+// Solo rehearsal specific pricing calculation
 document.addEventListener('DOMContentLoaded', function() {
-    const dropdown = document.getElementById('userDropdown');
-    if (dropdown) {
-        dropdown.addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
-    }
-    
-    // Handle contact link click
-    document.getElementById('contactLink')?.addEventListener('click', function(e) {
-        e.preventDefault();
-        // Scroll to contact section or show contact modal
-        const contactSection = document.querySelector('.contact-section');
-        if (contactSection) {
-            contactSection.scrollIntoView({ behavior: 'smooth' });
+      const durationSelect = document.getElementById('durationSelect');
+      const modalPrice = document.getElementById('modalPrice');
+      const gcashAmount = document.getElementById('gcashAmount');
+      const totalPriceInput = document.getElementById('totalPrice');
+      const selectedDurationInput = document.getElementById('selectedDuration');
+      const modalDuration = document.getElementById('modalDuration');
+      
+      // Solo rehearsal pricing: ₱300 per hour
+      const hourlyRate = 300;
+      
+      function updateSoloRehearsalPrice() {
+        if (durationSelect) {
+          const duration = parseInt(durationSelect.value) || 1;
+          const totalPrice = hourlyRate * duration;
+          
+          // Update modal price display
+          if (modalPrice) {
+            modalPrice.textContent = `₱${totalPrice}`;
+          }
+          
+          // Update GCash amount
+          if (gcashAmount) {
+            gcashAmount.textContent = `₱${totalPrice}`;
+          }
+          
+          // Update hidden form fields
+          if (totalPriceInput) {
+            totalPriceInput.value = totalPrice;
+          }
+          
+          if (selectedDurationInput) {
+            selectedDurationInput.value = duration;
+          }
+          
+          // Update modal duration display
+          if (modalDuration) {
+            modalDuration.textContent = `${duration} hour${duration > 1 ? 's' : ''}`;
+          }
         }
-        // Contact functionality handled by other contact methods
+      }
+      
+      // Listen for duration changes
+      if (durationSelect) {
+        durationSelect.addEventListener('change', updateSoloRehearsalPrice);
+        // Initialize with default value
+        updateSoloRehearsalPrice();
+      }
     });
-});
-
-// QR Code Modal Functions
-function openQRModal() {
-    document.getElementById('qrModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeQRModal() {
-    document.getElementById('qrModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Close modal when clicking outside the image
-document.addEventListener('DOMContentLoaded', function() {
-    const qrModal = document.getElementById('qrModal');
-    if (qrModal) {
-        qrModal.addEventListener('click', function(e) {
-            if (e.target === qrModal) {
-                closeQRModal();
-            }
-        });
-    }
-});
-</script>
-
-<!-- QR Code Modal -->
-<div id="qrModal" class="qr-modal" style="display: none;">
-    <span class="qr-close" onclick="closeQRModal()">&times;</span>
-    <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code - Click to close" class="qr-modal-image">
-</div>
-
-<style>
-.error-field {
-  border: 2px solid #dc2626 !important;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
-  background-color: #fef2f2 !important;
-}
-
-.error-field:focus {
-  border-color: #dc2626 !important;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
-}
-
-/* QR Modal Styles */
-.qr-modal {
-    position: fixed;
-    z-index: 10000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.qr-close {
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    font-size: 32px;
-    font-weight: bold;
-    color: white;
-    cursor: pointer;
-    transition: color 0.3s ease;
-    z-index: 10001;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.qr-close:hover {
-    background: rgba(0, 0, 0, 0.7);
-    color: #fff;
-}
-
-.qr-modal-image {
-    width: 80vw;
-    height: 80vw;
-    max-width: 400px;
-    max-height: 400px;
-    object-fit: contain;
-    border-radius: 15px;
-    background: white;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    animation: slideInUp 0.4s ease-out;
-}
-
-/* Responsive design for QR modal */
-@media (max-width: 768px) {
-    .qr-close {
-        top: 20px;
-        right: 20px;
-        width: 45px;
-        height: 45px;
-        font-size: 28px;
-    }
-    
-    .qr-modal-image {
-        width: 90vw;
-        height: 90vw;
-        max-width: 350px;
-        max-height: 350px;
-        padding: 15px;
-    }
-}
-</style>
-
+  </script>
+  <script src="{{ asset('js/script.js') }}"></script>
+  <script src="{{ asset('js/booking.js') }}"></script>
 </body>
 </html>

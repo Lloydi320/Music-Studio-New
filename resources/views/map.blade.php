@@ -11,8 +11,10 @@
 
     <header class="navbar">
     <div class="logo">
-      <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
-      <span>LEMON HUB STUDIO</span>
+      <a href="/" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+        <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
+        <span>LEMON HUB STUDIO</span>
+      </a>
     </div>
     
     <!-- Mobile Menu Toggle -->

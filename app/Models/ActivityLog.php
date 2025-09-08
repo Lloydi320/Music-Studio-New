@@ -67,6 +67,14 @@ class ActivityLog extends Model
     }
 
     /**
+     * Relationship with Booking model
+     */
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class, 'resource_id');
+    }
+
+    /**
      * Create a comprehensive activity log entry
      */
     public static function logActivity(

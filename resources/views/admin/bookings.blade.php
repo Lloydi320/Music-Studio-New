@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Studio Rental Bookings')
+@section('title', 'Bookings Management')
 
 @section('content')
 <style>
@@ -1001,14 +1001,14 @@
 
 <div class="admin-content">
     <div class="page-header">
-        <h1 class="page-title">🎵 Studio Rental Bookings</h1>
+        <h1 class="page-title">🎵 Bookings Management</h1>
     </div>
 
     <!-- Stats Overview -->
     <div class="stats-overview">
         <div class="stat-card">
             <div class="stat-number">{{ $statusCounts['all'] }}</div>
-            <div class="stat-label">Total Studio Bookings</div>
+            <div class="stat-label">Total Bookings</div>
         </div>
         <div class="stat-card">
             <div class="stat-number">{{ $statusCounts['confirmed'] }}</div>
@@ -1043,6 +1043,15 @@
                     <input type="text" name="search" class="form-control" placeholder="Search by name, email..." value="{{ $search }}">
                 </div>
                 <div class="form-group">
+                    <label class="form-label">Service Type</label>
+                    <select name="service_type" class="form-control">
+                        <option value="all" {{ ($serviceType ?? 'all') === 'all' ? 'selected' : '' }}>All Services</option>
+                        <option value="studio_rental" {{ ($serviceType ?? '') === 'studio_rental' ? 'selected' : '' }}>Studio Rental</option>
+                        <option value="solo_rehearsal" {{ ($serviceType ?? '') === 'solo_rehearsal' ? 'selected' : '' }}>Solo Rehearsal</option>
+                        <option value="instrument_rental" {{ ($serviceType ?? '') === 'instrument_rental' ? 'selected' : '' }}>Instrument Rental</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Date Filter</label>
                     <select name="date_filter" class="form-control">
                         <option value="all" {{ $dateFilter === 'all' ? 'selected' : '' }}>All Dates</option>
@@ -1066,7 +1075,7 @@
     <!-- Studio Rental Records -->
     <div class="bookings-table-card">
         <div class="table-header">
-            <h3 class="table-title">📋 Studio Rental Records</h3>
+            <h3 class="table-title">📋 Booking Records</h3>
             <div class="records-count">{{ $bookings->total() }} Records</div>
         </div>
         
@@ -1105,7 +1114,7 @@
                             <div class="booking-details">
                                 <div class="detail-row">
                                     <span class="detail-label">Service:</span>
-                                    <span class="detail-value">Studio Rental</span>
+                                    <span class="detail-value">{{ $booking->service_type ?? 'Studio Rental' }}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Duration:</span>
@@ -1158,7 +1167,7 @@
             @else
                 <div class="empty-state">
                     <div class="empty-state-icon">🎵</div>
-                    <div class="empty-state-text">No studio rental bookings found</div>
+                    <div class="empty-state-text">No bookings found</div>
                     <div class="empty-state-subtext">Try adjusting your filters or check back later</div>
                 </div>
             @endif

@@ -22,9 +22,7 @@ Route::get('/music-lessons', function () {
 
 
 
-Route::get('/feedback', function () {
-    return view('feedback');
-})->name('feedback');
+
 
 Route::get('/map', function () {
     return view('map');
@@ -40,6 +38,15 @@ Route::get('/booking', function () {
 })->name('booking');
 
 Route::post('/booking', [BookingController::class, 'store'])->middleware('auth')->name('booking.store');
+
+Route::get('/solo-rehearsal', function () {
+    if (!Auth::check()) {
+        return redirect('/')->with('error', 'Please log in to book a session.');
+    }
+    return view('solo-rehearsal');
+})->name('solo-rehearsal');
+
+Route::post('/solo-rehearsal', [BookingController::class, 'store'])->middleware('auth')->name('solo-rehearsal.store');
 
 Route::get('/api/booked-dates', [App\Http\Controllers\BookingController::class, 'getBookedDates']);
 Route::get('/api/bookings-by-date', [App\Http\Controllers\BookingController::class, 'getBookingsByDate']);
