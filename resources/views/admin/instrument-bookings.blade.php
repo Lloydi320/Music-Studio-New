@@ -369,6 +369,20 @@
         color: white;
     }
 
+    /* System Reschedule Indicator Styles */
+    .system-reschedule-indicator {
+        margin-left: 5px;
+        font-size: 0.8rem;
+        opacity: 0.9;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.9; }
+        50% { opacity: 0.6; }
+        100% { opacity: 0.9; }
+    }
+
     .booking-reference {
         font-size: 1.1rem;
         font-weight: 700;
@@ -816,6 +830,9 @@
                                     ⏳ Pending
                                 @elseif($rental->status == 'active')
                                     ✅ Active
+                                    @if($rental->reschedule_source === 'system')
+                                        <span class="system-reschedule-indicator" title="Rescheduled by Admin">⚙️</span>
+                                    @endif
                                 @elseif($rental->status == 'returned')
                                     📦 Returned
                                 @elseif($rental->status == 'cancelled')

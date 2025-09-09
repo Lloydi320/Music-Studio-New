@@ -20,6 +20,7 @@ class Booking extends Model
         'total_amount',
         'reference',
         'status',
+        'reschedule_source',
         'service_type',
         'google_event_id',
         'band_name',

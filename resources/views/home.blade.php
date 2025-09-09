@@ -1304,12 +1304,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: true
-                });
+                }).replace(/\s/g, '');
                 const endTimeStr = endTime.toLocaleTimeString('en-US', {
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: true
-                });
+                }).replace(/\s/g, '');
                 
                 const timeSlot = `${startTimeStr} - ${endTimeStr}`;
                 const option = document.createElement('option');
@@ -1552,12 +1552,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     generateRescheduleTimeSlots(1);
                 } else {
                     // Show error message
-                    alert('❌ ' + (result.error || 'Failed to submit reschedule request. Please try again.'));
+                    showRescheduleErrorModal(result.error || 'Failed to submit reschedule request. Please try again.');
                 }
                 
             } catch (error) {
                 console.error('Error submitting reschedule request:', error);
-                alert('❌ Network error. Please check your connection and try again.');
+                showRescheduleErrorModal('Network error. Please check your connection and try again.');
             } finally {
                 // Restore button state
                 submitBtn.textContent = originalText;
@@ -1671,6 +1671,121 @@ document.addEventListener('DOMContentLoaded', function() {
            ">
              Redirecting in <span id="rescheduleCountdown" style="color: #374151; font-weight: 500;">5</span> seconds...
            </div>
+         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reschedule Error Modal -->
+<div id="rescheduleErrorModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="modal-content" style="
+      max-width: 560px;
+      border-radius: 20px;
+      padding: 30px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    ">
+      
+      <!-- Left Section: Icon and Title -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+      ">
+        <!-- Error Icon -->
+        <div style="
+          width: 60px;
+          height: 60px;
+          margin-bottom: 16px;
+          background: #ef4444;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: bounceIn 0.6s ease-out 0.2s both;
+        ">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        
+        <!-- Title -->
+        <h2 style="
+          color: #ef4444;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: -0.3px;
+          animation: fadeInUp 0.5s ease-out 0.3s both;
+          white-space: nowrap;
+        ">Request<br>Failed!</h2>
+      </div>
+      
+      <!-- Right Section: Details -->
+      <div style="
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <!-- Error Message -->
+        <div id="rescheduleErrorMessage" style="
+          background: #fef2f2;
+          color: #991b1b;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #fecaca;
+          font-weight: 400;
+          line-height: 1.5;
+          font-size: 14px;
+          animation: fadeInUp 0.5s ease-out 0.4s both;
+        ">
+          <!-- Error message will be populated here -->
+        </div>
+        
+        <!-- Bottom Section -->
+         <div style="
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           gap: 20px;
+         ">
+           <!-- Retry text -->
+           <p style="
+             color: #6b7280;
+             margin: 0;
+             font-size: 14px;
+             font-weight: 400;
+             animation: fadeInUp 0.5s ease-out 0.5s both;
+             flex: 1;
+           ">Please check your details and try again.</p>
+           
+           <!-- Close Button -->
+           <button onclick="closeRescheduleErrorModal()" style="
+             background: #ef4444;
+             color: white;
+             border: none;
+             padding: 8px 16px;
+             border-radius: 8px;
+             font-size: 14px;
+             font-weight: 500;
+             cursor: pointer;
+             animation: fadeInUp 0.5s ease-out 0.6s both;
+             transition: background-color 0.2s;
+           " onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">
+             Close
+           </button>
          </div>
       </div>
     </div>
@@ -1959,6 +2074,39 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeRescheduleSuccessModal();
+    }
+});
+
+// Error Modal Functions
+function showRescheduleErrorModal(message) {
+    const modal = document.getElementById('rescheduleErrorModal');
+    const messageElement = document.getElementById('rescheduleErrorMessage');
+    
+    if (modal && messageElement) {
+        messageElement.innerHTML = message;
+        modal.style.display = 'flex';
+    }
+}
+
+function closeRescheduleErrorModal() {
+    const modal = document.getElementById('rescheduleErrorModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Close error modal when clicking outside
+document.addEventListener('click', function(e) {
+    const errorModal = document.getElementById('rescheduleErrorModal');
+    if (e.target === errorModal) {
+        closeRescheduleErrorModal();
+    }
+});
+
+// Close error modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeRescheduleErrorModal();
     }
 });
 

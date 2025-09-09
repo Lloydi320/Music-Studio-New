@@ -21,6 +21,7 @@ class InstrumentRental extends Model
         'daily_rate',
         'total_amount',
         'status',
+        'reschedule_source',
         'reference',
         'four_digit_code',
         'notes',

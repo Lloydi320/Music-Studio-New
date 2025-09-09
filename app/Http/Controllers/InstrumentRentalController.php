@@ -26,8 +26,8 @@ class InstrumentRentalController extends Controller
     public function store(Request $request)
     {
         $validationRules = [
-            'instrument_type' => $request->full_package ? 'nullable|string' : 'required|string',
-            'instrument_name' => $request->full_package ? 'nullable|string' : 'required|string',
+            'instrument_type' => 'nullable|string', // Will be set to 'Full Package' if null
+            'instrument_name' => 'nullable|string', // Will be set to 'Full Package' if null
             'rental_start_date' => 'required|date|after_or_equal:today',
             'rental_end_date' => 'required|date|after:rental_start_date',
             'notes' => 'nullable|string|max:500',
@@ -65,21 +65,43 @@ class InstrumentRentalController extends Controller
         $totalAmount = ($dailyRate * $durationDays) + $transportationFee + $reservationFee;
 
         // Check if instrument is available for the selected dates
-        $conflictingRentals = InstrumentRental::where('instrument_name', $request->instrument_name)
-            ->where('status', '!=', 'cancelled')
-            ->where('status', '!=', 'returned')
-            ->where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('rental_start_date', [$startDate, $endDate])
-                    ->orWhereBetween('rental_end_date', [$startDate, $endDate])
-                    ->orWhere(function ($q) use ($startDate, $endDate) {
-                        $q->where('rental_start_date', '<=', $startDate)
-                            ->where('rental_end_date', '>=', $endDate);
-                    });
-            })
-            ->first();
+        // For full package, check if any instruments are rented during the period
+        // For individual instruments, check specific instrument availability
+        if ($isFullPackage) {
+            // For full package, check if there are any active rentals during the period
+            $conflictingRentals = InstrumentRental::where('status', '!=', 'cancelled')
+                ->where('status', '!=', 'returned')
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('rental_start_date', [$startDate, $endDate])
+                        ->orWhereBetween('rental_end_date', [$startDate, $endDate])
+                        ->orWhere(function ($q) use ($startDate, $endDate) {
+                            $q->where('rental_start_date', '<=', $startDate)
+                                ->where('rental_end_date', '>=', $endDate);
+                        });
+                })
+                ->first();
+                
+            if ($conflictingRentals) {
+                return back()->with('error', 'Some instruments are not available for the selected dates. Please choose different dates.');
+            }
+        } else {
+            // For individual instruments, check specific instrument availability
+            $conflictingRentals = InstrumentRental::where('instrument_name', $instrumentName)
+                ->where('status', '!=', 'cancelled')
+                ->where('status', '!=', 'returned')
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('rental_start_date', [$startDate, $endDate])
+                        ->orWhereBetween('rental_end_date', [$startDate, $endDate])
+                        ->orWhere(function ($q) use ($startDate, $endDate) {
+                            $q->where('rental_start_date', '<=', $startDate)
+                                ->where('rental_end_date', '>=', $endDate);
+                        });
+                })
+                ->first();
 
-        if ($conflictingRentals) {
-            return back()->with('error', 'This instrument is not available for the selected dates. Please choose different dates or a different instrument.');
+            if ($conflictingRentals) {
+                return back()->with('error', 'This instrument is not available for the selected dates. Please choose different dates or a different instrument.');
+            }
         }
 
         // Handle image upload
@@ -96,10 +118,15 @@ class InstrumentRentalController extends Controller
             return back()->with('error', 'This 4-digit reference code is already in use. Please try a different code.');
         }
 
+        // Handle full package scenario where instrument_type might be null
+        $isFullPackage = $request->has('full_package') && $request->full_package;
+        $instrumentType = $isFullPackage ? 'Full Package' : $request->instrument_type;
+        $instrumentName = $isFullPackage ? 'Full Package' : $request->instrument_name;
+        
         $rental = InstrumentRental::create([
             'user_id' => Auth::id(),
-            'instrument_type' => $request->instrument_type,
-            'instrument_name' => $request->instrument_name,
+            'instrument_type' => $instrumentType,
+            'instrument_name' => $instrumentName,
             'rental_start_date' => $startDate,
             'rental_end_date' => $endDate,
             'rental_duration_days' => $durationDays,

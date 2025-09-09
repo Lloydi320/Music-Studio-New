@@ -187,23 +187,36 @@
             <div class="changes-section">
                 <h3 class="changes-title">🔄 Requested Changes</h3>
                 
+                @if(isset($rescheduleData['requested_date']) && $rescheduleData['requested_date'] != $booking->date)
                 <div class="change-item">
                     <strong>📅 Date:</strong><br>
-                    <span class="change-from">{{ \Carbon\Carbon::parse($rescheduleData['old_date'])->format('l, F j, Y') }}</span><br>
-                    <span class="change-to">{{ \Carbon\Carbon::parse($rescheduleData['new_date'])->format('l, F j, Y') }}</span>
+                    <span class="change-from">From: {{ \Carbon\Carbon::parse($booking->date)->format('l, F j, Y') }}</span><br>
+                    <span class="change-to">To: {{ \Carbon\Carbon::parse($rescheduleData['requested_date'])->format('l, F j, Y') }}</span>
                 </div>
+                @endif
                 
+                @if(isset($rescheduleData['requested_time_slot']) && $rescheduleData['requested_time_slot'] != $booking->time_slot)
                 <div class="change-item">
                     <strong>⏰ Time Slot:</strong><br>
-                    <span class="change-from">{{ $rescheduleData['old_time_slot'] }}</span><br>
-                    <span class="change-to">{{ $rescheduleData['new_time_slot'] }}</span>
+                    <span class="change-from">From: {{ $booking->time_slot }}</span><br>
+                    <span class="change-to">To: {{ $rescheduleData['requested_time_slot'] }}</span>
                 </div>
+                @endif
                 
+                @if(isset($rescheduleData['requested_duration']) && $rescheduleData['requested_duration'] != $booking->duration)
                 <div class="change-item">
                     <strong>⏱️ Duration:</strong><br>
-                    <span class="change-from">{{ $rescheduleData['old_duration'] }} hour(s)</span><br>
-                    <span class="change-to">{{ $rescheduleData['new_duration'] }} hour(s)</span>
+                    <span class="change-from">From: {{ $booking->duration }} hour{{ $booking->duration > 1 ? 's' : '' }}</span><br>
+                    <span class="change-to">To: {{ $rescheduleData['requested_duration'] }} hour{{ $rescheduleData['requested_duration'] > 1 ? 's' : '' }}</span>
                 </div>
+                @endif
+                
+                @if(isset($rescheduleData['reason']) && !empty($rescheduleData['reason']))
+                <div class="change-item">
+                    <strong>📝 Reason:</strong><br>
+                    <span style="color: #495057;">{{ $rescheduleData['reason'] }}</span>
+                </div>
+                @endif
             </div>
             
             <div class="action-buttons">

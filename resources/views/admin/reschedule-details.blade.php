@@ -41,45 +41,90 @@
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">
-                                <i class="fas fa-calendar-alt"></i> Reschedule Request #{{ $activityLog->id }}
+                                <i class="fas fa-calendar-alt"></i> Reschedule Request #{{ $rescheduleRequest->id }}
                             </h6>
                             <span class="badge badge-warning">Pending Review</span>
                         </div>
                         <div class="card-body">
-                            <!-- Current Booking Details -->
+                            <!-- Current Resource Details -->
                             <div class="mb-4">
                                 <h5 class="text-dark mb-3">
-                                    <i class="fas fa-info-circle text-primary"></i> Current Booking Details
+                                    <i class="fas fa-info-circle text-primary"></i> 
+                                    @if($rescheduleRequest->resource_type === 'booking')
+                                        Current Booking Details
+                                    @else
+                                        Current Rental Details
+                                    @endif
                                 </h5>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="detail-item">
                                             <label class="detail-label">Reference:</label>
-                                            <span class="detail-value reference-badge">{{ $booking->reference }}</span>
+                                            <span class="detail-value reference-badge">
+                                                @if($booking)
+                                                    {{ $booking->reference }}
+                                                @elseif($rental)
+                                                    {{ $rental->reference }}
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </span>
                                         </div>
-                                        <div class="detail-item">
-                                            <label class="detail-label">Band Name:</label>
-                                            <span class="detail-value">{{ $booking->band_name }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <label class="detail-label">Customer:</label>
-                                            <span class="detail-value">{{ $booking->customer_name }}</span>
-                                        </div>
+                                        @if($booking)
+                                            <div class="detail-item">
+                                                <label class="detail-label">Band Name:</label>
+                                                <span class="detail-value">{{ $booking->band_name }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <label class="detail-label">Customer:</label>
+                                                <span class="detail-value">{{ $booking->customer_name }}</span>
+                                            </div>
+                                        @elseif($rental)
+                                            <div class="detail-item">
+                                                <label class="detail-label">Instrument:</label>
+                                                <span class="detail-value">{{ $rental->instrument_name }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <label class="detail-label">Customer:</label>
+                                                <span class="detail-value">{{ $rental->customer_name }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="col-md-6">
                                         <div class="detail-item">
                                             <label class="detail-label">Email:</label>
-                                            <span class="detail-value">{{ $booking->user->email ?? 'N/A' }}</span>
+                                            <span class="detail-value">
+                                                @if($booking)
+                                                    {{ $booking->user->email ?? 'N/A' }}
+                                                @elseif($rental)
+                                                    {{ $rental->customer_email ?? 'N/A' }}
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </span>
                                         </div>
-                                        <div class="detail-item">
-                                            <label class="detail-label">Phone:</label>
-                                            <span class="detail-value">{{ $booking->phone ?? 'N/A' }}</span>
-                                        </div>
+                                        @if($booking)
+                                            <div class="detail-item">
+                                                <label class="detail-label">Phone:</label>
+                                                <span class="detail-value">{{ $booking->phone ?? 'N/A' }}</span>
+                                            </div>
+                                        @elseif($rental)
+                                            <div class="detail-item">
+                                                <label class="detail-label">Phone:</label>
+                                                <span class="detail-value">{{ $rental->customer_phone ?? 'N/A' }}</span>
+                                            </div>
+                                        @endif
                                         <div class="detail-item">
                                             <label class="detail-label">Status:</label>
-                                            <span class="badge badge-{{ $booking->status === 'confirmed' ? 'success' : ($booking->status === 'pending' ? 'warning' : 'secondary') }}">
-                                                {{ ucfirst($booking->status) }}
-                                            </span>
+                                            @if($booking)
+                                                <span class="badge badge-{{ $booking->status === 'confirmed' ? 'success' : ($booking->status === 'pending' ? 'warning' : 'secondary') }}">
+                                                    {{ ucfirst($booking->status) }}
+                                                </span>
+                                            @elseif($rental)
+                                                <span class="badge badge-{{ $rental->status === 'confirmed' ? 'success' : ($rental->status === 'pending' ? 'warning' : 'secondary') }}">
+                                                    {{ ucfirst($rental->status) }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -91,68 +136,87 @@
                                     <i class="fas fa-exchange-alt text-warning"></i> Requested Changes
                                 </h5>
                                 
-                                <!-- Date Change -->
-                                <div class="change-comparison mb-3">
-                                    <div class="change-header">
-                                        <i class="fas fa-calendar text-primary"></i>
-                                        <strong>Date</strong>
-                                    </div>
-                                    <div class="change-content">
-                                        <div class="change-from">
-                                            <span class="change-label">From:</span>
-                                            <span class="change-value old">{{ \Carbon\Carbon::parse($rescheduleData['old_date'])->format('l, F j, Y') }}</span>
+                                @if($rescheduleRequest->resource_type === 'booking')
+                                    <!-- Studio Booking Changes -->
+                                    @if($rescheduleRequest->original_date && $rescheduleRequest->requested_date)
+                                        <div class="mb-3">
+                                            <h6><i class="fas fa-calendar text-primary"></i> Date</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted">From:</span>
+                                                <span class="text-danger mx-2">{{ \Carbon\Carbon::parse($rescheduleRequest->original_date)->format('l, F j, Y') }}</span>
+                                                <i class="fas fa-arrow-right mx-2"></i>
+                                                <span class="text-muted">To:</span>
+                                                <span class="text-success mx-2">{{ \Carbon\Carbon::parse($rescheduleRequest->requested_date)->format('l, F j, Y') }}</span>
+                                            </div>
                                         </div>
-                                        <div class="change-arrow">
-                                            <i class="fas fa-arrow-right"></i>
-                                        </div>
-                                        <div class="change-to">
-                                            <span class="change-label">To:</span>
-                                            <span class="change-value new">{{ \Carbon\Carbon::parse($rescheduleData['new_date'])->format('l, F j, Y') }}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                    @endif
 
-                                <!-- Time Change -->
-                                <div class="change-comparison mb-3">
-                                    <div class="change-header">
-                                        <i class="fas fa-clock text-primary"></i>
-                                        <strong>Time Slot</strong>
-                                    </div>
-                                    <div class="change-content">
-                                        <div class="change-from">
-                                            <span class="change-label">From:</span>
-                                            <span class="change-value old">{{ $rescheduleData['old_time_slot'] }}</span>
+                                    @if($rescheduleRequest->original_time_slot && $rescheduleRequest->requested_time_slot)
+                                        <div class="mb-3">
+                                            <h6><i class="fas fa-clock text-primary"></i> Time Slot</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted">From:</span>
+                                                <span class="text-danger mx-2">{{ $rescheduleRequest->original_time_slot }}</span>
+                                                <i class="fas fa-arrow-right mx-2"></i>
+                                                <span class="text-muted">To:</span>
+                                                <span class="text-success mx-2">{{ $rescheduleRequest->requested_time_slot }}</span>
+                                            </div>
                                         </div>
-                                        <div class="change-arrow">
-                                            <i class="fas fa-arrow-right"></i>
-                                        </div>
-                                        <div class="change-to">
-                                            <span class="change-label">To:</span>
-                                            <span class="change-value new">{{ $rescheduleData['new_time_slot'] }}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                    @endif
 
-                                <!-- Duration Change -->
-                                <div class="change-comparison mb-3">
-                                    <div class="change-header">
-                                        <i class="fas fa-hourglass-half text-primary"></i>
-                                        <strong>Duration</strong>
-                                    </div>
-                                    <div class="change-content">
-                                        <div class="change-from">
-                                            <span class="change-label">From:</span>
-                                            <span class="change-value old">{{ $rescheduleData['old_duration'] }} hour(s)</span>
+                                    @if($rescheduleRequest->original_duration && $rescheduleRequest->requested_duration)
+                                        <div class="mb-3">
+                                            <h6><i class="fas fa-hourglass-half text-primary"></i> Duration</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted">From:</span>
+                                                <span class="text-danger mx-2">{{ $rescheduleRequest->original_duration }} hour(s)</span>
+                                                <i class="fas fa-arrow-right mx-2"></i>
+                                                <span class="text-muted">To:</span>
+                                                <span class="text-success mx-2">{{ $rescheduleRequest->requested_duration }} hour(s)</span>
+                                            </div>
                                         </div>
-                                        <div class="change-arrow">
-                                            <i class="fas fa-arrow-right"></i>
+                                    @endif
+                                @else
+                                    <!-- Instrument Rental Changes -->
+                                    @if($rescheduleRequest->original_start_date && $rescheduleRequest->requested_start_date)
+                                        <div class="mb-3">
+                                            <h6><i class="fas fa-calendar text-primary"></i> Start Date</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted">From:</span>
+                                                <span class="text-danger mx-2">{{ \Carbon\Carbon::parse($rescheduleRequest->original_start_date)->format('l, F j, Y') }}</span>
+                                                <i class="fas fa-arrow-right mx-2"></i>
+                                                <span class="text-muted">To:</span>
+                                                <span class="text-success mx-2">{{ \Carbon\Carbon::parse($rescheduleRequest->requested_start_date)->format('l, F j, Y') }}</span>
+                                            </div>
                                         </div>
-                                        <div class="change-to">
-                                            <span class="change-label">To:</span>
-                                            <span class="change-value new">{{ $rescheduleData['new_duration'] }} hour(s)</span>
+                                    @endif
+
+                                    @if($rescheduleRequest->original_end_date && $rescheduleRequest->requested_end_date)
+                                        <div class="mb-3">
+                                            <h6><i class="fas fa-calendar-check text-primary"></i> End Date</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted">From:</span>
+                                                <span class="text-danger mx-2">{{ \Carbon\Carbon::parse($rescheduleRequest->original_end_date)->format('l, F j, Y') }}</span>
+                                                <i class="fas fa-arrow-right mx-2"></i>
+                                                <span class="text-muted">To:</span>
+                                                <span class="text-success mx-2">{{ \Carbon\Carbon::parse($rescheduleRequest->requested_end_date)->format('l, F j, Y') }}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    @endif
+
+                                    @if($rescheduleRequest->original_duration && $rescheduleRequest->requested_duration)
+                                        <div class="mb-3">
+                                            <h6><i class="fas fa-hourglass-half text-primary"></i> Duration</h6>
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted">From:</span>
+                                                <span class="text-danger mx-2">{{ $rescheduleRequest->original_duration }} day(s)</span>
+                                                <i class="fas fa-arrow-right mx-2"></i>
+                                                <span class="text-muted">To:</span>
+                                                <span class="text-success mx-2">{{ $rescheduleRequest->requested_duration }} day(s)</span>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endif
                             </div>
 
                             <!-- Request Information -->
@@ -164,13 +228,13 @@
                                     <div class="col-md-6">
                                         <div class="detail-item">
                                             <label class="detail-label">Submitted:</label>
-                                            <span class="detail-value">{{ $activityLog->created_at->format('M j, Y \a\t g:i A') }}</span>
+                                            <span class="detail-value">{{ $rescheduleRequest->created_at->format('M j, Y \a\t g:i A') }}</span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="detail-item">
                                             <label class="detail-label">Time Ago:</label>
-                                            <span class="detail-value">{{ $activityLog->created_at->diffForHumans() }}</span>
+                                            <span class="detail-value">{{ $rescheduleRequest->created_at->diffForHumans() }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -195,7 +259,7 @@
                             </div>
 
                             <!-- Approve Button -->
-                            <form method="POST" action="{{ route('admin.reschedule-request.approve', $activityLog->id) }}" class="mb-3">
+                            <form method="POST" action="{{ route('admin.reschedule-request.approve', $rescheduleRequest->id) }}" class="mb-3">
                                 @csrf
                                 <button type="submit" class="btn btn-success btn-block" onclick="return confirm('Are you sure you want to approve this reschedule request? This will update the booking with the new details.')">
                                     <i class="fas fa-check"></i> Approve Request
@@ -203,7 +267,7 @@
                             </form>
 
                             <!-- Reject Button -->
-                            <form method="POST" action="{{ route('admin.reschedule-request.reject', $activityLog->id) }}" class="mb-3">
+                            <form method="POST" action="{{ route('admin.reschedule-request.reject', $rescheduleRequest->id) }}" class="mb-3">
                                 @csrf
                                 <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to reject this reschedule request? The customer will be notified.')">
                                     <i class="fas fa-times"></i> Reject Request
@@ -213,9 +277,15 @@
                             <hr>
 
                             <!-- Additional Actions -->
-                            <a href="{{ route('admin.bookings') }}?highlight={{ $booking->id }}" class="btn btn-outline-primary btn-block mb-2">
-                                <i class="fas fa-eye"></i> View Original Booking
-                            </a>
+                            @if($booking)
+                                <a href="{{ route('admin.bookings') }}?highlight={{ $booking->id }}" class="btn btn-outline-primary btn-block mb-2">
+                                    <i class="fas fa-eye"></i> View Original Booking
+                                </a>
+                            @elseif($rental)
+                                <a href="{{ route('admin.instrument-bookings') }}?highlight={{ $rental->id }}" class="btn btn-outline-primary btn-block mb-2">
+                                    <i class="fas fa-eye"></i> View Original Rental
+                                </a>
+                            @endif
 
                             <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary btn-block">
                                 <i class="fas fa-arrow-left"></i> Back to Dashboard

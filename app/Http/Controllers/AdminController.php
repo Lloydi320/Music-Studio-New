@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Models\Booking;
 use App\Models\InstrumentRental;
 use App\Models\ActivityLog;
+use App\Models\RescheduleRequest;
 
 class AdminController extends Controller
 {
@@ -1636,7 +1637,8 @@ class AdminController extends Controller
             $booking->update([
                 'date' => $request->date,
                 'time_slot' => $request->time_slot,
-                'duration' => $request->duration
+                'duration' => $request->duration,
+                'reschedule_source' => 'system'
             ]);
             
             // Log booking reschedule
@@ -1931,30 +1933,41 @@ class AdminController extends Controller
                 });
 
             // Get reschedule requests from the last 24 hours
-            $rescheduleRequests = \App\Models\ActivityLog::where('created_at', '>=', now()->subDay())
-                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
+            $rescheduleRequests = RescheduleRequest::where('created_at', '>=', now()->subDay())
+                ->where('status', RescheduleRequest::STATUS_PENDING)
                 ->orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get()
-                ->map(function ($log) {
-                    $booking = \App\Models\Booking::find($log->resource_id);
-                    if (!$booking) return null;
-                    
-                    $newValues = $log->new_values ?? [];
-                    return [
-                        'id' => $log->id,
-                        'type' => 'reschedule',
-                        'customer_name' => $booking->customer_name,
-                        'studio_name' => 'Reschedule Request',
-                        'date' => $newValues['new_date'] ?? $booking->date,
-                        'time_slot' => $newValues['new_time_slot'] ?? $booking->time_slot,
-                        'original_date' => $booking->date,
-                        'original_time_slot' => $booking->time_slot,
-                        'booking_reference' => $booking->reference,
-                        'created_at' => $log->created_at->toISOString(),
-                    ];
-                })
-                ->filter(); // Remove null values
+                ->map(function ($request) {
+                    // Handle both studio bookings and instrument rentals
+                    if ($request->resource_type === RescheduleRequest::RESOURCE_BOOKING) {
+                        return [
+                            'id' => $request->id,
+                            'type' => 'reschedule',
+                            'customer_name' => $request->customer_name,
+                            'studio_name' => 'Studio Reschedule Request',
+                            'date' => $request->requested_date,
+                            'time_slot' => $request->requested_time_slot,
+                            'original_date' => $request->original_date,
+                            'original_time_slot' => $request->original_time_slot,
+                            'booking_reference' => $request->booking ? $request->booking->reference : 'N/A',
+                            'created_at' => $request->created_at->toISOString(),
+                        ];
+                    } else {
+                        return [
+                            'id' => $request->id,
+                            'type' => 'reschedule',
+                            'customer_name' => $request->customer_name,
+                            'studio_name' => 'Instrument Reschedule Request',
+                            'date' => $request->requested_start_date,
+                            'time_slot' => 'Rental Period',
+                            'original_date' => $request->original_start_date,
+                            'original_time_slot' => 'to ' . $request->original_end_date,
+                            'booking_reference' => $request->instrumentRental ? $request->instrumentRental->reference : 'N/A',
+                            'created_at' => $request->created_at->toISOString(),
+                        ];
+                    }
+                });
 
             // Combine and sort all notifications
             $allNotifications = $newBookings->concat($rescheduleRequests)
@@ -2012,35 +2025,49 @@ class AdminController extends Controller
         }
 
         try {
-            // Find the activity log entry for the reschedule request
-            $activityLog = \App\Models\ActivityLog::where('id', $id)
-                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
-                ->firstOrFail();
+            // Find the reschedule request
+            $rescheduleRequest = RescheduleRequest::findOrFail($id);
+            
+            // If the request is already approved, redirect with success message
+            if ($rescheduleRequest->status === RescheduleRequest::STATUS_APPROVED) {
+                return redirect()->route('admin.dashboard')
+                    ->with('success', 'This reschedule request has already been approved and processed successfully.');
+            }
+            
+            // If the request is rejected, redirect with info message
+            if ($rescheduleRequest->status === RescheduleRequest::STATUS_REJECTED) {
+                return redirect()->route('admin.dashboard')
+                    ->with('info', 'This reschedule request has been rejected.');
+            }
 
-            // Get the associated booking
-            $booking = \App\Models\Booking::findOrFail($activityLog->resource_id);
-
-            // Get reschedule data from the activity log
-            $rescheduleData = $activityLog->new_values ?? [];
+            // Get the associated booking or rental
+            $booking = null;
+            $rental = null;
+            
+            if ($rescheduleRequest->resource_type === RescheduleRequest::RESOURCE_BOOKING) {
+                $booking = $rescheduleRequest->booking;
+            } else {
+                $rental = $rescheduleRequest->instrumentRental;
+            }
 
             // Check for conflicts with the requested time slot
-            $hasConflict = false;
+            $hasConflict = $rescheduleRequest->has_conflict;
             $conflictingBooking = null;
             
-            if (isset($rescheduleData['new_date']) && isset($rescheduleData['new_time_slot'])) {
-                $conflictingBooking = \App\Models\Booking::where('date', $rescheduleData['new_date'])
-                    ->where('time_slot', $rescheduleData['new_time_slot'])
+            if ($rescheduleRequest->resource_type === RescheduleRequest::RESOURCE_BOOKING && $rescheduleRequest->requested_date && $rescheduleRequest->requested_time_slot) {
+                $conflictingBooking = \App\Models\Booking::where('date', $rescheduleRequest->requested_date)
+                    ->where('time_slot', $rescheduleRequest->requested_time_slot)
                     ->whereIn('status', ['pending', 'confirmed'])
-                    ->where('id', '!=', $booking->id)
+                    ->where('id', '!=', $rescheduleRequest->resource_id)
                     ->first();
                     
                 $hasConflict = $conflictingBooking !== null;
             }
 
             return view('admin.reschedule-details', compact(
-                'activityLog',
+                'rescheduleRequest',
                 'booking',
-                'rescheduleData',
+                'rental',
                 'hasConflict',
                 'conflictingBooking'
             ));
@@ -2064,25 +2091,53 @@ class AdminController extends Controller
         }
 
         try {
-            // Find the activity log entry for the reschedule request
-            $activityLog = \App\Models\ActivityLog::where('id', $id)
-                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
-                ->firstOrFail();
-
-            // Get the associated original booking
-            $originalBooking = \App\Models\Booking::findOrFail($activityLog->resource_id);
-
-            // Get reschedule data from the activity log
-            $rescheduleData = $activityLog->new_values ?? [];
-
-            // Validate reschedule data
-            if (!isset($rescheduleData['new_date']) || !isset($rescheduleData['new_time_slot']) || !isset($rescheduleData['new_duration'])) {
-                return redirect()->back()->with('error', 'Invalid reschedule data.');
+            // Find the reschedule request
+            $rescheduleRequest = RescheduleRequest::findOrFail($id);
+            
+            // Check if already processed
+            if ($rescheduleRequest->status !== RescheduleRequest::STATUS_PENDING) {
+                return redirect()->back()->with('error', 'This reschedule request has already been processed.');
             }
+            
+            if ($rescheduleRequest->resource_type === RescheduleRequest::RESOURCE_BOOKING) {
+                // Handle studio booking reschedule
+                $originalBooking = $rescheduleRequest->booking;
+                
+                if (!$originalBooking) {
+                    return redirect()->back()->with('error', 'Original booking not found.');
+                }
+                
+                return $this->approveStudioReschedule($originalBooking, $rescheduleRequest, $user);
+                
+            } else {
+                // Handle instrument rental reschedule
+                $originalRental = $rescheduleRequest->instrumentRental;
+                
+                if (!$originalRental) {
+                    return redirect()->back()->with('error', 'Original rental not found.');
+                }
+                
+                return $this->approveInstrumentReschedule($originalRental, $rescheduleRequest, $user);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('Error approving reschedule request: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to approve reschedule request: ' . $e->getMessage()]);
+            }
+            
+            return redirect()->back()->with('error', 'Failed to approve reschedule request: ' . $e->getMessage());
+        }
+    }
+    
+    private function approveStudioReschedule($originalBooking, $rescheduleRequest, $user)
+    {
+        try {
 
             // Check for conflicts again
-            $conflictingBooking = \App\Models\Booking::where('date', $rescheduleData['new_date'])
-                ->where('time_slot', $rescheduleData['new_time_slot'])
+            $conflictingBooking = \App\Models\Booking::where('date', $rescheduleRequest->requested_date)
+                ->where('time_slot', $rescheduleRequest->requested_time_slot)
                 ->whereIn('status', ['pending', 'confirmed'])
                 ->where('id', '!=', $originalBooking->id)
                 ->first();
@@ -2094,67 +2149,30 @@ class AdminController extends Controller
             // Store old values for logging
             $oldValues = $originalBooking->toArray();
 
-            // Generate new unique reference for rescheduled booking
-            $newReference = 'BK-' . date('Y') . '-' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 6));
-            
-            // Generate a unique 4-character reference code for the new booking
-            $newReferenceCode = null;
-            $maxAttempts = 100;
-            for ($i = 0; $i < $maxAttempts; $i++) {
-                $code = str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
-                if (!\App\Models\Booking::where('reference_code', $code)->exists()) {
-                    $newReferenceCode = $code;
-                    break;
-                }
-            }
-            
-            // Fallback if no unique code found
-            if (!$newReferenceCode) {
-                $newReferenceCode = str_pad(time() % 10000, 4, '0', STR_PAD_LEFT);
-            }
-            
-            // Create a new booking with the rescheduled details
-            $newBooking = \App\Models\Booking::create([
-                'user_id' => $originalBooking->user_id,
-                'service_type' => $originalBooking->service_type,
-                'date' => $rescheduleData['new_date'],
-                'time_slot' => $rescheduleData['new_time_slot'],
-                'duration' => $rescheduleData['new_duration'],
+            // Update the original booking with the new details
+            $originalBooking->update([
+                'date' => $rescheduleRequest->requested_date,
+                'time_slot' => $rescheduleRequest->requested_time_slot,
+                'duration' => $rescheduleRequest->requested_duration,
                 'status' => 'confirmed',
-                'reference' => $newReference,
-                'reference_code' => $newReferenceCode,
-                'band_name' => $originalBooking->band_name,
-                'email' => $originalBooking->email,
-                'contact_number' => $originalBooking->contact_number,
-                'image_path' => $originalBooking->image_path,
-                'price' => $originalBooking->price,
-                'total_amount' => $originalBooking->total_amount,
-                'created_at' => now(),
+                'reschedule_source' => 'system',
                 'updated_at' => now()
             ]);
+            
+            // Mark reschedule request as approved
+            $rescheduleRequest->approve($user);
 
-            // Update the original booking status to 'rescheduled'
-            $originalBooking->update(['status' => 'rescheduled']);
-
-            // Log the approval and new booking creation
+            // Log the reschedule approval
             \App\Models\ActivityLog::logBooking(
-                'Reschedule Request Approved - New Booking Created',
-                $newBooking,
-                $oldValues,
-                $newBooking->toArray()
-            );
-
-            // Log the original booking status change
-            \App\Models\ActivityLog::logBooking(
-                'Original Booking Rescheduled',
+                'Reschedule Request Approved - Booking Updated',
                 $originalBooking,
-                ['status' => $oldValues['status']],
-                ['status' => 'rescheduled']
+                $oldValues,
+                $originalBooking->toArray()
             );
 
             // Log admin action
             \App\Models\ActivityLog::logAdmin(
-                'Admin approved reschedule request - created new booking ' . $newBooking->reference . ' and marked original as rescheduled',
+                'Admin approved reschedule request - updated booking ' . $originalBooking->reference . ' with new schedule',
                 \App\Models\ActivityLog::ACTION_ADMIN_ACCESS
             );
 
@@ -2164,18 +2182,14 @@ class AdminController extends Controller
                 if ($user->google_calendar_id) {
                     $googleCalendarService = app(\App\Services\GoogleCalendarService::class);
                     
-                    // Delete the original booking event from Google Calendar
-                    $googleCalendarService->deleteBookingEvent($originalBooking);
+                    // Update the booking event in Google Calendar
+                    $googleCalendarService->updateBookingEvent($originalBooking, $oldValues);
                     
-                    // Create a new event for the rescheduled booking
-                    $googleCalendarService->createBookingEvent($newBooking);
-                    
-                    $calendarSyncMessage = ' The original booking has been removed and the new booking has been added to Google Calendar.';
+                    $calendarSyncMessage = ' The booking has been updated in Google Calendar.';
                 }
             } catch (\Exception $e) {
                 Log::warning('Failed to sync Google Calendar events after reschedule approval', [
-                    'original_booking_id' => $originalBooking->id,
-                    'new_booking_id' => $newBooking->id,
+                    'booking_id' => $originalBooking->id,
                     'error' => $e->getMessage()
                 ]);
                 $calendarSyncMessage = ' Note: Google Calendar sync failed.';
@@ -2184,12 +2198,12 @@ class AdminController extends Controller
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => true, 
-                    'message' => "Reschedule request approved successfully! A new booking {$newBooking->reference} has been created with the new schedule.{$calendarSyncMessage}"
+                    'message' => "Reschedule request approved successfully! Booking {$originalBooking->reference} has been updated with the new schedule.{$calendarSyncMessage}"
                 ]);
             }
             
             return redirect()->route('admin.dashboard')
-                ->with('success', "Reschedule request approved successfully! A new booking {$newBooking->reference} has been created with the new schedule.{$calendarSyncMessage}");
+                ->with('success', "Reschedule request approved successfully! Booking {$originalBooking->reference} has been updated with the new schedule.{$calendarSyncMessage}");
 
         } catch (\Exception $e) {
             Log::error('Error approving reschedule request: ' . $e->getMessage());
@@ -2199,6 +2213,72 @@ class AdminController extends Controller
             }
             
             return redirect()->back()->with('error', 'Failed to approve reschedule request: ' . $e->getMessage());
+        }
+    }
+    
+    private function approveInstrumentReschedule($originalRental, $rescheduleRequest, $user)
+    {
+        try {
+            // Store old values for logging
+            $oldValues = $originalRental->toArray();
+
+            // Calculate duration from start and end dates
+            $startDate = \Carbon\Carbon::parse($rescheduleRequest->requested_start_date);
+            $endDate = \Carbon\Carbon::parse($rescheduleRequest->requested_end_date);
+            $durationDays = $startDate->diffInDays($endDate) + 1;
+
+            // Update the original rental with the new details
+            $originalRental->update([
+                'rental_start_date' => $rescheduleRequest->requested_start_date,
+                'rental_end_date' => $rescheduleRequest->requested_end_date,
+                'rental_duration_days' => $durationDays,
+                'status' => 'confirmed',
+                'reschedule_source' => 'system',
+                'updated_at' => now()
+            ]);
+            
+            // Mark reschedule request as approved
+            $rescheduleRequest->approve($user);
+
+            // Delete the approved reschedule request to prevent looping
+            $rescheduleRequest->delete();
+
+            // Log the reschedule approval using proper ActivityLog method
+            \App\Models\ActivityLog::logActivity(
+                'Reschedule Request Confirmed - Instrument Rental Updated: ' . $originalRental->reference,
+                \App\Models\ActivityLog::ACTION_RENTAL_UPDATED,
+                $user->id,
+                'App\\Models\\InstrumentRental',
+                $originalRental->id,
+                $oldValues,
+                $originalRental->toArray(),
+                \App\Models\ActivityLog::SEVERITY_MEDIUM
+            );
+
+            // Log admin action
+            \App\Models\ActivityLog::logAdmin(
+                'Admin approved instrument rental reschedule request - updated rental ' . $originalRental->reference . ' with new schedule',
+                \App\Models\ActivityLog::ACTION_ADMIN_ACCESS
+            );
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true, 
+                    'message' => "Instrument rental reschedule request approved successfully! Rental {$originalRental->reference} has been updated with the new schedule."
+                ]);
+            }
+            
+            return redirect()->route('admin.dashboard')
+                ->with('success', "Instrument rental reschedule request approved successfully! Rental {$originalRental->reference} has been updated with the new schedule.");
+
+        } catch (\Exception $e) {
+            Log::error('Error approving instrument rental reschedule request: ' . $e->getMessage());
+            
+            if (request()->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Failed to approve instrument rental reschedule request: ' . $e->getMessage()]);
+            }
+            
+            return redirect()->back()->with('error', 'Failed to approve instrument rental reschedule request: ' . $e->getMessage());
         }
     }
 
@@ -2215,30 +2295,85 @@ class AdminController extends Controller
         }
 
         try {
-            // Find the activity log entry for the reschedule request
-            $activityLog = \App\Models\ActivityLog::where('id', $id)
-                ->where('description', 'LIKE', 'Reschedule Request Submitted:%')
-                ->firstOrFail();
+            // Find the reschedule request
+            $rescheduleRequest = RescheduleRequest::findOrFail($id);
+            
+            // Check if already processed
+            if ($rescheduleRequest->status !== RescheduleRequest::STATUS_PENDING) {
+                return redirect()->back()->with('error', 'This reschedule request has already been processed.');
+            }
+            
+            if ($rescheduleRequest->resource_type === RescheduleRequest::RESOURCE_BOOKING) {
+                // Handle studio booking rejection
+                $booking = $rescheduleRequest->booking;
+                
+                if (!$booking) {
+                    return redirect()->back()->with('error', 'Original booking not found.');
+                }
+                
+                // Mark reschedule request as rejected
+                $rescheduleRequest->reject($user, 'Admin rejected the reschedule request');
+                
+                // Delete the rejected reschedule request to keep system clean
+                $rescheduleRequest->delete();
+                
+                // Log the rejection
+                \App\Models\ActivityLog::logBooking(
+                    'Reschedule Request Rejected by Admin',
+                    $booking,
+                    [],
+                    ['rejection_reason' => 'Admin rejected the reschedule request']
+                );
 
-            // Get the associated booking
-            $booking = \App\Models\Booking::findOrFail($activityLog->resource_id);
+                // Log admin action
+                \App\Models\ActivityLog::logAdmin(
+                    'Admin rejected reschedule request for booking ' . $booking->reference,
+                    \App\Models\ActivityLog::ACTION_ADMIN_BOOKING
+                );
 
-            // Log the rejection
-            \App\Models\ActivityLog::logBooking(
-                'Reschedule Request Rejected by Admin',
-                $booking,
-                $activityLog->new_values ?? [],
-                ['rejection_reason' => 'Admin rejected the reschedule request']
-            );
+                $successMessage = "Reschedule request for booking {$booking->reference} has been rejected.";
+                
+            } else {
+                // Handle instrument rental rejection
+                $rental = $rescheduleRequest->instrumentRental;
+                
+                if (!$rental) {
+                    return redirect()->back()->with('error', 'Original rental not found.');
+                }
+                
+                // Mark reschedule request as rejected
+                $rescheduleRequest->reject($user, 'Admin rejected the reschedule request');
+                
+                // Delete the rejected reschedule request to keep system clean
+                $rescheduleRequest->delete();
+                
+                // Log the rejection using proper ActivityLog method
+                \App\Models\ActivityLog::logActivity(
+                    'Reschedule Request Rejected by Admin: ' . $rental->reference,
+                    \App\Models\ActivityLog::ACTION_RENTAL_UPDATED,
+                    $user->id,
+                    'App\\Models\\InstrumentRental',
+                    $rental->id,
+                    [],
+                    ['rejection_reason' => 'Admin rejected the reschedule request'],
+                    \App\Models\ActivityLog::SEVERITY_MEDIUM
+                );
 
-            // Log admin action
-            \App\Models\ActivityLog::logAdmin(
-                'Admin rejected reschedule request for booking ' . $booking->reference,
-                \App\Models\ActivityLog::ACTION_ADMIN_BOOKING
-            );
+                // Log admin action
+                \App\Models\ActivityLog::logAdmin(
+                    'Admin rejected reschedule request for instrument rental ' . $rental->reference,
+                    \App\Models\ActivityLog::ACTION_ADMIN_ACCESS
+                );
 
+                $successMessage = "Reschedule request for instrument rental {$rental->reference} has been rejected.";
+            }
+
+            if (request()->expectsJson()) {
+                return response()->json(['success' => true, 'message' => $successMessage]);
+            }
+            
             return redirect()->route('admin.dashboard')
-                ->with('success', "Reschedule request for booking {$booking->reference} has been rejected.");
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             Log::error('Error rejecting reschedule request: ' . $e->getMessage());
@@ -2359,32 +2494,66 @@ class AdminController extends Controller
         }
 
         try {
-            // Get all reschedule requests from activity logs
-            $rescheduleRequests = \App\Models\ActivityLog::where('description', 'LIKE', 'Reschedule Request Submitted:%')
-                ->where('resource_type', 'Booking')
+            // Get only pending reschedule requests from the reschedule_requests table
+            $rescheduleRequests = RescheduleRequest::with(['user', 'booking', 'instrumentRental', 'handledBy'])
+                ->where('status', RescheduleRequest::STATUS_PENDING)
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
             // Process each request to add additional data
-            $rescheduleRequests->getCollection()->transform(function ($log) {
-                $booking = \App\Models\Booking::find($log->resource_id);
-                if ($booking) {
-                    $log->booking_data = $booking;
-                    $log->reschedule_data = $log->new_values ?? [];
-                    
-                    // Check for conflicts
-                    $hasConflict = false;
-                    if (isset($log->reschedule_data['new_date']) && isset($log->reschedule_data['new_time_slot'])) {
-                        $conflictingBooking = \App\Models\Booking::where('date', $log->reschedule_data['new_date'])
-                            ->where('time_slot', $log->reschedule_data['new_time_slot'])
-                            ->whereIn('status', ['pending', 'confirmed'])
-                            ->where('id', '!=', $booking->id)
-                            ->first();
-                        $hasConflict = $conflictingBooking !== null;
+            $rescheduleRequests->getCollection()->transform(function ($request) {
+                if ($request->resource_type === RescheduleRequest::RESOURCE_BOOKING) {
+                    // Handle studio booking reschedule requests
+                    $booking = $request->booking;
+                    if ($booking) {
+                        $request->booking_data = $booking;
+                        
+                        // Check for conflicts
+                        $hasConflict = false;
+                        if ($request->requested_date && $request->requested_time_slot) {
+                            $conflictingBooking = \App\Models\Booking::where('date', $request->requested_date)
+                                ->where('time_slot', $request->requested_time_slot)
+                                ->whereIn('status', ['pending', 'confirmed'])
+                                ->where('id', '!=', $booking->id)
+                                ->first();
+                            $hasConflict = $conflictingBooking !== null;
+                        }
+                        $request->has_conflict = $hasConflict;
                     }
-                    $log->has_conflict = $hasConflict;
+                } else {
+                    // Handle instrument rental reschedule requests
+                    $rental = $request->instrumentRental;
+                    if ($rental) {
+                        // Create a booking-like data structure for consistency
+                        $request->booking_data = (object) [
+                            'reference' => $rental->reference_code,
+                            'customer_name' => $rental->user->name ?? 'Unknown Customer',
+                            'date' => $rental->rental_start_date,
+                            'time_slot' => 'N/A (Multi-day rental)',
+                            'duration' => \Carbon\Carbon::parse($rental->rental_start_date)->diffInDays(\Carbon\Carbon::parse($rental->rental_end_date)) + 1 . ' days'
+                        ];
+                        
+                        // Check for conflicts (instrument rentals have different conflict logic)
+                        $hasConflict = false;
+                        if ($request->requested_start_date && $request->requested_end_date) {
+                            $conflictingRental = \App\Models\InstrumentRental::where('instrument_type', $rental->instrument_type)
+                                ->where(function($query) use ($request) {
+                                    $query->whereBetween('rental_start_date', [$request->requested_start_date, $request->requested_end_date])
+                                          ->orWhereBetween('rental_end_date', [$request->requested_start_date, $request->requested_end_date])
+                                          ->orWhere(function($q) use ($request) {
+                                              $q->where('rental_start_date', '<=', $request->requested_start_date)
+                                                ->where('rental_end_date', '>=', $request->requested_end_date);
+                                          });
+                                })
+                                ->whereIn('status', ['pending', 'confirmed'])
+                                ->where('id', '!=', $rental->id)
+                                ->first();
+                            $hasConflict = $conflictingRental !== null;
+                        }
+                        $request->has_conflict = $hasConflict;
+                    }
                 }
-                return $log;
+                return $request;
             });
 
             return view('admin.reschedule-requests', compact('rescheduleRequests'));

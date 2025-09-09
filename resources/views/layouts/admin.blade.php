@@ -1694,7 +1694,7 @@
                 <div class="dropdown-menu">
                     <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
                         <i class="fas fa-calendar-alt"></i>
-                        Studio Rental
+                        Studio rental & Solo Rehearsal
                     </a>
                     <a href="{{ route('admin.instrument-bookings') }}" class="{{ request()->routeIs('admin.instrument-bookings') ? 'active' : '' }}">
                         <i class="fas fa-guitar"></i>
@@ -1942,49 +1942,85 @@
         }
         
         function viewRescheduleRequest(logId) {
-            showRescheduleModal(logId);
+            // Show notification and redirect to reschedule requests page
+            showNotification('Redirecting to reschedule requests page...', 'info');
+            setTimeout(() => {
+                window.location.href = '/admin/reschedule-requests';
+            }, 1000);
         }
         
-        // Modal Functions
-        function showRescheduleModal(logId) {
-            const modal = document.getElementById('rescheduleModal');
-            const modalBody = document.getElementById('rescheduleModalBody');
-            
-            // Show loading state
-            modalBody.innerHTML = `
-                <div class="modal-loading">
-                    <i class="fas fa-spinner"></i>
-                    <p>Loading reschedule request details...</p>
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas fa-info-circle"></i>
+                    <span>${message}</span>
                 </div>
             `;
             
-            modal.classList.add('show');
-            
-            // Fetch reschedule request data
-            fetch(`/admin/reschedule-requests/${logId}/data`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        renderRescheduleModalContent(data.data, logId);
-                    } else {
-                        modalBody.innerHTML = `
-                            <div class="modal-alert modal-alert-warning">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                <span>Error loading reschedule request: ${data.message}</span>
-                            </div>
-                        `;
+            // Add styles if not already present
+            if (!document.getElementById('notification-styles')) {
+                const styles = document.createElement('style');
+                styles.id = 'notification-styles';
+                styles.textContent = `
+                    .notification {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #fff;
+                        border-left: 4px solid #007bff;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                        border-radius: 4px;
+                        padding: 16px;
+                        z-index: 10000;
+                        min-width: 300px;
+                        transform: translateX(100%);
+                        transition: transform 0.3s ease;
                     }
-                })
-                .catch(error => {
-                    console.error('Error fetching reschedule request:', error);
-                    modalBody.innerHTML = `
-                        <div class="modal-alert modal-alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>Error loading reschedule request details.</span>
-                        </div>
-                    `;
-                });
+                    .notification.notification-info { border-left-color: #007bff; }
+                    .notification.notification-success { border-left-color: #28a745; }
+                    .notification.notification-warning { border-left-color: #ffc107; }
+                    .notification.notification-error { border-left-color: #dc3545; }
+                    .notification.show { transform: translateX(0); }
+                    .notification-content {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    .notification-content i {
+                        color: #007bff;
+                        font-size: 18px;
+                    }
+                    .notification-info .notification-content i { color: #007bff; }
+                    .notification-success .notification-content i { color: #28a745; }
+                    .notification-warning .notification-content i { color: #ffc107; }
+                    .notification-error .notification-content i { color: #dc3545; }
+                `;
+                document.head.appendChild(styles);
+            }
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
         }
+        
+        // Modal Functions
         
         function showBookingModal(bookingId) {
             const modal = document.getElementById('bookingModal');
@@ -2026,122 +2062,7 @@
                 });
         }
         
-        function renderRescheduleModalContent(data, logId) {
-            const modalBody = document.getElementById('rescheduleModalBody');
-            const booking = data.booking;
-            const activityLog = data.activityLog;
-            const originalData = data.originalData;
-            const requestedData = data.requestedData;
-            
-            // Helper function to safely display values
-            function safeDisplay(value, fallback = 'undefined') {
-                return value !== null && value !== undefined && value !== '' ? value : fallback;
-            }
-            
-            modalBody.innerHTML = `
-                <div class="modal-section">
-                    <h4><i class="fas fa-info-circle"></i> Current Booking Details</h4>
-                    <div class="modal-info-grid">
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Reference</div>
-                            <div class="modal-info-value">${safeDisplay(booking.booking_reference || booking.reference_code)}</div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Band Name</div>
-                            <div class="modal-info-value">${safeDisplay(booking.band_name, 'bandang lapis')}</div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Customer</div>
-                            <div class="modal-info-value">${safeDisplay(booking.customer_name)}</div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Email</div>
-                            <div class="modal-info-value">${safeDisplay(booking.email, 'sepambooking62@gmail.com')}</div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Phone</div>
-                            <div class="modal-info-value">${safeDisplay(booking.phone, 'N/A')}</div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Status</div>
-                            <div class="modal-info-value">${safeDisplay(booking.status, 'confirmed')}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-section">
-                    <h4><i class="fas fa-calendar-times"></i> Requested Changes</h4>
-                    <div class="modal-info-grid">
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Date</div>
-                            <div class="modal-info-value">
-                                <span style="color: #dc3545;">From: ${safeDisplay(originalData.date, '2025-09-05')}</span><br>
-                                <span style="color: #28a745;">To: ${safeDisplay(requestedData.date)}</span>
-                            </div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Time Slot</div>
-                            <div class="modal-info-value">
-                                <span style="color: #dc3545;">From: ${safeDisplay(originalData.time_slot, '09:00 AM - 10:00 AM')}</span><br>
-                                <span style="color: #28a745;">To: ${safeDisplay(requestedData.time_slot)}</span>
-                            </div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Duration</div>
-                            <div class="modal-info-value">
-                                <span style="color: #dc3545;">From: ${safeDisplay(originalData.duration, '1')} hour(s)</span><br>
-                                <span style="color: #28a745;">To: ${safeDisplay(requestedData.duration)} hour(s)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-section">
-                    <h4><i class="fas fa-clock"></i> Request Information</h4>
-                    <div class="modal-info-grid">
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Submitted</div>
-                            <div class="modal-info-value">${new Date(activityLog.created_at).toLocaleString()}</div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Time Ago</div>
-                            <div class="modal-info-value">${getTimeAgo(activityLog.created_at)}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                ${data.conflicts && data.conflicts.length > 0 ? `
-                    <div class="modal-section">
-                        <div class="modal-alert modal-alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>Conflict detected! The requested time slot is already booked.</span>
-                        </div>
-                    </div>
-                ` : `
-                    <div class="modal-section">
-                        <div class="modal-alert modal-alert-success">
-                            <i class="fas fa-check-circle"></i>
-                            <span>No conflicts detected. The requested time slot is available.</span>
-                        </div>
-                    </div>
-                `}
-                
-                <div class="modal-section">
-                    <h4><i class="fas fa-cogs"></i> Actions</h4>
-                    <div class="modal-actions">
-                        <button class="modal-btn modal-btn-primary" onclick="approveReschedule(${logId})">
-                            <i class="fas fa-check"></i> Approve Request
-                        </button>
-                        <button class="modal-btn modal-btn-danger" onclick="rejectReschedule(${logId})">
-                            <i class="fas fa-times"></i> Reject Request
-                        </button>
-                        <a href="/admin/bookings?highlight=${booking.id}" class="modal-btn modal-btn-secondary">
-                            <i class="fas fa-external-link-alt"></i> View Original Booking
-                        </a>
-                    </div>
-                </div>
-            `;
-        }
+
         
         function renderBookingModalContent(booking) {
             const modalBody = document.getElementById('bookingModalBody');
@@ -2218,57 +2139,7 @@
             modal.classList.remove('show');
         }
         
-        function approveReschedule(logId) {
-            if (confirm('Are you sure you want to approve this reschedule request?')) {
-                fetch(`/admin/reschedule-request/${logId}/approve`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        closeModal('rescheduleModal');
-                        checkForNewBookings(); // Refresh notifications
-                        alert('Reschedule request approved successfully!');
-                    } else {
-                        alert('Error approving reschedule request: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error approving reschedule request.');
-                });
-            }
-        }
-        
-        function rejectReschedule(logId) {
-            if (confirm('Are you sure you want to reject this reschedule request?')) {
-                fetch(`/admin/reschedule-request/${logId}/reject`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        closeModal('rescheduleModal');
-                        checkForNewBookings(); // Refresh notifications
-                        alert('Reschedule request rejected successfully!');
-                    } else {
-                        alert('Error rejecting reschedule request: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error rejecting reschedule request.');
-                });
-            }
-        }
+
         
         // Close modal when clicking outside
         document.addEventListener('click', function(event) {
@@ -2339,7 +2210,7 @@
             toast.innerHTML = `
                 <div class="toast-header">
                     <div class="toast-icon">📅</div>
-                    <h6 class="toast-title">BOOKING NOTIFICATION FOR STUDIO RENTAL</h6>
+                    <h6 class="toast-title">BOOKING NOTIFICATION FOR STUDIO RENTAL & SOLO REHEARSAL</h6>
                     <button class="toast-close" onclick="dismissToast('${toastId}')">&times;</button>
                 </div>
                 <div class="toast-body">
@@ -2763,26 +2634,7 @@
         }
     </style>
     
-    <!-- Reschedule Request Modal -->
-    <div id="rescheduleModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-calendar-alt"></i>
-                    Reschedule Request Details
-                </h3>
-                <button class="modal-close" onclick="closeModal('rescheduleModal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="rescheduleModalBody">
-                <div class="modal-loading">
-                    <i class="fas fa-spinner"></i>
-                    <p>Loading reschedule request details...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+
     
     <!-- Booking Details Modal -->
     <div id="bookingModal" class="modal-overlay">

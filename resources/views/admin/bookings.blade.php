@@ -879,6 +879,20 @@
         }
     }
 
+    /* System Reschedule Indicator Styles */
+    .system-reschedule-indicator {
+        margin-left: 5px;
+        font-size: 0.8rem;
+        opacity: 0.9;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.9; }
+        50% { opacity: 0.6; }
+        100% { opacity: 0.9; }
+    }
+
     /* Reschedule Modal Styles */
     .reschedule-modal {
         display: none;
@@ -1046,7 +1060,7 @@
                     <label class="form-label">Service Type</label>
                     <select name="service_type" class="form-control">
                         <option value="all" {{ ($serviceType ?? 'all') === 'all' ? 'selected' : '' }}>All Services</option>
-                        <option value="studio_rental" {{ ($serviceType ?? '') === 'studio_rental' ? 'selected' : '' }}>Studio Rental</option>
+                        <option value="studio_rental" {{ ($serviceType ?? '') === 'studio_rental' ? 'selected' : '' }}>Studio rental & Solo Rehearsal</option>
                         <option value="solo_rehearsal" {{ ($serviceType ?? '') === 'solo_rehearsal' ? 'selected' : '' }}>Solo Rehearsal</option>
                         <option value="instrument_rental" {{ ($serviceType ?? '') === 'instrument_rental' ? 'selected' : '' }}>Instrument Rental</option>
                     </select>
@@ -1072,7 +1086,7 @@
         </form>
     </div>
 
-    <!-- Studio Rental Records -->
+    <!-- Studio rental & Solo Rehearsal Records -->
     <div class="bookings-table-card">
         <div class="table-header">
             <h3 class="table-title">📋 Booking Records</h3>
@@ -1092,8 +1106,13 @@
                                     ⏳ Pending
                                 @elseif($booking->status === 'confirmed')
                                     ✅ Confirmed
+                                    @if($booking->reschedule_source === 'system')
+                                        <span class="system-reschedule-indicator" title="System Rescheduled">⚙️</span>
+                                    @endif
                                 @elseif($booking->status === 'rejected')
                                     ❌ Rejected
+                                @elseif($booking->status === 'rescheduled')
+                                    🔄 Rescheduled
                                 @else
                                     {{ ucfirst($booking->status) }}
                                 @endif
@@ -1114,7 +1133,7 @@
                             <div class="booking-details">
                                 <div class="detail-row">
                                     <span class="detail-label">Service:</span>
-                                    <span class="detail-value">{{ $booking->service_type ?? 'Studio Rental' }}</span>
+                                    <span class="detail-value">{{ $booking->service_type ?? 'Studio rental & Solo Rehearsal' }}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Duration:</span>
@@ -1159,6 +1178,20 @@
                                     <button class="btn btn-reschedule" onclick="rescheduleBooking({{ $booking->id }})" title="Rescheduling">
                                         <i class="fas fa-calendar-alt"></i> Reschedule
                                     </button>
+                                @elseif($booking->status === 'rescheduled')
+                                    <form method="POST" action="{{ route('admin.booking.approve', $booking->id) }}" style="display: inline;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to confirm this rescheduled booking?')">
+                                            ✓ Confirm
+                                            @if($booking->reschedule_source === 'system')
+                                                <span class="system-reschedule-indicator" title="System Rescheduled">⚙️</span>
+                                            @endif
+                                        </button>
+                                    </form>
+                                    <span class="reschedule-text" style="margin-left: 10px; color: #FFD700; font-weight: 600; font-size: 0.9rem;">
+                                        <i class="fas fa-calendar-alt"></i> Reschedule
+                                    </span>
                                 @endif
                             </div>
                         </div>

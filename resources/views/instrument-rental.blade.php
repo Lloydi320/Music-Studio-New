@@ -2504,8 +2504,14 @@
         const documentationConsent = document.querySelector('input[name="documentation_consent"]').checked;
         
         // Populate hidden form fields
-        document.getElementById('modalInstrumentTypeInput').value = selectedType;
-        document.getElementById('modalInstrumentNameInput').value = selectedInstrument;
+        // Handle full package scenario
+        if (fullPackage) {
+          document.getElementById('modalInstrumentTypeInput').value = 'Full Package';
+          document.getElementById('modalInstrumentNameInput').value = 'Full Package';
+        } else {
+          document.getElementById('modalInstrumentTypeInput').value = selectedType;
+          document.getElementById('modalInstrumentNameInput').value = selectedInstrument;
+        }
         document.getElementById('modalStartDateInput').value = startDateInput.value;
         document.getElementById('modalEndDateInput').value = endDateInput.value;
         document.getElementById('modalDurationInput').value = durationInput.value;

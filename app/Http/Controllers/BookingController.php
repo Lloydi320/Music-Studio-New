@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\ActivityLog;
+use App\Models\RescheduleRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -34,6 +35,7 @@ class BookingController extends Controller
             'date' => 'required|date',
             'time_slot' => 'required|string',
             'duration' => 'required|integer|min:1|max:8',
+            'service_type' => 'nullable|string|in:studio_rental,solo_rehearsal,instrument_rental',
             'band_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'contact_number' => 'nullable|string|size:11|regex:/^[0-9]{11}$/',
@@ -92,8 +94,9 @@ class BookingController extends Controller
             $imagePath = $image->storeAs('booking_images', $imageName, 'public');
         }
 
-        // Calculate pricing (₱250 per hour)
-        $hourlyRate = 250.00;
+        // Calculate pricing based on service type
+        $serviceType = $request->service_type ?? 'studio_rental';
+        $hourlyRate = ($serviceType === 'solo_rehearsal') ? 300.00 : 250.00; // ₱300 for solo rehearsal, ₱250 for studio rental
         $totalAmount = $hourlyRate * $duration;
         
         $booking = Booking::create([
@@ -103,7 +106,7 @@ class BookingController extends Controller
             'duration' => $duration,
             'price' => $hourlyRate,
             'total_amount' => $totalAmount,
-            'service_type' => 'studio_rental', // Default service type
+            'service_type' => $request->service_type ?? 'studio_rental', // Use request service_type or default to studio_rental
             'band_name' => $request->band_name,
             'email' => $request->email,
             'contact_number' => $request->contact_number,
@@ -339,57 +342,136 @@ class BookingController extends Controller
 
     public function rescheduleRequest(Request $request)
     {
-        $request->validate([
-            'reference_number' => 'required|string|size:4',
-            'new_date' => 'required|date|after_or_equal:today',
-            'new_time_slot' => 'required|string',
-            'duration' => 'required|integer|min:1|max:8'
-        ]);
+        // Determine booking type and validate accordingly
+        $bookingType = $request->input('booking_type', 'studio_rental');
+        
+        if ($bookingType === 'studio_rental') {
+            $request->validate([
+                'reference_number' => 'required|string|size:4',
+                'new_date' => 'required|date|after_or_equal:today',
+                'new_time_slot' => 'required|string',
+                'duration' => 'required|integer|min:1|max:8'
+            ]);
+        } else {
+            $request->validate([
+                'reference_number' => 'required|string|size:4',
+                'start_date' => 'required|date|after_or_equal:today',
+                'end_date' => 'required|date|after:start_date'
+            ]);
+        }
 
         try {
-            // Find booking by reference code (4-digit number) only
-            $booking = Booking::where('reference_code', $request->reference_number)
-                             ->whereIn('status', ['pending', 'confirmed'])
-                             ->first();
+            $booking = null;
+            $rental = null;
             
-            if (!$booking) {
-                return response()->json(['error' => 'Booking not found'], 404);
-            }
-
-            // Check for time slot conflicts
-            $conflictingBooking = Booking::where('date', $request->new_date)
-                ->where('time_slot', $request->new_time_slot)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->where('id', '!=', $booking->id)
-                ->first();
+            if ($bookingType === 'studio_rental') {
+                // Find studio booking by reference code
+                $booking = Booking::where('reference_code', $request->reference_number)
+                                 ->whereIn('status', ['pending', 'confirmed'])
+                                 ->first();
                 
-            if ($conflictingBooking) {
-                return response()->json(['error' => 'The selected time slot is already booked'], 409);
+                if (!$booking) {
+                    return response()->json(['error' => 'Studio booking not found'], 404);
+                }
+
+                // Check for time slot conflicts
+                $conflictingBooking = Booking::where('date', $request->new_date)
+                    ->where('time_slot', $request->new_time_slot)
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->where('id', '!=', $booking->id)
+                    ->first();
+                    
+                if ($conflictingBooking) {
+                    return response()->json(['error' => 'The selected time slot is already booked'], 409);
+                }
+
+                // Create reschedule request for studio booking
+                $rescheduleRequest = RescheduleRequest::create([
+                    'resource_type' => RescheduleRequest::RESOURCE_BOOKING,
+                    'resource_id' => $booking->id,
+                    'user_id' => $booking->user_id,
+                    'customer_name' => $booking->band_name,
+                    'customer_email' => $booking->email,
+                    'original_data' => $booking->toArray(),
+                    'requested_data' => [
+                        'new_date' => $request->new_date,
+                        'new_time_slot' => $request->new_time_slot,
+                        'new_duration' => $request->duration,
+                        'booking_type' => 'studio_rental'
+                    ],
+                    'original_date' => $booking->date,
+                    'original_time_slot' => $booking->time_slot,
+                    'original_duration' => $booking->duration,
+                    'requested_date' => $request->new_date,
+                    'requested_time_slot' => $request->new_time_slot,
+                    'requested_duration' => $request->duration,
+                    'reason' => $request->reason,
+                    'has_conflict' => $conflictingBooking !== null,
+                    'conflict_details' => $conflictingBooking ? [
+                        'conflicting_booking_id' => $conflictingBooking->id,
+                        'conflicting_booking_reference' => $conflictingBooking->reference
+                    ] : null,
+                    'priority' => RescheduleRequest::PRIORITY_MEDIUM
+                ]);
+
+                // Log the reschedule request creation
+                ActivityLog::logBooking(
+                    'Reschedule Request Submitted: Studio Booking - ' . $rescheduleRequest->reference,
+                    $booking,
+                    $booking->toArray(),
+                    $rescheduleRequest->requested_data
+                );
+
+                // Send notification to admin
+                $this->notifyAdminOfReschedule($booking, $rescheduleRequest->requested_data);
+                
+            } else {
+                // Find instrument rental by reference code
+                $rental = \App\Models\InstrumentRental::where('four_digit_code', $request->reference_number)
+                                                     ->whereIn('status', ['pending', 'confirmed'])
+                                                     ->first();
+                
+                if (!$rental) {
+                    return response()->json(['error' => 'Instrument rental not found'], 404);
+                }
+
+                // Create reschedule request for instrument rental
+                $rescheduleRequest = RescheduleRequest::create([
+                    'resource_type' => RescheduleRequest::RESOURCE_INSTRUMENT_RENTAL,
+                    'resource_id' => $rental->id,
+                    'user_id' => $rental->user_id,
+                    'customer_name' => $rental->user->name ?? 'Unknown Customer',
+                    'customer_email' => $rental->user->email ?? 'unknown@example.com',
+                    'original_data' => $rental->toArray(),
+                    'requested_data' => [
+                        'new_start_date' => $request->start_date,
+                        'new_end_date' => $request->end_date,
+                        'new_duration' => \Carbon\Carbon::parse($request->start_date)->diffInDays(\Carbon\Carbon::parse($request->end_date)) + 1,
+                        'booking_type' => 'instrument_rental'
+                    ],
+                    'original_start_date' => $rental->rental_start_date,
+                    'original_end_date' => $rental->rental_end_date,
+                    'requested_start_date' => $request->start_date,
+                    'requested_end_date' => $request->end_date,
+                    'reason' => $request->reason,
+                    'priority' => RescheduleRequest::PRIORITY_MEDIUM
+                ]);
+
+                // Log reschedule request for instrument rental
+                ActivityLog::logActivity(
+                    'Reschedule Request Submitted: Instrument Rental - ' . $rescheduleRequest->reference,
+                    'rental_reschedule_requested',
+                    $rental->user_id,
+                    'App\\Models\\InstrumentRental',
+                    $rental->id,
+                    $rental->toArray(),
+                    $rescheduleRequest->requested_data,
+                    ActivityLog::SEVERITY_MEDIUM
+                );
+
+                // Send notification to admin for instrument rental
+                $this->notifyAdminOfInstrumentReschedule($rental, $rescheduleRequest->requested_data);
             }
-
-            // Create reschedule request data for notification
-            $rescheduleData = [
-                'booking_id' => $booking->id,
-                'old_date' => $booking->date,
-                'old_time_slot' => $booking->time_slot,
-                'old_duration' => $booking->duration,
-                'new_date' => $request->new_date,
-                'new_time_slot' => $request->new_time_slot,
-                'new_duration' => $request->duration,
-                'requested_by' => $booking->user_id,
-                'requested_at' => now()
-            ];
-
-            // Log reschedule request (without updating the booking)
-            ActivityLog::logBooking(
-                'Reschedule Request Submitted',
-                $booking,
-                $booking->toArray(),
-                $rescheduleData
-            );
-
-            // Send notification to admin
-            $this->notifyAdminOfReschedule($booking, $rescheduleData);
 
             return response()->json([
                 'success' => true,
@@ -398,7 +480,7 @@ class BookingController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Failed to submit reschedule request', [
-                'band_name' => $request->band_name,
+                'booking_type' => $bookingType,
                 'reference_number' => $request->reference_number,
                 'error' => $e->getMessage()
             ]);
@@ -408,57 +490,136 @@ class BookingController extends Controller
 
     public function rescheduleByReference(Request $request, $reference)
     {
-        $request->validate([
-            'reference_number' => 'required|string|size:4',
-            'new_date' => 'required|date|after_or_equal:today',
-            'new_time_slot' => 'required|string',
-            'duration' => 'required|integer|min:1|max:8'
-        ]);
+        // Determine booking type and validate accordingly
+        $bookingType = $request->input('booking_type', 'studio_rental');
+        
+        if ($bookingType === 'studio_rental') {
+            $request->validate([
+                'reference_number' => 'required|string|size:4',
+                'new_date' => 'required|date|after_or_equal:today',
+                'new_time_slot' => 'required|string',
+                'duration' => 'required|integer|min:1|max:8'
+            ]);
+        } else {
+            $request->validate([
+                'reference_number' => 'required|string|size:4',
+                'start_date' => 'required|date|after_or_equal:today',
+                'end_date' => 'required|date|after:start_date'
+            ]);
+        }
 
         try {
-            // Find booking by reference code (4-digit number) only
-            $booking = Booking::where('reference_code', $request->reference_number)
-                             ->whereIn('status', ['pending', 'confirmed'])
-                             ->first();
+            $booking = null;
+            $rental = null;
             
-            if (!$booking) {
-                return response()->json(['error' => 'Booking not found'], 404);
-            }
-
-            // Check for time slot conflicts
-            $conflictingBooking = Booking::where('date', $request->new_date)
-                ->where('time_slot', $request->new_time_slot)
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->where('id', '!=', $booking->id)
-                ->first();
+            if ($bookingType === 'studio_rental') {
+                // Find studio booking by reference code
+                $booking = Booking::where('reference_code', $request->reference_number)
+                                 ->whereIn('status', ['pending', 'confirmed'])
+                                 ->first();
                 
-            if ($conflictingBooking) {
-                return response()->json(['error' => 'The selected time slot is already booked'], 409);
+                if (!$booking) {
+                    return response()->json(['error' => 'Studio booking not found'], 404);
+                }
+
+                // Check for time slot conflicts
+                $conflictingBooking = Booking::where('date', $request->new_date)
+                    ->where('time_slot', $request->new_time_slot)
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->where('id', '!=', $booking->id)
+                    ->first();
+                    
+                if ($conflictingBooking) {
+                    return response()->json(['error' => 'The selected time slot is already booked'], 409);
+                }
+
+                // Create reschedule request for studio booking
+                $rescheduleRequest = RescheduleRequest::create([
+                    'resource_type' => RescheduleRequest::RESOURCE_BOOKING,
+                    'resource_id' => $booking->id,
+                    'user_id' => $booking->user_id,
+                    'customer_name' => $booking->band_name,
+                    'customer_email' => $booking->email,
+                    'original_data' => $booking->toArray(),
+                    'requested_data' => [
+                        'new_date' => $request->new_date,
+                        'new_time_slot' => $request->new_time_slot,
+                        'new_duration' => $request->duration,
+                        'booking_type' => 'studio_rental'
+                    ],
+                    'original_date' => $booking->date,
+                    'original_time_slot' => $booking->time_slot,
+                    'original_duration' => $booking->duration,
+                    'requested_date' => $request->new_date,
+                    'requested_time_slot' => $request->new_time_slot,
+                    'requested_duration' => $request->duration,
+                    'reason' => $request->reason,
+                    'has_conflict' => $conflictingBooking !== null,
+                    'conflict_details' => $conflictingBooking ? [
+                        'conflicting_booking_id' => $conflictingBooking->id,
+                        'conflicting_booking_reference' => $conflictingBooking->reference
+                    ] : null,
+                    'priority' => RescheduleRequest::PRIORITY_MEDIUM
+                ]);
+
+                // Log the reschedule request creation
+                ActivityLog::logBooking(
+                    'Reschedule Request Submitted: Studio Booking - ' . $rescheduleRequest->reference,
+                    $booking,
+                    $booking->toArray(),
+                    $rescheduleRequest->requested_data
+                );
+
+                // Send notification to admin
+                $this->notifyAdminOfReschedule($booking, $rescheduleRequest->requested_data);
+                
+            } else {
+                // Find instrument rental by reference code
+                $rental = \App\Models\InstrumentRental::where('four_digit_code', $request->reference_number)
+                                                     ->whereIn('status', ['pending', 'confirmed'])
+                                                     ->first();
+                
+                if (!$rental) {
+                    return response()->json(['error' => 'Instrument rental not found'], 404);
+                }
+
+                // Create reschedule request for instrument rental
+                $rescheduleRequest = RescheduleRequest::create([
+                    'resource_type' => RescheduleRequest::RESOURCE_INSTRUMENT_RENTAL,
+                    'resource_id' => $rental->id,
+                    'user_id' => $rental->user_id,
+                    'customer_name' => $rental->user->name ?? 'Unknown Customer',
+                    'customer_email' => $rental->user->email ?? 'unknown@example.com',
+                    'original_data' => $rental->toArray(),
+                    'requested_data' => [
+                        'new_start_date' => $request->start_date,
+                        'new_end_date' => $request->end_date,
+                        'new_duration' => \Carbon\Carbon::parse($request->start_date)->diffInDays(\Carbon\Carbon::parse($request->end_date)) + 1,
+                        'booking_type' => 'instrument_rental'
+                    ],
+                    'original_start_date' => $rental->rental_start_date,
+                    'original_end_date' => $rental->rental_end_date,
+                    'requested_start_date' => $request->start_date,
+                    'requested_end_date' => $request->end_date,
+                    'reason' => $request->reason,
+                    'priority' => RescheduleRequest::PRIORITY_MEDIUM
+                ]);
+
+                // Log reschedule request for instrument rental
+                ActivityLog::create([
+                    'description' => 'Reschedule Request Submitted: Instrument Rental - ' . $rescheduleRequest->reference,
+                    'resource_type' => 'App\\Models\\InstrumentRental',
+                    'resource_id' => $rental->id,
+                    'old_values' => $rental->toArray(),
+                    'new_values' => $rescheduleRequest->requested_data,
+                    'user_id' => $rental->user_id,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // Send notification to admin for instrument rental
+                $this->notifyAdminOfInstrumentReschedule($rental, $rescheduleRequest->requested_data);
             }
-
-            // Create reschedule request data for notification
-            $rescheduleData = [
-                'booking_id' => $booking->id,
-                'old_date' => $booking->date,
-                'old_time_slot' => $booking->time_slot,
-                'old_duration' => $booking->duration,
-                'new_date' => $request->new_date,
-                'new_time_slot' => $request->new_time_slot,
-                'new_duration' => $request->duration,
-                'requested_by' => $booking->user_id,
-                'requested_at' => now()
-            ];
-
-            // Log reschedule request (without updating the booking)
-            ActivityLog::logBooking(
-                'Reschedule Request Submitted',
-                $booking,
-                $booking->toArray(),
-                $rescheduleData
-            );
-
-            // Send notification to admin
-            $this->notifyAdminOfReschedule($booking, $rescheduleData);
 
             return response()->json([
                 'success' => true,
@@ -467,6 +628,7 @@ class BookingController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Failed to submit reschedule request', [
+                'booking_type' => $bookingType,
                 'reference' => $reference,
                 'error' => $e->getMessage()
             ]);
@@ -477,17 +639,40 @@ class BookingController extends Controller
     private function notifyAdminOfReschedule($booking, $rescheduleData)
     {
         try {
+            \Illuminate\Support\Facades\Log::info('Starting reschedule notification process', [
+                'booking_reference' => $booking->reference
+            ]);
+            
             // Get all admin users
             $adminUsers = \App\Models\User::where('is_admin', true)->get();
             
+            \Illuminate\Support\Facades\Log::info('Found admin users', [
+                'admin_count' => $adminUsers->count(),
+                'admin_emails' => $adminUsers->pluck('email')->toArray()
+            ]);
+            
+            if ($adminUsers->count() === 0) {
+                \Illuminate\Support\Facades\Log::warning('No admin users found for reschedule notification');
+                return;
+            }
+            
             foreach ($adminUsers as $admin) {
+                \Illuminate\Support\Facades\Log::info('Sending notification to admin', [
+                    'admin_email' => $admin->email,
+                    'admin_name' => $admin->name
+                ]);
+                
                 // Send email notification
                 \Illuminate\Support\Facades\Mail::to($admin->email)->send(
                     new \App\Mail\RescheduleNotification($booking, $rescheduleData)
                 );
+                
+                \Illuminate\Support\Facades\Log::info('Notification sent successfully to admin', [
+                    'admin_email' => $admin->email
+                ]);
             }
             
-            \Illuminate\Support\Facades\Log::info('Reschedule notification sent to admins', [
+            \Illuminate\Support\Facades\Log::info('Reschedule notification sent to all admins', [
                 'booking_reference' => $booking->reference,
                 'admin_count' => $adminUsers->count()
             ]);
@@ -495,7 +680,58 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Failed to send reschedule notification', [
                 'booking_reference' => $booking->reference,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    private function notifyAdminOfInstrumentReschedule($rental, $rescheduleData)
+    {
+        try {
+            \Illuminate\Support\Facades\Log::info('Starting instrument reschedule notification process', [
+                'rental_reference' => $rental->reference
+            ]);
+            
+            // Get all admin users
+            $adminUsers = \App\Models\User::where('is_admin', true)->get();
+            
+            \Illuminate\Support\Facades\Log::info('Found admin users for instrument reschedule', [
+                'admin_count' => $adminUsers->count(),
+                'admin_emails' => $adminUsers->pluck('email')->toArray()
+            ]);
+            
+            if ($adminUsers->count() === 0) {
+                \Illuminate\Support\Facades\Log::warning('No admin users found for instrument reschedule notification');
+                return;
+            }
+            
+            foreach ($adminUsers as $admin) {
+                \Illuminate\Support\Facades\Log::info('Sending instrument reschedule notification to admin', [
+                    'admin_email' => $admin->email,
+                    'admin_name' => $admin->name
+                ]);
+                
+                // Send email notification for instrument rental reschedule
+                \Illuminate\Support\Facades\Mail::to($admin->email)->send(
+                    new \App\Mail\InstrumentRescheduleNotification($rental, $rescheduleData)
+                );
+                
+                \Illuminate\Support\Facades\Log::info('Instrument reschedule notification sent successfully to admin', [
+                    'admin_email' => $admin->email
+                ]);
+            }
+            
+            \Illuminate\Support\Facades\Log::info('Instrument reschedule notification sent to all admins', [
+                'rental_reference' => $rental->reference,
+                'admin_count' => $adminUsers->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send instrument reschedule notification', [
+                'rental_reference' => $rental->reference,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }

@@ -261,6 +261,86 @@
         background: #FFD700;
         color: #1a1a1a;
     }
+
+    /* Popup Notification Styles */
+    .notification-popup {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--gradient-success);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: var(--shadow-hover);
+        z-index: 9999;
+        transform: translateX(400px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        min-width: 300px;
+        max-width: 400px;
+    }
+
+    .notification-popup.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .notification-popup.error {
+        background: var(--gradient-danger);
+    }
+
+    .notification-popup.warning {
+        background: var(--gradient-warning);
+    }
+
+    .notification-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .notification-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .notification-close:hover {
+        opacity: 1;
+    }
+
+    .notification-body {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .notification-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 0 0 10px 10px;
+        animation: progress 5s linear forwards;
+    }
+
+    @keyframes progress {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
 </style>
 
 <div class="admin-content">
@@ -309,7 +389,13 @@
                                 <div class="detail-content">
                                     <div class="date">{{ \Carbon\Carbon::parse($request->booking_data->date)->format('M d, Y') }}</div>
                                     <div class="time">{{ $request->booking_data->time_slot }}</div>
-                                    <div class="duration">{{ $request->booking_data->duration }} hour(s)</div>
+                                    <div class="duration">
+                                        @if($request->resource_type === 'instrument_rental')
+                                            {{ $request->booking_data->duration }}
+                                        @else
+                                            {{ $request->booking_data->duration }} hour(s)
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
 
@@ -319,14 +405,26 @@
                                     Requested Changes
                                 </div>
                                 <div class="detail-content">
-                                    @if(isset($request->reschedule_data['new_date']))
-                                        <div class="date">{{ \Carbon\Carbon::parse($request->reschedule_data['new_date'])->format('M d, Y') }}</div>
-                                    @endif
-                                    @if(isset($request->reschedule_data['new_time_slot']))
-                                        <div class="time">{{ $request->reschedule_data['new_time_slot'] }}</div>
-                                    @endif
-                                    @if(isset($request->reschedule_data['new_duration']))
-                                        <div class="duration">{{ $request->reschedule_data['new_duration'] }} hour(s)</div>
+                                    @if($request->resource_type === 'instrument_rental')
+                                        {{-- Instrument rental reschedule data --}}
+                                        @if($request->requested_start_date)
+                                            <div class="date">Start: {{ \Carbon\Carbon::parse($request->requested_start_date)->format('M d, Y') }}</div>
+                                        @endif
+                                        @if($request->requested_end_date)
+                                            <div class="date">End: {{ \Carbon\Carbon::parse($request->requested_end_date)->format('M d, Y') }}</div>
+                                        @endif
+                                        <div class="time">Multi-day instrument rental</div>
+                                    @else
+                                        {{-- Studio booking reschedule data --}}
+                                        @if($request->requested_date)
+                                            <div class="date">{{ \Carbon\Carbon::parse($request->requested_date)->format('M d, Y') }}</div>
+                                        @endif
+                                        @if($request->requested_time_slot)
+                                            <div class="time">{{ $request->requested_time_slot }}</div>
+                                        @endif
+                                        @if($request->requested_duration)
+                                            <div class="duration">{{ $request->requested_duration }} hour(s)</div>
+                                        @endif
                                     @endif
                                 </div>
                             </div>
@@ -339,9 +437,9 @@
                             </a>
                             
                             @if(!$request->has_conflict)
-                                <form method="POST" action="{{ route('admin.reschedule-request.approve', $request->id) }}" style="display: inline;">
+                                <form method="POST" action="{{ route('admin.reschedule-request.approve', $request->id) }}" style="display: inline;" class="approve-form" data-booking-ref="{{ $request->booking_data->reference }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-approve" onclick="return confirm('Are you sure you want to approve this reschedule request?')">
+                                    <button type="button" class="btn btn-approve approve-btn">
                                         <i class="fas fa-check"></i>
                                         Approve
                                     </button>
@@ -372,4 +470,164 @@
         @endif
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle approve button clicks
+    document.querySelectorAll('.approve-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = this.closest('.approve-form');
+            const bookingRef = form.dataset.bookingRef;
+            
+            // Show confirmation popup
+            showConfirmationDialog(
+                'Approve Reschedule Request',
+                `Are you sure you want to approve the reschedule request for booking ${bookingRef}?`,
+                () => {
+                    // Show loading state
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                    this.disabled = true;
+                    
+                    // Submit form via AJAX
+                    submitApprovalForm(form, bookingRef, this);
+                }
+            );
+        });
+    });
+    
+    // Check for Laravel session messages and show notifications
+    @if(session('success'))
+        showNotification('success', 'Success', '{{ session('success') }}');
+    @endif
+    
+    @if(session('error'))
+        showNotification('error', 'Error', '{{ session('error') }}');
+    @endif
+});
+
+function showConfirmationDialog(title, message, onConfirm) {
+    const dialog = document.createElement('div');
+    dialog.className = 'notification-popup show';
+    dialog.style.background = 'var(--gradient-warning)';
+    dialog.innerHTML = `
+        <div class="notification-header">
+            <div class="notification-title">
+                <i class="fas fa-question-circle"></i>
+                ${title}
+            </div>
+        </div>
+        <div class="notification-body">
+            ${message}
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <button class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer;" onclick="this.closest('.notification-popup').remove()">Cancel</button>
+            <button class="btn btn-sm" style="background: rgba(255,255,255,0.9); color: #1a1a1a; border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer; font-weight: 600;" onclick="confirmAction(this)">Confirm</button>
+        </div>
+    `;
+    
+    dialog.querySelector('button[onclick="confirmAction(this)"]').addEventListener('click', function() {
+        dialog.remove();
+        onConfirm();
+    });
+    
+    document.body.appendChild(dialog);
+}
+
+function submitApprovalForm(form, bookingRef, button) {
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json().then(data => {
+                if (data.success) {
+                    showNotification('success', 'Approved Successfully', `Reschedule request for booking ${bookingRef} has been approved successfully!`);
+                    // Remove the request card after a short delay
+                    setTimeout(() => {
+                        form.closest('.request-card').style.transition = 'all 0.5s ease';
+                        form.closest('.request-card').style.transform = 'translateX(-100%)';
+                        form.closest('.request-card').style.opacity = '0';
+                        setTimeout(() => {
+                            form.closest('.request-card').remove();
+                            // Check if no more requests
+                            if (document.querySelectorAll('.request-card').length === 0) {
+                                location.reload();
+                            }
+                        }, 500);
+                    }, 2000);
+                } else {
+                    showNotification('error', 'Approval Failed', data.message || 'Failed to approve the reschedule request.');
+                    // Reset button
+                    button.innerHTML = '<i class="fas fa-check"></i> Approve';
+                    button.disabled = false;
+                }
+            });
+        } else {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Failed to approve request');
+            }).catch(() => {
+                throw new Error('Failed to approve request');
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('error', 'Approval Failed', error.message || 'Failed to approve the reschedule request. Please try again.');
+        // Reset button
+        button.innerHTML = '<i class="fas fa-check"></i> Approve';
+        button.disabled = false;
+    });
+}
+
+function showNotification(type, title, message) {
+    const notification = document.createElement('div');
+    notification.className = `notification-popup ${type}`;
+    
+    const iconMap = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+    
+    notification.innerHTML = `
+        <div class="notification-header">
+            <div class="notification-title">
+                <i class="${iconMap[type] || iconMap.info}"></i>
+                ${title}
+            </div>
+            <button class="notification-close" onclick="this.closest('.notification-popup').remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notification-body">
+            ${message}
+        </div>
+        <div class="notification-progress"></div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 400);
+    }, 5000);
+}
+</script>
+
 @endsection
