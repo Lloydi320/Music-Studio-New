@@ -304,4 +304,47 @@ class InstrumentRentalController extends Controller
 
         return response()->json(['daily_rate' => $dailyRate]);
     }
+
+    /**
+     * Get booked dates for conflict checking
+     * Returns dates that are already booked by studio/band or solo rehearsal bookings
+     */
+    public function getBookedDates(Request $request)
+    {
+        // Get all active bookings (studio/band and solo rehearsal)
+        $bookings = \App\Models\Booking::where('status', '!=', 'cancelled')
+            ->select('date', 'time_slot', 'duration', 'service_type')
+            ->get();
+
+        $bookedDates = [];
+        
+        foreach ($bookings as $booking) {
+            $bookingDate = Carbon::parse($booking->date);
+            
+            // For multi-day events, we need to block all days in the duration
+            // Extract start time from time slot
+            $timeSlot = $booking->time_slot;
+            $startTime = trim(explode('-', $timeSlot)[0]);
+            
+            // Calculate booking start and end times
+            $bookingStart = Carbon::createFromFormat('Y-m-d g:i A', $bookingDate->format('Y-m-d') . ' ' . $startTime, config('app.timezone', 'Asia/Manila'));
+            $bookingEnd = $bookingStart->copy()->addHours($booking->duration);
+            
+            // If booking spans multiple days, add all affected dates
+            $currentDate = $bookingStart->copy()->startOfDay();
+            $endDate = $bookingEnd->copy()->startOfDay();
+            
+            while ($currentDate->lte($endDate)) {
+                $dateStr = $currentDate->format('Y-m-d');
+                if (!in_array($dateStr, $bookedDates)) {
+                    $bookedDates[] = $dateStr;
+                }
+                $currentDate->addDay();
+            }
+        }
+
+        return response()->json([
+            'booked_dates' => array_unique($bookedDates)
+        ]);
+    }
 }

@@ -1687,6 +1687,13 @@
        color: #065f46 !important;
        border: 1px solid #a7f3d0 !important;
      }
+
+     /* Hide Sign Out button in navigation on desktop view */
+     @media (min-width: 769px) {
+       .nav-signout-desktop-hidden {
+         display: none !important;
+       }
+     }
   </style>
 </head>
 <body class="booking-page">
@@ -1720,7 +1727,7 @@
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
         @endif
         @if(Auth::check())
-        <li>
+        <li class="nav-signout-desktop-hidden">
           <form action="/logout" method="POST" style="margin: 0;">
             @csrf
             <button type="submit" style="background: none; border: none; color: #fff; padding: 15px 20px; font-size: 1.1rem; cursor: pointer; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
@@ -2218,6 +2225,74 @@
       // Available instruments data
       const availableInstruments = @json($availableInstruments ?? []);
       const dailyRates = @json($dailyRates ?? []);
+      
+      // Store booked dates for conflict checking
+      let bookedDates = [];
+      
+      // Fetch booked dates from API
+      async function fetchBookedDates() {
+        try {
+          const response = await fetch('/api/instrument-rental/booked-dates');
+          const data = await response.json();
+          bookedDates = data.booked_dates || [];
+          updateDatePickerConstraints();
+        } catch (error) {
+          console.error('Error fetching booked dates:', error);
+        }
+      }
+      
+      // Update date picker constraints to disable booked dates
+      function updateDatePickerConstraints() {
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.setAttribute('min', today);
+        endDateInput.setAttribute('min', today);
+        
+        // Add event listeners to validate selected dates
+        startDateInput.addEventListener('input', validateDateSelection);
+        endDateInput.addEventListener('input', validateDateSelection);
+      }
+      
+      // Validate that selected dates don't conflict with existing bookings
+      function validateDateSelection() {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        
+        if (startDate && bookedDates.includes(startDate)) {
+          alert('The selected start date is already booked for studio/band or solo rehearsal. Please choose a different date.');
+          startDateInput.value = '';
+          return;
+        }
+        
+        if (endDate && bookedDates.includes(endDate)) {
+          alert('The selected end date is already booked for studio/band or solo rehearsal. Please choose a different date.');
+          endDateInput.value = '';
+          return;
+        }
+        
+        // Check if any date in the range is booked
+        if (startDate && endDate) {
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          const conflictDates = [];
+          
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+            if (bookedDates.includes(dateStr)) {
+              conflictDates.push(dateStr);
+            }
+          }
+          
+          if (conflictDates.length > 0) {
+            alert(`The following dates in your rental period are already booked: ${conflictDates.join(', ')}. Please choose different dates.`);
+            endDateInput.value = '';
+            return;
+          }
+        }
+      }
+      
+      // Initialize booked dates on page load
+      fetchBookedDates();
 
       // Update instruments when type changes
       instrumentTypeSelect.addEventListener('change', function() {
@@ -2549,11 +2624,6 @@
         referenceCodeInput.classList.add('error-field');
         referenceErrorText.textContent = message;
         referenceErrorMessage.style.display = 'block';
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-          hideReferenceError();
-        }, 5000);
       }
       
       // Function to hide reference error
@@ -2569,11 +2639,6 @@
         referenceErrorText.textContent = message;
         referenceErrorMessage.style.display = 'block';
         referenceErrorMessage.classList.add('success-message');
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-          hideReferenceSuccess();
-        }, 5000);
       }
       
       // Function to hide reference success

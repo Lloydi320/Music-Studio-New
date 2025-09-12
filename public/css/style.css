@@ -128,8 +128,17 @@ body::after {
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   transition: transform 0.3s ease;
+}
+.logo a {
+  display: flex;
+  align-items: center;
+  gap: inherit;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
 }
 .logo:hover {
   transform: scale(1.02);

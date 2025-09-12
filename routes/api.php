@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\InstrumentRentalController;
 
 // Test route to verify API is working
 Route::get('/test', function () {
@@ -19,6 +20,9 @@ Route::post('/check-reference-code', [BookingController::class, 'checkReferenceC
 
 // Get booked dates for calendar
 Route::get('/booked-dates', [BookingController::class, 'getBookedDates']);
+
+// Get booked dates for instrument rental conflict checking
+Route::get('/instrument-rental/booked-dates', [InstrumentRentalController::class, 'getBookedDates']);
 
 // Booking API routes to match your PHP scripts
 Route::prefix('bookings')->group(function () {

@@ -315,6 +315,10 @@
       .lessons-container {
         padding: 0 10px;
       }
+
+      .booking-main {
+        padding-top: 60px;
+      }
     }
 
     /* Ensure proper spacing */
@@ -338,6 +342,13 @@
     .booking-footer {
       position: relative !important;
       bottom: auto !important;
+    }
+
+    /* Hide Sign Out button in navigation on desktop view */
+    @media (min-width: 769px) {
+      .nav-signout-desktop-hidden {
+        display: none !important;
+      }
     }
   </style>
 </head>
@@ -372,7 +383,7 @@
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
         @endif
         @if(Auth::check())
-        <li>
+        <li class="nav-signout-desktop-hidden">
           <form action="/logout" method="POST" style="margin: 0;">
             @csrf
             <button type="submit" style="background: none; border: none; color: #fff; padding: 15px 20px; font-size: 1.1rem; cursor: pointer; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
