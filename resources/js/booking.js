@@ -197,75 +197,149 @@ document.addEventListener("DOMContentLoaded", function () {
       empty.classList.add("empty");
       calendar.appendChild(empty);
     }
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    for (let day = 1; day <= daysInMonth; day++) {
-      const cell = document.createElement("div");
-      cell.classList.add("calendar-cell");
-      cell.textContent = day;
-      const date = new Date(year, month, day);
-      if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
-        cell.classList.add("disabled");
-      } else {
-        cell.addEventListener("click", function (e) {
-          e.stopPropagation();
-          if (cell.classList.contains("selected")) {
-            // Single click on selected does nothing (keep selected)
+    
+    // Fetch booked dates to disable unavailable dates
+    fetch('/api/booked-dates')
+      .then(response => response.json())
+      .then(data => {
+        let bookedDates = [];
+        
+        // Handle the API response format
+        if (data.booked_dates) {
+          // Convert object to array of values
+          if (typeof data.booked_dates === 'object' && !Array.isArray(data.booked_dates)) {
+            bookedDates = Object.values(data.booked_dates);
           } else {
-            document.querySelectorAll(".calendar-cell.selected").forEach(c => c.classList.remove("selected"));
-            cell.classList.add("selected");
-            const dateStr = `${monthNames[month]} ${day}, ${year}`;
-            const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
-            selectedDateLabel.textContent = `${weekday}, ${dateStr}`;
-            selectedCell = cell;
-
-            // Generate time slots when date is selected
-            const selectedDateObj = new Date(year, month, day);
-            generateTimeSlots(selectedDuration, selectedDateObj);
-
-            // Parse selected date to YYYY-MM-DD
-            const pad = n => n.toString().padStart(2, '0');
-            const dateStrISO = `${selectedYear}-${pad(selectedMonth+1)}-${pad(day)}`;
-
-            // Fetch bookings and block overlapping slots
-            fetch(`/api/bookings?date=${dateStrISO}`)
-              .then(res => res.json())
-              .then(bookings => {
-                // Show booking info
-                const bookingInfoBox = document.querySelector('.booking-info-box');
-                let info = '';
-                if (bookings.length === 0) {
-                  info = 'No bookings for this date.';
-                } else {
-                  info = 'Booked slots:<br>' + bookings.map(b => b.time_slot).join('<br>');
-                }
-                if (bookingInfoBox) bookingInfoBox.innerHTML = `<strong>Booking Info</strong><br>${info}`;
-                // Generate time slots and hide booked ones
-                generateTimeSlots(selectedDuration, selectedDateObj, bookings);
-              });
-              
-            // Update booking summary if it exists and user has made selections
-            const bookingSummary = document.getElementById('bookingSummary');
-            const confirmDate = document.getElementById('confirmDate');
-            const confirmTimeSlot = document.getElementById('confirmTimeSlot');
-            const confirmDuration = document.getElementById('confirmDuration');
-            
-            if (bookingSummary && confirmDate && selectedTimeSlot) {
-              bookingSummary.style.display = 'block';
-              confirmDate.textContent = `${weekday}, ${dateStr}`;
-              confirmTimeSlot.textContent = selectedTimeSlot;
-              confirmDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
-            }
-              
-            // If booking form is visible (user clicked Next), revert back to Next button
-            const bookingForm = document.getElementById('bookingForm');
-            const nextBtn = document.querySelector('.next-btn');
-            if (bookingForm && bookingForm.style.display !== 'none') {
-              bookingForm.style.display = 'none';
-              if (nextBtn) {
-                nextBtn.style.display = 'block';
-              }
-            }
+            bookedDates = data.booked_dates;
           }
+        } else if (Array.isArray(data)) {
+          bookedDates = data;
+        } else {
+          bookedDates = [];
+        }
+        
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let day = 1; day <= daysInMonth; day++) {
+          const cell = document.createElement("div");
+          cell.classList.add("calendar-cell");
+          cell.textContent = day;
+          const date = new Date(year, month, day);
+          
+          // Format date as YYYY-MM-DD for comparison
+          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          
+          if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate()) || (Array.isArray(bookedDates) && bookedDates.includes(dateStr))) {
+          cell.classList.add('disabled');
+          if (Array.isArray(bookedDates) && bookedDates.includes(dateStr)) {
+              cell.title = "Studio unavailable (drum/full package rental or existing booking)";
+            }
+          } else {
+            cell.addEventListener("click", function (e) {
+              e.stopPropagation();
+              if (cell.classList.contains("selected")) {
+                // Single click on selected does nothing (keep selected)
+              } else {
+                document.querySelectorAll(".calendar-cell.selected").forEach(c => c.classList.remove("selected"));
+                cell.classList.add("selected");
+                const dateStr = `${monthNames[month]} ${day}, ${year}`;
+                const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+                selectedDateLabel.textContent = `${weekday}, ${dateStr}`;
+                selectedCell = cell;
+
+                // Generate time slots when date is selected
+                const selectedDateObj = new Date(year, month, day);
+                generateTimeSlots(selectedDuration, selectedDateObj);
+
+                // Parse selected date to YYYY-MM-DD
+                const pad = n => n.toString().padStart(2, '0');
+                const dateStrISO = `${selectedYear}-${pad(selectedMonth+1)}-${pad(day)}`;
+
+                // Fetch bookings and block overlapping slots
+                fetch(`/api/bookings?date=${dateStrISO}`)
+                  .then(res => res.json())
+                  .then(bookings => {
+                    // Show booking info
+                    const bookingInfoBox = document.querySelector('.booking-info-box');
+                    let info = '';
+                    if (bookings.length === 0) {
+                      info = 'No bookings for this date.';
+                    } else {
+                      info = 'Booked slots:<br>' + bookings.map(b => b.time_slot).join('<br>');
+                    }
+                    if (bookingInfoBox) bookingInfoBox.innerHTML = `<strong>Booking Info</strong><br>${info}`;
+                    // Generate time slots and hide booked ones
+                    generateTimeSlots(selectedDuration, selectedDateObj, bookings);
+                  });
+                  
+                // Update booking summary if it exists and user has made selections
+                const bookingSummary = document.getElementById('bookingSummary');
+                const confirmDate = document.getElementById('confirmDate');
+                const confirmTimeSlot = document.getElementById('confirmTimeSlot');
+                const confirmDuration = document.getElementById('confirmDuration');
+                
+                if (bookingSummary && confirmDate && selectedTimeSlot) {
+                  bookingSummary.style.display = 'block';
+                  confirmDate.textContent = `${weekday}, ${dateStr}`;
+                  confirmTimeSlot.textContent = selectedTimeSlot;
+                  confirmDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
+                }
+                  
+                // If booking form is visible (user clicked Next), revert back to Next button
+                const bookingForm = document.getElementById('bookingForm');
+                const nextBtn = document.querySelector('.next-btn');
+                if (bookingForm && bookingForm.style.display !== 'none') {
+                  bookingForm.style.display = 'none';
+                  if (nextBtn) {
+                    nextBtn.style.display = 'block';
+                  }
+                }
+              }
+            });
+            // Double-click to unselect
+            cell.addEventListener("dblclick", function (e) {
+              e.stopPropagation();
+              if (cell.classList.contains("selected")) {
+                cell.classList.remove("selected");
+                selectedDateLabel.textContent = "";
+                selectedCell = null;
+              }
+            });
+          }
+          calendar.appendChild(cell);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching booked dates:', error);
+        // Fallback: render calendar without booked date checking
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        for (let day = 1; day <= daysInMonth; day++) {
+          const cell = document.createElement("div");
+          cell.classList.add("calendar-cell");
+          cell.textContent = day;
+          const date = new Date(year, month, day);
+          if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+            cell.classList.add("disabled");
+          } else {
+            // Add click handlers for non-disabled dates
+            cell.addEventListener("click", function (e) {
+              e.stopPropagation();
+              if (cell.classList.contains("selected")) {
+                // Single click on selected does nothing (keep selected)
+              } else {
+                document.querySelectorAll(".calendar-cell.selected").forEach(c => c.classList.remove("selected"));
+                cell.classList.add("selected");
+                const dateStr = `${monthNames[month]} ${day}, ${year}`;
+                const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+                selectedDateLabel.textContent = `${weekday}, ${dateStr}`;
+                selectedCell = cell;
+              }
+            });
+          }
+          calendar.appendChild(cell);
+        }
+      });
+  }
+
         });
         // Double-click to unselect
         cell.addEventListener("dblclick", function (e) {

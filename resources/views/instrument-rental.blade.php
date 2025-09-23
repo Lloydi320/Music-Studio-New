@@ -290,7 +290,73 @@
       }
     }
 
-         .form-group {
+    /* Date Input Styling */
+    input[type="date"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    input[type="date"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Disabled/Unavailable Date Styling */
+    .date-unavailable {
+      background-color: #ffebee !important;
+      color: #c62828 !important;
+      border-color: #e57373 !important;
+      cursor: not-allowed !important;
+    }
+
+    .date-unavailable:hover {
+      background-color: #ffcdd2 !important;
+      border-color: #ef5350 !important;
+    }
+
+    /* Date picker calendar styling for unavailable dates */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      filter: invert(0.5);
+    }
+
+    .date-unavailable::-webkit-calendar-picker-indicator {
+      filter: invert(0.8) sepia(1) saturate(5) hue-rotate(315deg);
+      cursor: not-allowed;
+    }
+
+    /* Alert styling for better user feedback */
+    .date-conflict-alert {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Form group styling */
+     .form-group {
        margin-bottom: 25px;
        position: relative;
      }
@@ -1787,46 +1853,6 @@
                 </div>
                 
                 <div class="dropdown-menu">
-                    @if(Auth::user()->is_admin)
-                        <a href="{{ route('admin.dashboard') }}" class="dropdown-item">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
-                            </svg>
-                            Admin Dashboard
-                        </a>
-                    @endif
-                    
-                    <a href="{{ route('home') }}" class="dropdown-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
-                        </svg>
-                        Calendar
-                    </a>
-                    
-                    <a href="{{ route('booking') }}" class="dropdown-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                        Book Session
-                    </a>
-                    
-                    <a href="{{ route('services') }}" class="dropdown-item">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                        About Us & Services
-                    </a>
-                    
-                    <a href="{{ route('instrument-rental') }}" class="dropdown-item active">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                        </svg>
-                        Instrument Rental
-                    </a>
-                    
-
-                    
-                    <div class="dropdown-divider"></div>
                     
                     <form action="{{ route('logout') }}" method="POST" class="dropdown-form">
                         @csrf
@@ -1841,7 +1867,7 @@
             </div>
         </div>
     @else
-        <a href="{{ route('login') }}" class="book-btn" style="margin-left: 30px;">Login with Google</a>
+        <a href="{{ route('google.login') }}" class="book-btn" style="margin-left: 30px;">Login with Google</a>
     @endif
   </header>
 
@@ -2251,31 +2277,145 @@
         // Add event listeners to validate selected dates
         startDateInput.addEventListener('input', validateDateSelection);
         endDateInput.addEventListener('input', validateDateSelection);
+        
+        // Add CSS to visually disable booked dates
+        addDisabledDatesStyle();
+      }
+      
+      // Add CSS styling for disabled dates
+      function addDisabledDatesStyle() {
+        // Remove existing style if it exists
+        const existingStyle = document.getElementById('disabled-dates-style');
+        if (existingStyle) {
+          existingStyle.remove();
+        }
+        
+        // Create CSS rules to disable booked dates
+        const style = document.createElement('style');
+        style.id = 'disabled-dates-style';
+        
+        let cssRules = '';
+        bookedDates.forEach(date => {
+          // Convert date to the format used by date input (YYYY-MM-DD)
+          const dateObj = new Date(date + 'T00:00:00');
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+          const day = String(dateObj.getDate()).padStart(2, '0');
+          const formattedDate = `${year}-${month}-${day}`;
+          
+          cssRules += `
+            input[type="date"]::-webkit-calendar-picker-indicator {
+              pointer-events: auto;
+            }
+            input[type="date"][value="${formattedDate}"] {
+              background-color: #ffebee !important;
+              color: #c62828 !important;
+              border-color: #e57373 !important;
+            }
+          `;
+        });
+        
+        style.textContent = cssRules;
+        document.head.appendChild(style);
       }
       
       // Validate that selected dates don't conflict with existing bookings
-      function validateDateSelection() {
+      function validateDateSelection(event) {
+        const input = event.target;
+        const selectedDate = input.value;
+        
+        // Remove any existing conflict alerts
+        const existingAlert = document.querySelector('.date-conflict-alert');
+        if (existingAlert) {
+          existingAlert.remove();
+        }
+        
+        // Check if selected date is in the past
+        if (selectedDate) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0); // Set to start of today
+          const selected = new Date(selectedDate + 'T00:00:00');
+          
+          if (selected < today) {
+            // Prevent past date selection
+            input.value = '';
+            input.classList.add('date-unavailable');
+            
+            const formattedDate = selected.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            });
+            
+            // Create and show alert for past date
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'date-conflict-alert';
+            alertDiv.style.display = 'block';
+            alertDiv.innerHTML = `
+              <strong>Invalid Date:</strong> ${formattedDate} is in the past. Please select today or a future date.
+            `;
+            
+            input.parentNode.insertBefore(alertDiv, input.nextSibling);
+            
+            // Remove alert after 5 seconds
+            setTimeout(() => {
+              if (alertDiv.parentNode) {
+                alertDiv.remove();
+              }
+            }, 5000);
+            
+            return false;
+          }
+        }
+        
+        if (selectedDate && bookedDates.includes(selectedDate)) {
+          // Prevent the date from being selected
+          input.value = '';
+          
+          // Add visual styling to indicate unavailable date
+          input.classList.add('date-unavailable');
+          
+          // Show user-friendly message with better styling
+          const dateObj = new Date(selectedDate + 'T00:00:00');
+          const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          
+          // Create and show alert
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'date-conflict-alert';
+          alertDiv.style.display = 'block';
+          alertDiv.innerHTML = `
+            <strong>Date Unavailable:</strong> ${formattedDate} is already booked for studio/band or solo rehearsal. Please choose a different date.
+          `;
+          
+          input.parentNode.insertBefore(alertDiv, input.nextSibling);
+          
+          // Remove alert after 5 seconds
+          setTimeout(() => {
+            if (alertDiv.parentNode) {
+              alertDiv.remove();
+            }
+          }, 5000);
+          
+          return false;
+        } else {
+          // Remove unavailable styling if date is valid
+          input.classList.remove('date-unavailable');
+        }
+        
+        // Additional validation for date range conflicts
         const startDate = startDateInput.value;
         const endDate = endDateInput.value;
         
-        if (startDate && bookedDates.includes(startDate)) {
-          alert('The selected start date is already booked for studio/band or solo rehearsal. Please choose a different date.');
-          startDateInput.value = '';
-          return;
-        }
-        
-        if (endDate && bookedDates.includes(endDate)) {
-          alert('The selected end date is already booked for studio/band or solo rehearsal. Please choose a different date.');
-          endDateInput.value = '';
-          return;
-        }
-        
-        // Check if any date in the range is booked
         if (startDate && endDate) {
           const start = new Date(startDate);
           const end = new Date(endDate);
           const conflictDates = [];
           
+          // Check if any date in the range is booked
           for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             const dateStr = d.toISOString().split('T')[0];
             if (bookedDates.includes(dateStr)) {
@@ -2284,15 +2424,50 @@
           }
           
           if (conflictDates.length > 0) {
-            alert(`The following dates in your rental period are already booked: ${conflictDates.join(', ')}. Please choose different dates.`);
-            endDateInput.value = '';
-            return;
+            const conflictDateStrings = conflictDates.map(date => {
+              const dateObj = new Date(date + 'T00:00:00');
+              return dateObj.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              });
+            });
+            
+            // Create and show range conflict alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'date-conflict-alert';
+            alertDiv.style.display = 'block';
+            alertDiv.innerHTML = `
+              <strong>Date Range Conflict:</strong> The following dates in your rental period are already booked: ${conflictDateStrings.join(', ')}. Please choose different dates.
+            `;
+            
+            input.parentNode.insertBefore(alertDiv, input.nextSibling);
+            
+            // Clear the problematic date and add styling
+            if (input === endDateInput) {
+              endDateInput.value = '';
+              endDateInput.classList.add('date-unavailable');
+            } else if (input === startDateInput) {
+              startDateInput.value = '';
+              startDateInput.classList.add('date-unavailable');
+            }
+            
+            // Remove alert after 7 seconds
+            setTimeout(() => {
+              if (alertDiv.parentNode) {
+                alertDiv.remove();
+              }
+            }, 7000);
+            
+            return false;
           }
         }
+        
+        return true;
       }
-      
-      // Initialize booked dates on page load
-      fetchBookedDates();
+       
+       // Initialize booked dates on page load
+       fetchBookedDates();
 
       // Update instruments when type changes
       instrumentTypeSelect.addEventListener('change', function() {

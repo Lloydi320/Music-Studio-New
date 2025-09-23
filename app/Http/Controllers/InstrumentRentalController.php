@@ -308,6 +308,7 @@ class InstrumentRentalController extends Controller
     /**
      * Get booked dates for conflict checking
      * Returns dates that are already booked by studio/band or solo rehearsal bookings
+     * and existing instrument rentals
      */
     public function getBookedDates(Request $request)
     {
@@ -316,8 +317,15 @@ class InstrumentRentalController extends Controller
             ->select('date', 'time_slot', 'duration', 'service_type')
             ->get();
 
+        // Get all active instrument rentals
+        $instrumentRentals = InstrumentRental::where('status', '!=', 'cancelled')
+            ->where('status', '!=', 'returned')
+            ->select('rental_start_date', 'rental_end_date', 'instrument_type')
+            ->get();
+
         $bookedDates = [];
         
+        // Process studio/band bookings
         foreach ($bookings as $booking) {
             $bookingDate = Carbon::parse($booking->date);
             
@@ -334,6 +342,22 @@ class InstrumentRentalController extends Controller
             $currentDate = $bookingStart->copy()->startOfDay();
             $endDate = $bookingEnd->copy()->startOfDay();
             
+            while ($currentDate->lte($endDate)) {
+                $dateStr = $currentDate->format('Y-m-d');
+                if (!in_array($dateStr, $bookedDates)) {
+                    $bookedDates[] = $dateStr;
+                }
+                $currentDate->addDay();
+            }
+        }
+
+        // Process instrument rentals
+        foreach ($instrumentRentals as $rental) {
+            $startDate = Carbon::parse($rental->rental_start_date);
+            $endDate = Carbon::parse($rental->rental_end_date);
+            
+            // Add all dates in the rental period
+            $currentDate = $startDate->copy();
             while ($currentDate->lte($endDate)) {
                 $dateStr = $currentDate->format('Y-m-d');
                 if (!in_array($dateStr, $bookedDates)) {

@@ -57,6 +57,31 @@ class BookingController extends Controller
         $newStartTime = Carbon::createFromFormat('Y-m-d g:i A', $bookingDate->format('Y-m-d') . ' ' . $startTime, config('app.timezone', 'Asia/Manila'));
         $newEndTime = $newStartTime->copy()->addHours($duration);
         
+        // Check if drums or full package are rented on this date (studio unavailable)
+        $drumOrFullPackageRentals = \App\Models\InstrumentRental::whereIn('status', ['pending', 'confirmed'])
+            ->where(function($query) {
+                $query->where('instrument_type', 'drums')
+                      ->orWhere('instrument_type', 'Full Package');
+            })
+            ->where(function($query) use ($request) {
+                $query->where('rental_start_date', '<=', $request->date)
+                      ->where('rental_end_date', '>=', $request->date);
+            })
+            ->exists();
+
+        if ($drumOrFullPackageRentals) {
+            $errorMessage = 'Studio is unavailable on this date due to a Full Package or drum rental. Please choose a different date.';
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage
+                ], 422);
+            }
+            
+            return back()->with('error', $errorMessage);
+        }
+
         // Check for overlapping bookings
         $existingBookings = Booking::where('date', $request->date)
             ->where('status', '!=', 'cancelled')
@@ -255,6 +280,22 @@ class BookingController extends Controller
             }
         }
         
+        // Check if drums or full package are rented on this date (studio unavailable)
+        $drumOrFullPackageRentals = \App\Models\InstrumentRental::whereIn('status', ['pending', 'confirmed'])
+            ->where(function($query) {
+                $query->where('instrument_type', 'drums')
+                      ->orWhere('instrument_type', 'Full Package');
+            })
+            ->where(function($query) use ($request) {
+                $query->where('rental_start_date', '<=', $request->date)
+                      ->where('rental_end_date', '>=', $request->date);
+            })
+            ->exists();
+
+        if ($drumOrFullPackageRentals) {
+            return response()->json(['available' => false, 'reason' => 'Studio unavailable due to drum/full package rental']);
+        }
+        
         return response()->json(['available' => true]);
     }
 
@@ -433,6 +474,56 @@ class BookingController extends Controller
                 
                 if (!$rental) {
                     return response()->json(['error' => 'Instrument rental not found'], 404);
+                }
+
+                // Check for date conflicts with existing rentals
+                $conflictingRentals = \App\Models\InstrumentRental::whereIn('status', ['pending', 'confirmed'])
+                    ->where('id', '!=', $rental->id) // Exclude current rental
+                    ->where(function($query) use ($request) {
+                        // Check if the requested dates overlap with existing rentals
+                        $query->where(function($subQuery) use ($request) {
+                            // Case 1: Existing rental starts during requested period
+                            $subQuery->whereBetween('rental_start_date', [$request->start_date, $request->end_date]);
+                        })->orWhere(function($subQuery) use ($request) {
+                            // Case 2: Existing rental ends during requested period
+                            $subQuery->whereBetween('rental_end_date', [$request->start_date, $request->end_date]);
+                        })->orWhere(function($subQuery) use ($request) {
+                            // Case 3: Existing rental completely encompasses requested period
+                            $subQuery->where('rental_start_date', '<=', $request->start_date)
+                                    ->where('rental_end_date', '>=', $request->end_date);
+                        })->orWhere(function($subQuery) use ($request) {
+                            // Case 4: Requested period completely encompasses existing rental
+                            $subQuery->where('rental_start_date', '>=', $request->start_date)
+                                    ->where('rental_end_date', '<=', $request->end_date);
+                        });
+                    })
+                    ->get();
+
+                if ($conflictingRentals->count() > 0) {
+                    $conflictDetails = $conflictingRentals->map(function($conflictRental) {
+                        return [
+                            'reference' => $conflictRental->reference,
+                            'instrument' => $conflictRental->instrument_type,
+                            'start_date' => $conflictRental->rental_start_date,
+                            'end_date' => $conflictRental->rental_end_date,
+                            'customer' => $conflictRental->user->name ?? 'Unknown'
+                        ];
+                    });
+
+                    $firstConflict = $conflictDetails->first();
+                    $conflictMessage = "The requested dates conflict with an existing rental. ";
+                    $conflictMessage .= "There is already a {$firstConflict['instrument']} rental ";
+                    $conflictMessage .= "from " . \Carbon\Carbon::parse($firstConflict['start_date'])->format('M j, Y');
+                    $conflictMessage .= " to " . \Carbon\Carbon::parse($firstConflict['end_date'])->format('M j, Y');
+                    $conflictMessage .= " (Reference: {$firstConflict['reference']}).";
+                    
+                    if ($conflictingRentals->count() > 1) {
+                        $conflictMessage .= " Plus " . ($conflictingRentals->count() - 1) . " other conflicting rental(s).";
+                    }
+                    
+                    $conflictMessage .= " Please choose different dates.";
+
+                    return response()->json(['error' => $conflictMessage], 409);
                 }
 
                 // Create reschedule request for instrument rental
@@ -749,17 +840,50 @@ class BookingController extends Controller
 
     /**
      * Return all booked dates as an array of date strings (YYYY-MM-DD).
+     * Includes dates when drums or full package are rented (studio unavailable).
      */
     public function getBookedDates()
     {
-        $dates = \App\Models\Booking::whereIn('status', ['pending', 'confirmed'])
+        // Get studio booking dates
+        $studioBookingDates = \App\Models\Booking::whereIn('status', ['pending', 'confirmed'])
             ->get()
             ->map(function($booking) {
                 return \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
             })
             ->unique()
-            ->values();
-        return response()->json(['booked_dates' => $dates]);
+            ->values()
+            ->toArray();
+
+        // Get instrument rental dates that make studio unavailable
+        // (drums and full package rentals)
+        $instrumentRentalDates = \App\Models\InstrumentRental::whereIn('status', ['pending', 'confirmed'])
+            ->where(function($query) {
+                $query->where('instrument_type', 'drums')
+                      ->orWhere('instrument_type', 'Full Package');
+            })
+            ->get()
+            ->flatMap(function($rental) {
+                $dates = [];
+                $startDate = \Carbon\Carbon::parse($rental->rental_start_date);
+                $endDate = \Carbon\Carbon::parse($rental->rental_end_date);
+                
+                // Add all dates in the rental period
+                $currentDate = $startDate->copy();
+                while ($currentDate->lte($endDate)) {
+                    $dates[] = $currentDate->format('Y-m-d');
+                    $currentDate->addDay();
+                }
+                
+                return $dates;
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        // Combine and return all unavailable dates
+        $allBookedDates = array_unique(array_merge($studioBookingDates, $instrumentRentalDates));
+        
+        return response()->json(['booked_dates' => $allBookedDates]);
     }
 
     /**

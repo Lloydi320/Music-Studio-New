@@ -56,7 +56,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Handle the API response format
         if (data.booked_dates) {
-          bookedDates = data.booked_dates;
+          // Convert object to array of values
+          if (typeof data.booked_dates === 'object' && !Array.isArray(data.booked_dates)) {
+            bookedDates = Object.values(data.booked_dates);
+          } else {
+            bookedDates = data.booked_dates;
+          }
         } else if (Array.isArray(data)) {
           bookedDates = data;
         } else {
@@ -106,9 +111,12 @@ document.addEventListener('DOMContentLoaded', function() {
           dayElement.appendChild(circle);
           
           // Check if date has bookings
-          if (bookedDates.includes(dateKey)) {
+          if (Array.isArray(bookedDates) && bookedDates.includes(dateKey)) {
             dayElement.classList.add('booked');
-            dayElement.title = 'Booked';
+            dayElement.title = 'Booked - Studio unavailable';
+            dayElement.style.pointerEvents = 'none'; // Disable clicking
+            dayElement.style.opacity = '0.6';
+            dayElement.style.cursor = 'not-allowed';
             console.log('✅ Date is booked:', dateKey);
           }
           

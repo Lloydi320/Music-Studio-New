@@ -19,13 +19,7 @@
     "welcome": "Hello! Welcome to Lemon Hub Studio! How can I help you today?",
     "fallback": "I'm here to help with any questions about our music studio services. What would you like to know?"
   },
-  "quick_replies": [
-    "What services do you offer?",
-    "What are your rates?",
-    "How do I book a session?",
-    "What equipment do you use?",
-    "How do I reschedule?"
-  ],
+  "quick_replies": [],
   "training_data": {
     "note": "Updated with comprehensive FAQs for Lemon Hub Studio - Complete Training Data",
     "instructions": "Always match user questions to the most relevant FAQ. Provide detailed, accurate information based on the studio's actual services, rates, and policies. Use exact pricing and policy information as provided.",

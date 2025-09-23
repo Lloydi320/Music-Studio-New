@@ -99,53 +99,6 @@
           </div>
           
           <div class="dropdown-menu">
-            @if($user->is_admin)
-              <a href="/admin/dashboard" class="dropdown-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Admin Dashboard</span>
-              </a>
-              <a href="/admin/calendar" class="dropdown-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Calendar</span>
-              </a>
-            @endif
-            <a href="/booking" class="dropdown-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Book Session</span>
-            </a>
-
-            <a href="/services" class="dropdown-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L3.09 8.26L4 21L12 17L20 21L20.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>About Us & Services</span>
-            </a>
-            <a href="#" id="contactLink" class="dropdown-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Contact</span>
-            </a>
-            <a href="/feedback" class="dropdown-item">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Feedback</span>
-            </a>
-            
-            <div class="dropdown-divider"></div>
             
             <form action="/logout" method="POST" class="logout-form">
               @csrf
@@ -162,7 +115,7 @@
         </div>
         </div>
     @else
-      <a href="/login" class="book-btn" style="margin-left: 30px;">Login</a>
+      <a href="/auth/google" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 
@@ -652,14 +605,14 @@
   document.addEventListener('DOMContentLoaded', function() {
     if (window.location.hash === '#bottom-of-services') {
       // Check if user is authenticated
-      var isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
+      var isAuthenticated = @json(Auth::check());
       if (!isAuthenticated) {
         // Redirect to login if not authenticated
         window.location.href = '/auth/google';
         return;
       }
       
-    setTimeout(function() {
+      setTimeout(function() {
         const element = document.getElementById('bottom-of-services');
         if (element) {
           element.scrollIntoView({ 
@@ -1027,7 +980,6 @@
             }
         });
     }
-});
 </script>
 
 <script>
@@ -1096,6 +1048,243 @@
       if (e.key === 'Escape') {
           closeRescheduleSuccessModal();
       }
+  });
+</script>
+
+<script>
+  // Rescheduling date validation variables
+  let rescheduleBookedDates = [];
+  let rescheduleInstrumentBookedDates = [];
+
+  // Fetch booked dates for studio/band bookings
+  async function fetchRescheduleBookedDates() {
+    try {
+      const response = await fetch('/api/booked-dates');
+      const data = await response.json();
+      rescheduleBookedDates = data.booked_dates || [];
+      console.log('Fetched booked dates for rescheduling:', rescheduleBookedDates);
+    } catch (error) {
+      console.error('Error fetching booked dates for rescheduling:', error);
+    }
+  }
+
+  // Fetch booked dates for instrument rentals
+  async function fetchRescheduleInstrumentBookedDates() {
+    try {
+      const response = await fetch('/api/instrument-rental/booked-dates');
+      const data = await response.json();
+      rescheduleInstrumentBookedDates = data.booked_dates || [];
+      console.log('Fetched instrument booked dates for rescheduling:', rescheduleInstrumentBookedDates);
+    } catch (error) {
+      console.error('Error fetching instrument booked dates for rescheduling:', error);
+    }
+  }
+
+  // Validate date selection for rescheduling
+  function validateRescheduleDateSelection(event) {
+    const input = event.target;
+    const selectedDate = input.value;
+    const isInstrumentRental = input.id === 'startDate' || input.id === 'endDate';
+    
+    // Remove any existing conflict alerts
+    const existingAlert = input.parentNode.querySelector('.date-conflict-alert');
+    if (existingAlert) {
+      existingAlert.remove();
+    }
+    
+    // Check if selected date is in the past
+    if (selectedDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selected = new Date(selectedDate + 'T00:00:00');
+      
+      if (selected < today) {
+        // Prevent past date selection
+        input.value = '';
+        input.classList.add('date-unavailable');
+        
+        const formattedDate = selected.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        
+        // Create and show alert for past date
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'date-conflict-alert';
+        alertDiv.style.cssText = `
+          background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+          color: white;
+          padding: 12px 16px;
+          border-radius: 8px;
+          margin-top: 8px;
+          font-size: 14px;
+          box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+          border-left: 4px solid #ff4757;
+          animation: slideIn 0.3s ease-out;
+        `;
+        alertDiv.innerHTML = `
+          <strong>⚠️ Invalid Date:</strong> ${formattedDate} is in the past. Please select today or a future date.
+        `;
+        
+        input.parentNode.appendChild(alertDiv);
+        
+        // Remove alert after 5 seconds
+        setTimeout(() => {
+          if (alertDiv.parentNode) {
+            alertDiv.remove();
+          }
+        }, 5000);
+        
+        return false;
+      }
+    }
+    
+    // Check for date conflicts based on booking type
+    const bookedDates = isInstrumentRental ? rescheduleInstrumentBookedDates : rescheduleBookedDates;
+    
+    if (selectedDate && bookedDates.includes(selectedDate)) {
+      // Prevent the date from being selected
+      input.value = '';
+      
+      // Add visual styling to indicate unavailable date
+      input.classList.add('date-unavailable');
+      
+      // Show user-friendly message
+      const dateObj = new Date(selectedDate + 'T00:00:00');
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      const conflictType = isInstrumentRental ? 'instrument rental or studio booking' : 'studio/band or solo rehearsal';
+      
+      // Create and show alert
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'date-conflict-alert';
+      alertDiv.style.cssText = `
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-top: 8px;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        border-left: 4px solid #ff4757;
+        animation: slideIn 0.3s ease-out;
+      `;
+      alertDiv.innerHTML = `
+        <strong>🚫 Date Unavailable:</strong> ${formattedDate} is already booked for ${conflictType}. Please choose a different date.
+      `;
+      
+      input.parentNode.appendChild(alertDiv);
+      
+      // Remove alert after 5 seconds
+      setTimeout(() => {
+        if (alertDiv.parentNode) {
+          alertDiv.remove();
+        }
+      }, 5000);
+      
+      return false;
+    } else {
+      // Remove unavailable styling if date is valid
+      input.classList.remove('date-unavailable');
+    }
+    
+    // Additional validation for instrument rental date range conflicts
+    if (isInstrumentRental) {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const conflictDates = [];
+        
+        // Check if any date in the range is booked
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const dateStr = d.toISOString().split('T')[0];
+          if (rescheduleInstrumentBookedDates.includes(dateStr)) {
+            conflictDates.push(dateStr);
+          }
+        }
+        
+        if (conflictDates.length > 0) {
+          const conflictDateStrings = conflictDates.map(date => {
+            const dateObj = new Date(date + 'T00:00:00');
+            return dateObj.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            });
+          });
+          
+          // Create and show range conflict alert
+          const alertDiv = document.createElement('div');
+          alertDiv.className = 'date-conflict-alert';
+          alertDiv.style.cssText = `
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            border-left: 4px solid #ff4757;
+            animation: slideIn 0.3s ease-out;
+          `;
+          alertDiv.innerHTML = `
+            <strong>⚠️ Date Range Conflict:</strong> The following dates in your rental period are already booked: ${conflictDateStrings.join(', ')}. Please choose different dates.
+          `;
+          
+          input.parentNode.appendChild(alertDiv);
+          
+          // Clear the problematic date and add styling
+          input.value = '';
+          input.classList.add('date-unavailable');
+          
+          // Remove alert after 7 seconds
+          setTimeout(() => {
+            if (alertDiv.parentNode) {
+              alertDiv.remove();
+            }
+          }, 7000);
+          
+          return false;
+        }
+      }
+    }
+    
+    return true;
+  }
+
+  // Initialize rescheduling date validation when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fetch booked dates for validation
+    fetchRescheduleBookedDates();
+    fetchRescheduleInstrumentBookedDates();
+    
+    // Add event listeners to date inputs
+    const newDateInput = document.getElementById('newDate');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    if (newDateInput) {
+      newDateInput.addEventListener('change', validateRescheduleDateSelection);
+      newDateInput.addEventListener('input', validateRescheduleDateSelection);
+    }
+    
+    if (startDateInput) {
+      startDateInput.addEventListener('change', validateRescheduleDateSelection);
+      startDateInput.addEventListener('input', validateRescheduleDateSelection);
+    }
+    
+    if (endDateInput) {
+      endDateInput.addEventListener('change', validateRescheduleDateSelection);
+      endDateInput.addEventListener('input', validateRescheduleDateSelection);
+    }
   });
 </script>
 

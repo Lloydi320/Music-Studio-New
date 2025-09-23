@@ -3024,8 +3024,8 @@ a {
 .services-modal {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 20px;
-  width: 90%;
-  max-width: 1000px;
+  width: 95%;
+  max-width: 1200px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 
@@ -3082,7 +3082,7 @@ a {
 .service-grid-popup {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 25px;
   justify-items: center;
 }
 
@@ -3090,7 +3090,7 @@ a {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border: 2px solid #ffd700;
   border-radius: 15px;
-  padding: 20px;
+  padding: 25px;
   text-align: center;
   text-decoration: none;
   color: inherit;
@@ -3099,7 +3099,7 @@ a {
   position: relative;
   overflow: hidden;
   width: 100%;
-  max-width: 350px;
+  max-width: 400px;
 }
 
 .service-box-popup::before {
