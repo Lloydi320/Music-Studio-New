@@ -215,44 +215,7 @@
 </div>
 
 <!-- Feedback Modal -->
-<div id="feedbackPopup" class="feedback-popup">
-  <div class="feedback-modal-card">
-    <div class="feedback-modal-header">
-      <h2>Feedback</h2>
-      <button class="close-feedback" id="closeFeedback">&times;</button>
-    </div>
-    <div class="feedback-modal-content">
-      <div class="feedback-list">
-        <div id="feedbackEntries">
-          <p class="placeholder">No feedback shared yet.</p>
-        </div>
-      </div>
-      <div class="feedback-form">
-        <form id="feedbackForm">
-          <label for="name">Your Name</label>
-          <input type="text" id="name" required />
-
-          <label for="rating">Rating</label>
-          <div class="rating-stars">
-            <span data-value="1">★</span>
-            <span data-value="2">★</span>
-            <span data-value="3">★</span>
-            <span data-value="4">★</span>
-            <span data-value="5">★</span>
-          </div>
-
-          <label for="comment">Comment</label>
-          <textarea id="comment" rows="5" required></textarea>
-
-          <label for="photo">Upload a Photo (optional)</label>
-          <input type="file" id="photo" accept="image/*" />
-
-          <button type="submit" class="submit-btn">Submit Feedback</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+@include('partials.feedback-modal')
 
 <!-- Modern Rescheduling Modal -->
 <div id="reschedulePopup" class="reschedule-popup">
@@ -1529,6 +1492,8 @@
   }
 }
 </style>
+
+<script src="{{ asset('js/feedback.js') }}"></script>
 
 </body>
 </html>

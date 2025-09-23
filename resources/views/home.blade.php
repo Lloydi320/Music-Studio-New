@@ -238,29 +238,35 @@
     <div class="feedback-modal-content">
       <div class="feedback-list">
         <div id="feedbackEntries">
-          <p class="placeholder">No feedback shared yet.</p>
+          <div style="text-align: center; padding: 40px; color: #666;">
+            <div style="font-size: 3em; margin-bottom: 15px; opacity: 0.5;">📝</div>
+            <h3 style="margin: 0 0 10px 0; color: #333;">No feedback yet</h3>
+            <p style="margin: 0; font-size: 0.9em;">Be the first to share your experience!</p>
+          </div>
         </div>
       </div>
       <div class="feedback-form">
         <form id="feedbackForm">
-          <label for="name">Your Name</label>
-          <input type="text" id="name" required />
+          <div class="form-content">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" required />
 
-          <label for="rating">Rating</label>
-          <div class="rating-stars">
-            <span data-value="1">★</span>
-            <span data-value="2">★</span>
-            <span data-value="3">★</span>
-            <span data-value="4">★</span>
-            <span data-value="5">★</span>
+            <label for="rating">Rating</label>
+            <div class="rating-stars">
+              <span data-value="1">★</span>
+              <span data-value="2">★</span>
+              <span data-value="3">★</span>
+              <span data-value="4">★</span>
+              <span data-value="5">★</span>
+            </div>
+
+            <label for="comment">Comment</label>
+            <textarea id="comment" rows="5" required></textarea>
+
+            <label for="photo">Upload a Photo (optional)</label>
+            <input type="file" id="photo" accept="image/*" />
           </div>
-
-          <label for="comment">Comment</label>
-          <textarea id="comment" rows="5" required></textarea>
-
-          <label for="photo">Upload a Photo (optional)</label>
-          <input type="file" id="photo" accept="image/*" />
-
+          
           <button type="submit" class="submit-btn">Submit Feedback</button>
         </form>
       </div>
@@ -485,133 +491,40 @@
         return;
       }
       
-      // Show loading state
-      container.innerHTML = `
-        <div style="text-align: center; padding: 20px; color: #666;">
-          <div style="font-size: 1.5em; margin-bottom: 10px;">⏳</div>
-          <p>Loading feedback from database...</p>
-        </div>
-      `;
-      
-      console.log('📡 Fetching from /api/feedbacks...');
-      const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-      console.log('🔑 CSRF Token:', token ? 'Present' : 'Missing');
-      
-      fetch('/api/feedbacks', {
-        headers: {
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': token
-        }
-      })
-      .then(res => {
-        console.log('📥 Response status:', res.status);
-        return res.json();
-      })
-      .then(data => {
-        console.log('📊 Received data:', data);
-        container.innerHTML = '';
-        if (!data.feedbacks || !data.feedbacks.length) {
-          container.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: #666;">
-              <div style="font-size: 1.5em; margin-bottom: 10px;">📝</div>
-              <p>No feedback shared yet.</p>
-              <small>Be the first to share your experience!</small>
-            </div>
-          `;
-          return;
-        }
-        
-        data.feedbacks.forEach(feedback => {
-          const entry = document.createElement('div');
-          entry.className = 'feedback-entry';
-          entry.style.cssText = `
-            border: 2px solid #ffd700;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease;
-          `;
+      // Fetch actual feedback from database
+      fetch('/api/feedbacks')
+        .then(response => response.json())
+        .then(data => {
+          console.log('✅ Feedback loaded successfully:', data);
           
-          // Add hover effect
-          entry.addEventListener('mouseenter', () => {
-            entry.style.transform = 'translateY(-2px)';
-            entry.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
-          });
-          
-          entry.addEventListener('mouseleave', () => {
-            entry.style.transform = 'translateY(0)';
-            entry.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-          });
-          
-          const stars = '★'.repeat(feedback.rating) + '☆'.repeat(5 - feedback.rating);
-          const starColor = feedback.rating >= 4 ? '#ffd700' : feedback.rating >= 3 ? '#ffa500' : '#ff6b6b';
-          
-          const date = new Date(feedback.created_at);
-          const formattedDate = date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          
-          let photoHtml = '';
-          if (feedback.photo_url) {
-            photoHtml = `
-              <div style="margin-top: 10px;">
-                <img src="${feedback.photo_url}" 
-                     style="width: 100%; max-width: 200px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); cursor: pointer;" 
-                     onclick="openPhotoModal('${feedback.photo_url}')" 
-                     alt="Feedback photo" />
+          if (!data.feedbacks || data.feedbacks.length === 0) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 40px; color: #666;">
+                <div style="font-size: 3em; margin-bottom: 15px; opacity: 0.5;">📝</div>
+                <h3 style="margin: 0 0 10px 0; color: #333;">No feedback yet</h3>
+                <p style="margin: 0; font-size: 0.9em;">Be the first to share your experience!</p>
               </div>
             `;
+            return;
           }
           
-          const userTypeIcon = feedback.user_type === 'Authenticated' ? '👤' : '👥';
-          const userTypeColor = feedback.user_type === 'Authenticated' ? '#007bff' : '#6c757d';
-          
-          entry.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <h4 style="margin: 0; color: #333; font-size: 1.1em; font-weight: bold;">${feedback.name}</h4>
-                <span style="background: ${userTypeColor}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.6em; font-weight: bold;">
-                  ${userTypeIcon} ${feedback.user_type}
-                </span>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 1.3em; color: ${starColor}; margin-bottom: 3px;">${stars}</div>
-                <small style="color: #666; font-size: 0.8em;">${feedback.rating}/5 stars</small>
-              </div>
+          container.innerHTML = '';
+          data.feedbacks.forEach(feedback => {
+            const card = createFeedbackCard(feedback);
+            container.appendChild(card);
+          });
+        })
+        .catch(error => {
+          console.error('❌ Error loading feedback:', error);
+          // Show the same "No feedback yet" message even on error
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+              <div style="font-size: 3em; margin-bottom: 15px; opacity: 0.5;">📝</div>
+              <h3 style="margin: 0 0 10px 0; color: #333;">No feedback yet</h3>
+              <p style="margin: 0; font-size: 0.9em;">Be the first to share your experience!</p>
             </div>
-            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin: 8px 0; border-left: 3px solid #ffd700;">
-              <p style="margin: 0; color: #555; line-height: 1.5; font-style: italic; font-size: 0.9em;">"${feedback.comment || feedback.content || ''}"</p>
-            </div>
-            ${photoHtml}
-
           `;
-          container.appendChild(entry);
         });
-        
-
-      })
-      .catch(error => {
-        console.error('❌ Error loading feedback:', error);
-        console.error('❌ Error details:', error.message);
-        const container = document.getElementById('feedbackEntries');
-        container.innerHTML = `
-          <div style="text-align: center; padding: 20px; color: #dc3545;">
-            <div style="font-size: 1.5em; margin-bottom: 10px;">❌</div>
-            <p>Error loading feedback from database</p>
-            <small>Please check your connection and try again</small>
-            <br><br>
-            <button onclick="loadFeedbacks()" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em;">
-              🔄 Retry
-            </button>
-          </div>
-        `;
-      });
     }
     
     // Function to create feedback card
@@ -687,11 +600,6 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
           <div style="display: flex; align-items: center; gap: 10px;">
             <small style="color: #888; font-size: 0.75em;">📅 ${formattedDate}</small>
-            <small style="color: #6c757d; font-size: 0.75em;">🆔 ID: ${feedback.id}</small>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <small style="color: #28a745; font-weight: bold; font-size: 0.75em;">✅ Just Submitted</small>
-            <small style="color: #17a2b8; font-weight: bold; font-size: 0.75em;">📊 Saved to Database</small>
           </div>
         </div>
       `;
@@ -733,14 +641,18 @@
       if (feedbackForm) {
         // Add rating star functionality
         const ratingStars = document.querySelectorAll('.rating-stars span');
+        console.log('⭐ Rating stars found:', ratingStars.length);
+        
         ratingStars.forEach((star, index) => {
           star.addEventListener('click', () => {
             selectedRating = index + 1;
+            console.log('⭐ Rating selected:', selectedRating);
             updateStars();
           });
         });
         
         function updateStars() {
+          console.log('🎨 Updating stars display for rating:', selectedRating);
           ratingStars.forEach((star, index) => {
             if (index < selectedRating) {
               star.style.color = '#ffd700';
@@ -752,15 +664,21 @@
         
         feedbackForm.addEventListener('submit', async function(e) {
           e.preventDefault();
+          console.log('🚀 Form submission started...');
           
           const name = document.getElementById('name').value.trim();
           const comment = document.getElementById('comment').value.trim();
           const photo = document.getElementById('photo').files[0];
           
+          console.log('📝 Form data:', { name, comment, selectedRating, hasPhoto: !!photo });
+          
           if (!name || !comment || selectedRating === 0) {
+            console.log('❌ Validation failed:', { name: !!name, comment: !!comment, selectedRating });
             alert('Please fill in all required fields and select a rating.');
             return;
           }
+          
+          console.log('✅ Validation passed, preparing submission...');
           
           // Create form data
           const formData = new FormData();
@@ -771,8 +689,12 @@
             formData.append('photo', photo);
           }
           
+          console.log('📦 FormData prepared, making API request...');
+          
           try {
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            console.log('🔐 CSRF token found:', token ? 'Yes' : 'No');
+            
             const response = await fetch('/api/feedback', {
               method: 'POST',
               headers: {
@@ -781,8 +703,11 @@
               body: formData
             });
             
+            console.log('📡 API response status:', response.status, response.statusText);
+            
             if (response.ok) {
               const result = await response.json();
+              console.log('✅ Success response:', result);
               
               // Create feedback card for immediate display
               const feedbackCard = createFeedbackCard({
@@ -797,9 +722,10 @@
               
               // Add to display immediately
               const container = document.getElementById('feedbackEntries');
-              const placeholder = container.querySelector('.placeholder');
-              if (placeholder) {
-                placeholder.remove();
+              // Remove the "No feedback yet" message if it exists
+              const noFeedbackMessage = container.querySelector('div[style*="text-align: center"]');
+              if (noFeedbackMessage) {
+                noFeedbackMessage.remove();
               }
               
               // Insert at the top
@@ -815,10 +741,11 @@
               
             } else {
               const errorData = await response.json();
+              console.log('❌ Error response:', errorData);
               alert('Error submitting feedback: ' + (errorData.message || 'Unknown error'));
             }
           } catch (error) {
-            console.error('Error submitting feedback:', error);
+            console.error('💥 Exception during submission:', error);
             alert('Error submitting feedback. Please try again.');
           }
         });

@@ -364,7 +364,8 @@
           </div>
         </div>
         <div class="feedback-form">
-          <form id="feedbackForm">
+        <form id="feedbackForm">
+          <div class="form-content">
             <label for="name">Your Name</label>
             <input type="text" id="name" required />
 
@@ -382,10 +383,11 @@
 
             <label for="photo">Upload a Photo (optional)</label>
             <input type="file" id="photo" accept="image/*" />
-
-            <button type="submit" class="submit-btn">Submit Feedback</button>
-          </form>
-        </div>
+          </div>
+          
+          <button type="submit" class="submit-btn">Submit Feedback</button>
+        </form>
+      </div>
       </div>
     </div>
   </div>

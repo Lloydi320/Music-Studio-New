@@ -2372,13 +2372,14 @@ a {
   border-radius: 24px;
   width: 950px;
   max-width: 95vw;
+  max-height: 95vh;
   box-shadow: 0 25px 60px rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
   border: 1px solid rgba(255, 224, 102, 0.3);
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow: visible;
-  margin: 40px 0;
+  overflow: hidden;
+  margin: 10px 0;
   animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   transform-origin: center bottom;
 }
@@ -2472,10 +2473,13 @@ a {
   max-width: 400px;
   min-width: 0;
   padding: 20px 18px 18px 18px;
-  margin-bottom: 0;
+  margin-bottom: -20px;
   height: auto;
+  max-height: none;
   overflow: visible;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .feedback-list:hover, .feedback-form:hover {
@@ -2484,13 +2488,53 @@ a {
 }
 
 .feedback-list {
-  max-height: 500px;
+  max-height: 658px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
   text-align: left;
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.feedback-form form {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+
+.feedback-form .form-content {
+  flex: none;
+  overflow: visible;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.feedback-form .submit-btn {
+  background: #ffd700;
+  color: #333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  align-self: flex-start;
+  min-width: 120px;
+  margin-bottom: 40px;
+}
+
+.feedback-form .submit-btn:hover {
+  background: #ffed4e;
 }
 
 .feedback-list h2 {
