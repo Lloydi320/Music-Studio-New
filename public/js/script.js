@@ -113,10 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
           // Check if date has bookings
           if (bookedDates.includes(dateKey)) {
             dayElement.classList.add('booked');
-            dayElement.title = 'Booked - Studio unavailable';
-            dayElement.style.pointerEvents = 'none'; // Disable clicking
-            dayElement.style.opacity = '0.6';
-            dayElement.style.cursor = 'not-allowed';
+            dayElement.title = 'Click to view booking details';
+            // Remove the pointer-events: none to allow clicking
+            dayElement.style.cursor = 'pointer';
             console.log('✅ Date is booked:', dateKey);
           }
           
@@ -129,8 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
             dayElement.style.opacity = '0.7';
             dayElement.style.pointerEvents = 'none';
           } else {
-            // Add click event for future dates
-            dayElement.addEventListener('click', () => {
+            // Add click event for ALL future dates (including booked ones)
+            dayElement.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              
               // Remove previous selection
               const previousSelected = document.querySelector('.calendar-day.selected');
               if (previousSelected) {
@@ -141,8 +143,17 @@ document.addEventListener('DOMContentLoaded', function() {
               dayElement.classList.add('selected');
               selectedDate = dateKey;
               
+              // Set pointer events and cursor explicitly
+              dayElement.style.pointerEvents = 'auto';
+              dayElement.style.cursor = 'pointer';
+              
+              console.log('📅 Date clicked:', dateKey);
               showTimeSlots(dateKey);
             });
+            
+            // Set default cursor for clickable dates
+            dayElement.style.cursor = 'pointer';
+            dayElement.style.pointerEvents = 'auto';
           }
         } else {
           // This date is not in the current month

@@ -157,8 +157,8 @@
       <!-- Image Display Component (shows when calendar is hidden) -->
       <div class="image-display" id="carouselContainer">
         <img src="{{ asset('images/feedback-bg.png') }}" alt="Placeholder Image 1" class="display-image active" data-slide="0" />
-        <img src="{{ asset('images/feedback-bg.png') }}" alt="Placeholder Image 2" class="display-image" data-slide="1" />
-        <img src="{{ asset('images/feedback-bg.png') }}" alt="Placeholder Image 3" class="display-image" data-slide="2" />
+        <img src="{{ asset('images/Car3.jpg') }}" alt="Placeholder Image 2" class="display-image" data-slide="1" />
+        <img src="{{ asset('images/instruments.png') }}" alt="Placeholder Image 3" class="display-image" data-slide="2" />
         <div class="carousel-indicators">
           <span class="indicator active" data-slide="0"></span>
           <span class="indicator" data-slide="1"></span>

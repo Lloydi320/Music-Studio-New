@@ -273,6 +273,7 @@
     
     .directions-btn svg {
       transition: transform 0.3s ease;
+      pointer-events: none;
     }
     
     .directions-btn:hover svg {

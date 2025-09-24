@@ -78,6 +78,34 @@
             gap: 1rem;
         }
         
+        /* Main Website Button */
+        .main-website-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);
+            color: #1a1a1a;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .main-website-btn:hover {
+            background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+            color: #1a1a1a;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(129, 199, 132, 0.3);
+        }
+        
+        .main-website-btn i {
+            font-size: 1rem;
+        }
+        
         .notification-icon {
             color: #81c784;
             font-size: 1.2rem;
@@ -1624,6 +1652,12 @@
         </div>
         
         <div class="user-section">
+            <!-- Main Website Button -->
+            <a href="/" class="main-website-btn" title="Go to Main Website">
+                <i class="fas fa-home"></i>
+                <span>Main Site</span>
+            </a>
+            
             <div class="notification-dropdown">
                 <div class="notification-icon" onclick="toggleNotificationDropdown()">
                     <i class="fas fa-bell"></i>
