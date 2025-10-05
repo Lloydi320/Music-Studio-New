@@ -115,7 +115,7 @@
         </div>
         </div>
     @else
-      <a href="/auth/google" class="book-btn" style="margin-left: 30px;">Login</a>
+      <a href="/login" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 
@@ -571,7 +571,7 @@
       var isAuthenticated = @json(Auth::check());
       if (!isAuthenticated) {
         // Redirect to login if not authenticated
-        window.location.href = '/auth/google';
+        window.location.href = '/login';
         return;
       }
       

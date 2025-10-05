@@ -3,304 +3,296 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Lemon Hub Studio</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <title>Login - Lemon Hub Studio</title>
     <style>
-        :root {
-            --studio-bg-image: url('{{ asset('images/studio.jpg') }}');
-        }
-        
-        /* stylelint-disable */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            background-image: var(--studio-bg-image);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            padding: 20px;
         }
-        
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-        
+
         .login-container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             width: 100%;
-            max-width: 800px;
-            min-height: 500px;
-            position: relative;
-            z-index: 1;
-            margin: 20px;
-            display: flex;
+            max-width: 400px;
+            animation: slideUp 0.6s ease-out;
         }
-        
-        .login-left {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            text-align: center;
-            color: #333;
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
-        .login-left img {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-            border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .login-left h1 {
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .login-left p {
-            font-size: 16px;
-            font-style: italic;
-            opacity: 0.8;
-        }
-        
-        .login-right {
-            flex: 1;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
+
         .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
-            margin-bottom: 30px;
         }
-        
-        .login-header h2 {
-            color: #333;
-            margin: 0 0 5px;
+
+        .login-header h1 {
             font-size: 28px;
+            margin-bottom: 10px;
             font-weight: 600;
         }
-        
+
         .login-header p {
-            color: #888;
-            margin: 0;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            opacity: 0.9;
+            font-size: 16px;
         }
-        
-        .login-tabs {
+
+        .login-content {
+            padding: 40px 30px;
+        }
+
+        .tab-container {
             display: flex;
             margin-bottom: 30px;
-            border-bottom: 1px solid #eee;
+            border-radius: 10px;
+            background: #f8f9fa;
+            padding: 5px;
         }
-        
+
         .tab-button {
             flex: 1;
-            padding: 15px 20px;
-            background: none;
+            padding: 12px;
+            background: transparent;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
             font-weight: 500;
-            color: #666;
             transition: all 0.3s ease;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border-bottom: 2px solid transparent;
+            color: #666;
         }
-        
+
         .tab-button.active {
-            color: #FFD700;
-            border-bottom-color: #FFD700;
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        
-        .tab-content {
-            flex: 1;
-        }
-        
+
         .tab-panel {
             display: none;
         }
-        
+
         .tab-panel.active {
             display: block;
         }
-        
-        .login-description {
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .form-group input.error {
+            border-color: #e74c3c;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            user-select: none;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .remember-me input {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .register-link {
             text-align: center;
-            margin-bottom: 25px;
+            color: #666;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .login-description {
+            margin-bottom: 20px;
             color: #666;
             font-size: 14px;
             line-height: 1.5;
         }
-        
-        .google-login-btn {
-            width: 100%;
-            padding: 15px;
-            background: #4285f4;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-        
-        .google-login-btn:hover {
-            background: #3367d6;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
-        }
-        
-        .google-icon {
-            width: 18px;
-            height: 18px;
-        }
-        
-        .back-home {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-        }
-        
-        .back-home a {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-        
-        .back-home a:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        @media (max-width: 768px) {
-            .login-container {
-                flex-direction: column;
-                max-width: 400px;
-                min-height: auto;
-            }
-            
-            .login-left {
-                padding: 30px 20px;
-            }
-            
-            .login-left h1 {
-                font-size: 24px;
-            }
-            
-            .login-right {
-                padding: 30px 20px;
-            }
-        }
-        
+
         @media (max-width: 480px) {
             .login-container {
                 margin: 10px;
             }
             
-            .tab-button {
-                font-size: 13px;
-                padding: 12px 15px;
+            .login-content {
+                padding: 30px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="back-home">
-        <a href="/">
-            <span>←</span>
-            Back to Home
-        </a>
-    </div>
-    
     <div class="login-container">
-        <!-- Left Panel - Branding -->
-        <div class="login-left">
-            <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
-            <h1>LEMON<br>HUB STUDIO</h1>
-            <p>Professional Music Experience</p>
+        <div class="login-header">
+            <h1>🍋 Lemon Hub Studio</h1>
+            <p>Welcome back! Please sign in to your account</p>
         </div>
         
-        <!-- Right Panel - Login Form -->
-        <div class="login-right">
-            <div class="login-header">
-A                <h2 id="header-title">Welcome</h2>
-                <p id="header-subtitle">Please log in your account</p>
+        <div class="login-content">
+            @if (session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-error">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="alert alert-error">
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
+            <div class="tab-container">
+                <button class="tab-button active" onclick="switchTab('user')">User Login</button>
+                <button class="tab-button" onclick="switchTab('admin')">Admin Login</button>
             </div>
-            
-            <div class="login-tabs">
-                <button class="tab-button active" onclick="switchTab('user')">
-                    👤 User Login
-                </button>
-                <button class="tab-button" onclick="switchTab('admin')">
-                    🔐 Admin Login
-                </button>
-            </div>
-            
+
             <div class="tab-content">
                 <!-- User Login Tab -->
                 <div id="user-tab" class="tab-panel active">
                     <div class="login-description">
-                        Sign in as a regular user to book studio sessions, rent instruments, and leave feedback.
+                        Sign in to access your bookings, manage your account, and book studio sessions.
                     </div>
                     
-                    <a href="{{ route('google.login', ['type' => 'user']) }}" class="google-login-btn">
-                        <svg class="google-icon" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        Continue with Google
-                    </a>
+                    <form method="POST" action="{{ route('login') }}">
+                        @csrf
+                        <input type="hidden" name="login_type" value="user">
+                        
+                        <div class="form-group">
+                            <label for="user_email">Email Address</label>
+                            <input type="email" id="user_email" name="email" value="{{ old('email') }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user_password">Password</label>
+                            <div class="password-container">
+                                <input type="password" id="user_password" name="password" required>
+                                <span class="password-toggle" onclick="togglePassword('user_password')">👁</span>
+                            </div>
+                        </div>
+                        
+                        <div class="remember-me">
+                            <input type="checkbox" id="user_remember" name="remember">
+                            <label for="user_remember">Remember me</label>
+                        </div>
+                        
+                        <button type="submit" class="login-btn">Sign In</button>
+                    </form>
                 </div>
                 
                 <!-- Admin Login Tab -->
@@ -309,20 +301,39 @@ A                <h2 id="header-title">Welcome</h2>
                         Sign in as an administrator to manage bookings, approve requests, and access admin dashboard.
                     </div>
                     
-                    <a href="{{ route('google.login', ['type' => 'admin']) }}" class="google-login-btn">
-                        <svg class="google-icon" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        Continue with Google
-                    </a>
+                    <form method="POST" action="{{ route('login') }}">
+                        @csrf
+                        <input type="hidden" name="login_type" value="admin">
+                        
+                        <div class="form-group">
+                            <label for="admin_email">Email Address</label>
+                            <input type="email" id="admin_email" name="email" value="{{ old('email') }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="admin_password">Password</label>
+                            <div class="password-container">
+                                <input type="password" id="admin_password" name="password" required>
+                                <span class="password-toggle" onclick="togglePassword('admin_password')">👁</span>
+                            </div>
+                        </div>
+                        
+                        <div class="remember-me">
+                            <input type="checkbox" id="admin_remember" name="remember">
+                            <label for="admin_remember">Remember me</label>
+                        </div>
+                        
+                        <button type="submit" class="login-btn">Sign In as Admin</button>
+                    </form>
                 </div>
+            </div>
+
+            <div class="register-link">
+                Don't have an account? <a href="{{ route('register') }}">Create one here</a>
             </div>
         </div>
     </div>
-    
+
     <script>
         function switchTab(tabType) {
             // Remove active class from all tabs and panels
@@ -332,26 +343,27 @@ A                <h2 id="header-title">Welcome</h2>
             // Add active class to clicked tab and corresponding panel
             event.target.classList.add('active');
             document.getElementById(tabType + '-tab').classList.add('active');
+        }
+
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = passwordInput.nextElementSibling;
             
-            // Update header text based on selected tab
-            const headerTitle = document.getElementById('header-title');
-            const headerSubtitle = document.getElementById('header-subtitle');
-            
-            if (tabType === 'admin') {
-                headerTitle.textContent = 'Welcome';
-                headerSubtitle.textContent = 'Please log in to admin dashboard';
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = '👁';
             } else {
-                headerTitle.textContent = 'Welcome';
-                headerSubtitle.textContent = 'Please log in  your account';
+                passwordInput.type = 'password';
+                toggleIcon.textContent = '👁';
             }
         }
-        
-        function switchToNextTab(nextTabType) {
-            // Add a small delay to show the tab switch before redirect
-            setTimeout(() => {
-                switchTab(nextTabType);
-            }, 100);
-        }
+
+        // Clear form errors on input
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('error');
+            });
+        });
     </script>
 </body>
 </html>

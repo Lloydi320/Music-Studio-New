@@ -134,7 +134,7 @@
         </div>
       </div>
     @else
-      <a href="/auth/google" class="book-btn" style="margin-left: 30px;">Login</a>
+      <a href="/login" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 
@@ -150,7 +150,7 @@
             <a href="/admin/dashboard" class="book-btn" style="background: #e74c3c; margin-left: 10px;">Admin Panel</a>
           @endif
         @else
-          <a href="/auth/google" class="book-btn">Login to Book Now!</a>
+          <a href="/login" class="book-btn">Login to Book Now!</a>
         @endif
       </div>
       

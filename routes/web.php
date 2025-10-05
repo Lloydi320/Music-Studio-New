@@ -74,9 +74,21 @@ Route::get('/login', function () {
 })->name('login');
 
 // Google OAuth routes with type parameter
-Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
-Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+// Authentication routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Email verification routes
+Route::get('/email/verify', [AuthController::class, 'showVerifyEmailForm'])->middleware('auth')->name('verification.notice');
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware(['auth', 'signed'])->name('verification.verify');
+Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+// Pending user verification routes
+Route::get('/verify-registration/{token}/{email}', [AuthController::class, 'verifyPendingUser'])->name('verification.verify.pending');
+Route::post('/resend-pending-verification', [AuthController::class, 'resendPendingVerification'])->name('verification.resend.pending');
 
 // Feedback routes
 Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store'); // Allow guests

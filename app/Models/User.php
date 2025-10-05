@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Feedback;
 use App\Models\Booking;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -23,8 +23,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'google_id',
-        'email_verified_at',
         'is_admin',
         'google_calendar_token',
         'google_calendar_id',
@@ -80,7 +78,7 @@ class User extends Authenticatable
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'google_id' => 'nullable|string|unique:users',
+            'password' => 'required|string|min:6|confirmed',
             'is_admin' => 'boolean',
             'google_calendar_token' => 'nullable|json',
             'google_calendar_id' => 'nullable|string',
@@ -92,7 +90,7 @@ class User extends Authenticatable
         return [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $id,
-            'google_id' => 'nullable|string|unique:users,google_id,' . $id,
+            'password' => 'sometimes|string|min:6|confirmed',
             'is_admin' => 'sometimes|boolean',
             'google_calendar_token' => 'nullable|json',
             'google_calendar_id' => 'nullable|string',

@@ -114,7 +114,7 @@
       </div>
     @else
       <div class="auth-buttons">
-        <a href="{{ route('google.login') }}" class="login-btn">Login</a>
+        <a href="{{ route('login') }}" class="login-btn">Login</a>
       </div>
     @endif
   </header>

@@ -1867,7 +1867,7 @@
             </div>
         </div>
     @else
-        <a href="{{ route('google.login') }}" class="book-btn" style="margin-left: 30px;">Login with Google</a>
+        <a href="{{ route('login') }}" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 
