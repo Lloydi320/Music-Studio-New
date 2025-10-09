@@ -1175,7 +1175,7 @@
                                         </button>
                                     </form>
                                 @elseif($booking->status === 'confirmed')
-                                    <button class="btn btn-reschedule" onclick="rescheduleBooking({{ $booking->id }})" title="Rescheduling">
+                                    <button class="btn btn-reschedule" onclick="rescheduleBooking({{ $booking->id }}, '{{ $booking->date }}', '{{ $booking->time_slot }}', {{ $booking->duration }})" title="Rescheduling">
                                         <i class="fas fa-calendar-alt"></i> Reschedule
                                     </button>
                                 @elseif($booking->status === 'rescheduled')
@@ -1251,7 +1251,7 @@
                 </div>
                 <div class="form-group">
                     <label for="reschedule_duration">Duration (hours)</label>
-                    <select id="reschedule_duration" name="duration" class="form-control" required>
+                    <select id="reschedule_duration" name="duration" class="form-control" required disabled>
                         <option value="">Select Duration</option>
                         <option value="1">1 hour</option>
                         <option value="2">2 hours</option>
@@ -1262,6 +1262,7 @@
                         <option value="7">7 hours</option>
                         <option value="8">8 hours</option>
                     </select>
+                    <small class="form-text">Duration is fixed based on the original booking</small>
                 </div>
             </div>
             <div class="reschedule-modal-footer">
@@ -1273,10 +1274,15 @@
 </div>
 
 <script>
-    function rescheduleBooking(bookingId) {
+    function rescheduleBooking(bookingId, currentDate, currentTimeSlot, currentDuration) {
         // Set the form action URL
         const form = document.getElementById('rescheduleForm');
         form.action = `/admin/bookings/${bookingId}/reschedule`;
+        
+        // Pre-fill current booking data
+        document.getElementById('reschedule_date').value = currentDate;
+        document.getElementById('reschedule_time_slot').value = currentTimeSlot;
+        document.getElementById('reschedule_duration').value = currentDuration;
         
         // Show the modal
         openRescheduleModal();

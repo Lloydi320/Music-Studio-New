@@ -38,57 +38,57 @@
       justify-content: center;
       align-items: center;
       height: 100%;
-      padding: 15px;
+      padding: 20px;
       overflow: hidden;
       touch-action: none;
     }
 
     .modal-content {
       background: white;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 1000px;
-      max-height: 80vh;
+      border-radius: 20px;
+      width: 95%;
+      max-width: 1200px;
+      max-height: 85vh;
       overflow-y: auto;
       overflow-x: hidden;
       display: flex;
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
       scroll-behavior: smooth;
       touch-action: pan-y;
     }
 
     .modal-left {
       flex: 1;
-      padding: 18px;
+      padding: 25px;
       background: #f8f9fa;
       border-radius: 20px 0 0 20px;
       overflow-y: auto;
-      max-height: 80vh;
+      max-height: 85vh;
       order: 1;
     }
 
     .modal-center {
-      flex: 1.3;
-      padding: 12px;
+      flex: 1.2;
+      padding: 25px;
       background: white;
       border-left: 1px solid #e9ecef;
       border-right: 1px solid #e9ecef;
       overflow-y: auto;
-      max-height: 80vh;
+      max-height: 85vh;
       order: 3;
     }
 
     .modal-right {
-      flex: 0.8;
-      padding: 18px;
+      flex: 1;
+      padding: 25px;
       background: white;
       border-radius: 0 20px 20px 0;
       display: flex;
       align-items: flex-start;
       justify-content: center;
       overflow-y: auto;
-      max-height: 80vh;
-      padding-top: 12px;
+      max-height: 85vh;
+      padding-top: 15px;
       order: 2;
     }
 
@@ -614,6 +614,13 @@
         @if(Auth::check() && Auth::user()->isAdmin())
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
         @endif
+        @if(!Auth::check())
+        <li class="nav-login-mobile">
+          <a href="{{ route('login') }}" style="color: #FFD700; padding: 15px 20px; font-size: 1.1rem; text-decoration: none; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: block;">
+            Login
+          </a>
+        </li>
+        @endif
         @if(Auth::check())
         <li class="nav-signout-desktop-hidden">
           <form action="/logout" method="POST" style="margin: 0;">
@@ -688,16 +695,6 @@
                 </div>
             </div>
         </div>
-    @else
-        <a href="{{ route('login') }}" class="login-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Login with Google
-        </a>
     @endif
   </header>
 
@@ -835,18 +832,13 @@
             </div>
             
             <div class="form-group">
-              <label class="form-label" for="email">Email *</label>
-              <input type="email" id="email" name="email" class="form-input" required>
-            </div>
-            
-            <div class="form-group">
               <label class="form-label" for="contactNumber">Contact Number *</label>
               <input type="tel" id="contactNumber" name="contact_number" class="form-input" maxlength="11" required>
             </div>
             
             <div class="form-group">
-              <label class="form-label" for="referenceCode">LAST 4 DIGITS OF GCASH PAYMENT *</label>
-              <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
+              <label class="form-label" for="referenceCode">GCASH PAYMENT REFERENCE NUMBER *</label>
+            <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="13" pattern="[0-9]{13}" placeholder="Enter 13-digit reference number" required>
               <div id="referenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 6px 8px; margin: 3px 0 0 0; border-radius: 4px; border-left: 3px solid #dc2626; font-size: 0.8rem;">
                 <span id="referenceErrorText">Reference number already exists.</span>
               </div>
@@ -860,12 +852,7 @@
               </div>
             </div>
             
-            <div class="policy-section">
-              <div class="policy-title">Down Payment Policy</div>
-              <p class="policy-text">To secure your booking, a non-refundable down payment of 30% of the total service fee is required upon reservation.</p>
-              <p class="policy-text">This ensures your preferred date and time slot is reserved exclusively for you.</p>
-              <p class="policy-text">• Rebooking is allowed up to 24 hours before the session, subject to availability.</p>
-            </div>
+
             
             <div class="checkbox-group">
               <input type="checkbox" id="agreeTerms" name="agree_terms" required>
@@ -948,12 +935,12 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.borderColor = '';
             
             // Clear validation state when user is typing
-            if (value.length < 4) {
+            if (value.length < 1) {
                 delete this.dataset.valid;
             }
             
-            // Only validate if we have 4 digits
-            if (value.length === 4 && /^[0-9]{4}$/.test(value)) {
+            // Only validate if we have exactly 13 digits
+            if (value.length === 13 && /^[0-9]{13}$/.test(value)) {
                 validationTimeout = setTimeout(() => {
                     validateReferenceCode(value);
                 }, 500); // Debounce for 500ms
@@ -988,7 +975,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (data.exists) {
                     // Reference code already exists
-                    validationMessage.textContent = 'This reference code is already existing. Please use a different reference number from GCash 4-digits last number.';
+                    validationMessage.textContent = 'This reference code is already existing. Please use a different reference number from GCash.';
                     validationMessage.style.cssText += `
                         display: block;
                         background-color: #fef2f2;

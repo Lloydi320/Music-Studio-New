@@ -13,22 +13,36 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url('/images/studio-bg.jpg') no-repeat center center/cover;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
         }
 
         .login-container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             animation: slideUp 0.6s ease-out;
+            position: relative;
+            z-index: 2;
         }
 
         @keyframes slideUp {
@@ -43,9 +57,9 @@
         }
 
         .login-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
+            background: linear-gradient(135deg, #FFD700 0%, #E0BC3A 50%, #F4C200 100%);
+            color: #1a1a1a;
+            padding: 40px;
             text-align: center;
         }
 
@@ -61,41 +75,15 @@
         }
 
         .login-content {
-            padding: 40px 30px;
+            padding: 50px 40px;
         }
 
-        .tab-container {
-            display: flex;
+        .login-description {
             margin-bottom: 30px;
-            border-radius: 10px;
-            background: #f8f9fa;
-            padding: 5px;
-        }
-
-        .tab-button {
-            flex: 1;
-            padding: 12px;
-            background: transparent;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
             color: #666;
-        }
-
-        .tab-button.active {
-            background: white;
-            color: #667eea;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab-panel {
-            display: none;
-        }
-
-        .tab-panel.active {
-            display: block;
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: center;
         }
 
         .form-group {
@@ -121,7 +109,7 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #FFD700;
             background: white;
         }
 
@@ -146,7 +134,7 @@
         }
 
         .password-toggle:hover {
-            color: #667eea;
+            color: #FFD700;
         }
 
         .remember-me {
@@ -163,8 +151,8 @@
         .login-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #FFD700 0%, #F4C200 50%, #E6B800 100%);
+            color: #1a1a1a;
             border: none;
             border-radius: 10px;
             font-size: 16px;
@@ -172,10 +160,13 @@
             cursor: pointer;
             transition: transform 0.2s ease;
             margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.25);
         }
 
         .login-btn:hover {
             transform: translateY(-2px);
+            background: linear-gradient(135deg, #F4C200 0%, #E6B800 50%, #D4A700 100%);
+            box-shadow: 0 8px 24px rgba(255, 215, 0, 0.35);
         }
 
         .register-link {
@@ -184,7 +175,7 @@
         }
 
         .register-link a {
-            color: #667eea;
+            color: #E6B800;
             text-decoration: none;
             font-weight: 500;
         }
@@ -211,19 +202,17 @@
             border: 1px solid #f5c6cb;
         }
 
-        .login-description {
-            margin-bottom: 20px;
-            color: #666;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
         @media (max-width: 480px) {
             .login-container {
                 margin: 10px;
+                max-width: 95%;
             }
             
             .login-content {
+                padding: 40px 25px;
+            }
+
+            .login-header {
                 padding: 30px 20px;
             }
         }
@@ -257,76 +246,33 @@
                 </div>
             @endif
 
-            <div class="tab-container">
-                <button class="tab-button active" onclick="switchTab('user')">User Login</button>
-                <button class="tab-button" onclick="switchTab('admin')">Admin Login</button>
+            <div class="login-description">
+                Sign in with your credentials. The system will automatically detect if you're a user or administrator.
             </div>
-
-            <div class="tab-content">
-                <!-- User Login Tab -->
-                <div id="user-tab" class="tab-panel active">
-                    <div class="login-description">
-                        Sign in to access your bookings, manage your account, and book studio sessions.
-                    </div>
-                    
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-                        <input type="hidden" name="login_type" value="user">
-                        
-                        <div class="form-group">
-                            <label for="user_email">Email Address</label>
-                            <input type="email" id="user_email" name="email" value="{{ old('email') }}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="user_password">Password</label>
-                            <div class="password-container">
-                                <input type="password" id="user_password" name="password" required>
-                                <span class="password-toggle" onclick="togglePassword('user_password')">👁</span>
-                            </div>
-                        </div>
-                        
-                        <div class="remember-me">
-                            <input type="checkbox" id="user_remember" name="remember">
-                            <label for="user_remember">Remember me</label>
-                        </div>
-                        
-                        <button type="submit" class="login-btn">Sign In</button>
-                    </form>
+            
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required>
                 </div>
                 
-                <!-- Admin Login Tab -->
-                <div id="admin-tab" class="tab-panel">
-                    <div class="login-description">
-                        Sign in as an administrator to manage bookings, approve requests, and access admin dashboard.
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" required>
+                        <span class="password-toggle" onclick="togglePassword('password')">👁</span>
                     </div>
-                    
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-                        <input type="hidden" name="login_type" value="admin">
-                        
-                        <div class="form-group">
-                            <label for="admin_email">Email Address</label>
-                            <input type="email" id="admin_email" name="email" value="{{ old('email') }}" required>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="admin_password">Password</label>
-                            <div class="password-container">
-                                <input type="password" id="admin_password" name="password" required>
-                                <span class="password-toggle" onclick="togglePassword('admin_password')">👁</span>
-                            </div>
-                        </div>
-                        
-                        <div class="remember-me">
-                            <input type="checkbox" id="admin_remember" name="remember">
-                            <label for="admin_remember">Remember me</label>
-                        </div>
-                        
-                        <button type="submit" class="login-btn">Sign In as Admin</button>
-                    </form>
                 </div>
-            </div>
+                
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Remember me</label>
+                </div>
+                
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
 
             <div class="register-link">
                 Don't have an account? <a href="{{ route('register') }}">Create one here</a>
@@ -335,16 +281,6 @@
     </div>
 
     <script>
-        function switchTab(tabType) {
-            // Remove active class from all tabs and panels
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-            
-            // Add active class to clicked tab and corresponding panel
-            event.target.classList.add('active');
-            document.getElementById(tabType + '-tab').classList.add('active');
-        }
-
         function togglePassword(inputId) {
             const passwordInput = document.getElementById(inputId);
             const toggleIcon = passwordInput.nextElementSibling;

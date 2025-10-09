@@ -1792,6 +1792,13 @@
         @if(Auth::check() && Auth::user()->isAdmin())
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
         @endif
+        @if(!Auth::check())
+        <li class="nav-login-mobile">
+          <a href="{{ route('login') }}" style="color: #FFD700; padding: 15px 20px; font-size: 1.1rem; text-decoration: none; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: block;">
+            Login
+          </a>
+        </li>
+        @endif
         @if(Auth::check())
         <li class="nav-signout-desktop-hidden">
           <form action="/logout" method="POST" style="margin: 0;">
@@ -1866,8 +1873,6 @@
                 </div>
             </div>
         </div>
-    @else
-        <a href="{{ route('login') }}" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 
@@ -2171,8 +2176,8 @@
                 </div>
                 
                 <div class="form-group">
-                  <label class="form-label" for="modalReferenceCode">LAST 4 DIGITS OF GCASH PAYMENT *</label>
-                  <input type="text" id="modalReferenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
+                  <label class="form-label" for="modalReferenceCode">GCASH PAYMENT REFERENCE NUMBER *</label>
+                  <input type="text" id="modalReferenceCode" name="reference_code" class="form-input" maxlength="13" pattern="[0-9]{13}" placeholder="Enter 13-digit reference number" required>
                   <!-- Error message container for inline validation -->
                   <div id="modalReferenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
                     <span id="modalReferenceErrorText">Reference number already exists.</span>
@@ -2843,8 +2848,8 @@
             return;
           }
           
-          // Only validate if we have 4 digits
-          if (referenceCode.length === 4 && /^\d{4}$/.test(referenceCode)) {
+          // Only validate if we have exactly 13 digits
+          if (referenceCode.length === 13 && /^\d{13}$/.test(referenceCode)) {
             // Show loading state (optional - you can remove this if you don't want loading indication)
             // For now, we'll just proceed with validation
             
@@ -2888,7 +2893,7 @@
           form.addEventListener('submit', function(e) {
             const referenceCode = referenceCodeInput.value.trim();
             
-            if (referenceCode.length === 4 && /^\d{4}$/.test(referenceCode) && !isReferenceValid) {
+            if (referenceCode.length === 13 && /^\d{13}$/.test(referenceCode) && !isReferenceValid) {
               e.preventDefault();
               showReferenceError('Please use a different reference code. The current one is already taken.');
               referenceCodeInput.focus();

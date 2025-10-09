@@ -39,7 +39,7 @@ class InstrumentRentalController extends Controller
             'event_duration_hours' => 'required|integer|min:1|max:12',
             'documentation_consent' => 'nullable|boolean',
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
-            'reference_code' => 'required|string|size:4|regex:/^[0-9]{4}$/',
+            'reference_code' => 'required|string|regex:/^[0-9]{13}$/',
         ];
 
         $request->validate($validationRules);

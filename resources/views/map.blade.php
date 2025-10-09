@@ -37,6 +37,13 @@
         @if(Auth::check() && Auth::user()->isAdmin())
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
         @endif
+        @if(!Auth::check())
+        <li class="nav-login-mobile">
+          <a href="{{ route('login') }}" style="color: #FFD700; padding: 15px 20px; font-size: 1.1rem; text-decoration: none; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: block;">
+            Login
+          </a>
+        </li>
+        @endif
         @if(Auth::check())
         <li class="nav-signout-desktop-hidden">
           <form action="/logout" method="POST" style="margin: 0;">
@@ -111,10 +118,6 @@
             </form>
           </div>
         </div>
-      </div>
-    @else
-      <div class="auth-buttons">
-        <a href="{{ route('login') }}" class="login-btn">Login</a>
       </div>
     @endif
   </header>

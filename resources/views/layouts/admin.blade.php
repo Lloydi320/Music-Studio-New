@@ -1772,6 +1772,12 @@
                     Activity Logs
                 </a>
             </li>
+            <li>
+                <a href="{{ route('admin.carousel') }}" class="{{ request()->routeIs('admin.carousel') ? 'active' : '' }}">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Music Teachers
+                </a>
+            </li>
 
             <li>
                 <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

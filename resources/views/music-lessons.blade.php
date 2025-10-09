@@ -350,6 +350,263 @@
         display: none !important;
       }
     }
+
+    /* Carousel Styles */
+    .carousel-section {
+      margin: 30px 0;
+      padding: 0 20px;
+    }
+
+    .carousel-container {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      overflow: hidden;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .carousel-wrapper {
+      overflow: hidden;
+      border-radius: 15px;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      will-change: transform;
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      flex-shrink: 0;
+    }
+
+    .carousel-card {
+      position: relative;
+      background: white;
+      overflow: hidden;
+      height: 400px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .carousel-card:hover {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .carousel-card::before {
+      content: '👁️ Click to view details';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 215, 0, 0.9);
+      color: #333;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.8em;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 10;
+      backdrop-filter: blur(5px);
+    }
+
+    .carousel-card:hover::before {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .carousel-image {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .carousel-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .carousel-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 30px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      color: white;
+      transform: translateY(0);
+      transition: transform 0.3s ease;
+    }
+
+    .carousel-card:hover .carousel-content {
+      transform: translateY(-10px);
+    }
+
+    .carousel-card:hover .carousel-image img {
+      transform: scale(1.05);
+    }
+
+    .carousel-title {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 10px;
+      line-height: 1.2;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .carousel-description {
+      font-size: 1em;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.5;
+      margin: 0 0 10px 0;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .click-to-view {
+      font-size: 0.9em;
+      color: #FFD700;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+      margin-top: 8px;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    .carousel-card:hover .click-to-view {
+      opacity: 1;
+    }
+
+    /* Navigation Buttons */
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 215, 0, 0.9);
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111;
+      font-size: 18px;
+      transition: all 0.3s ease;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .carousel-btn:hover {
+      background: #ffd700;
+      transform: translateY(-50%) scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .carousel-btn-prev {
+      left: 20px;
+    }
+
+    .carousel-btn-next {
+      right: 20px;
+    }
+
+    /* Dots Indicator */
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    .carousel-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      background: #ddd;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .carousel-dot.active {
+      background: #ffd700;
+      transform: scale(1.2);
+    }
+
+    .carousel-dot:hover {
+      background: #ffd700;
+      transform: scale(1.1);
+    }
+
+    /* Responsive Carousel */
+    @media (max-width: 768px) {
+      .carousel-container {
+        max-width: 100%;
+      }
+
+      .carousel-card {
+        height: 300px;
+      }
+
+      .carousel-content {
+        padding: 20px;
+      }
+
+      .carousel-title {
+        font-size: 1.4em;
+        margin-bottom: 8px;
+      }
+
+      .carousel-description {
+        font-size: 0.9em;
+        -webkit-line-clamp: 2;
+      }
+
+      .carousel-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+
+      .carousel-btn-prev {
+        left: 10px;
+      }
+
+      .carousel-btn-next {
+        right: 10px;
+      }
+
+      .carousel-section {
+        padding: 0 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .carousel-content {
+        padding: 20px 15px;
+      }
+
+      .carousel-title {
+        font-size: 1.3em;
+      }
+
+      .carousel-description {
+        font-size: 0.95em;
+      }
+    }
   </style>
 </head>
 <body class="booking-page">
@@ -381,6 +638,13 @@
         @endif
         @if(Auth::check() && Auth::user()->isAdmin())
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
+        @endif
+        @if(!Auth::check())
+        <li class="nav-login-mobile">
+          <a href="/login" style="color: #FFD700; padding: 15px 20px; font-size: 1.1rem; text-decoration: none; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: block;">
+            Login
+          </a>
+        </li>
         @endif
         @if(Auth::check())
         <li class="nav-signout-desktop-hidden">
@@ -458,8 +722,6 @@
           </div>
         </div>
       </div>
-    @else
-      <a href="/login" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 
@@ -468,6 +730,55 @@
       <h1>🎵 Music Lessons</h1>
       <p>Discover your musical potential with our expert instructors</p>
     </div>
+
+    <!-- Carousel Section -->
+    @if($carouselItems->count() > 0)
+    <div class="carousel-section">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="font-size: 2.5em; font-weight: bold; color: #333; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">🎼 Meet Our Expert Teachers</h2>
+        <p style="font-size: 1.2em; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.6;">Discover the talented instructors who will guide your musical journey with passion and expertise.</p>
+      </div>
+      <div class="carousel-container">
+        <div class="carousel-wrapper">
+          <div class="carousel-track" id="carouselTrack">
+            @foreach($carouselItems as $item)
+            <div class="carousel-slide">
+              <div class="carousel-card" onclick="openTeacherModal({{ json_encode($item->title) }}, {{ json_encode($item->description) }}, {{ json_encode($item->expertise ?? 'No expertise information available') }}, {{ json_encode(asset('images/carousel/' . $item->image_path)) }})">
+                <div class="carousel-image">
+                  <img src="{{ asset('images/carousel/' . $item->image_path) }}" alt="{{ $item->title }}" loading="lazy">
+                </div>
+                <div class="carousel-content">
+                  <h3 class="carousel-title">{{ $item->title }}</h3>
+                  <p class="carousel-description">{{ $item->expertise ?? 'Music Instructor' }}</p>
+                  <div class="click-to-view">Click to view details</div>
+                </div>
+              </div>
+            </div>
+            @endforeach
+          </div>
+        </div>
+        
+        <!-- Navigation buttons -->
+        <button class="carousel-btn carousel-btn-prev" id="prevBtn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="carousel-btn carousel-btn-next" id="nextBtn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        
+        <!-- Dots indicator -->
+        <div class="carousel-dots" id="carouselDots">
+          @foreach($carouselItems as $index => $item)
+          <button class="carousel-dot {{ $index === 0 ? 'active' : '' }}" data-slide="{{ $index }}"></button>
+          @endforeach
+        </div>
+      </div>
+    </div>
+    @endif
 
     <div class="why-section">
       <h2>🎯 Why Music Education Matters?</h2>
@@ -678,7 +989,342 @@
           }
         });
       }
+
+      // Carousel functionality
+      const carouselTrack = document.getElementById('carouselTrack');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const carouselDots = document.getElementById('carouselDots');
+      
+      if (carouselTrack && prevBtn && nextBtn && carouselDots) {
+        const slides = carouselTrack.querySelectorAll('.carousel-slide');
+        const dots = carouselDots.querySelectorAll('.carousel-dot');
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        // Function to update carousel position
+        function updateCarousel() {
+          const translateX = -currentSlide * 100;
+          carouselTrack.style.transform = `translateX(${translateX}%)`;
+          
+          // Update dots
+          dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentSlide);
+          });
+        }
+
+        // Next button functionality
+        nextBtn.addEventListener('click', function() {
+          currentSlide = (currentSlide + 1) % totalSlides;
+          updateCarousel();
+        });
+
+        // Previous button functionality
+        prevBtn.addEventListener('click', function() {
+          currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+          updateCarousel();
+        });
+
+        // Dot navigation
+        dots.forEach((dot, index) => {
+          dot.addEventListener('click', function() {
+            currentSlide = index;
+            updateCarousel();
+          });
+        });
+
+        // Auto-play functionality (optional)
+        let autoPlayInterval;
+        
+        function startAutoPlay() {
+          autoPlayInterval = setInterval(() => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateCarousel();
+          }, 5000); // Change slide every 5 seconds
+        }
+
+        function stopAutoPlay() {
+          clearInterval(autoPlayInterval);
+        }
+
+        // Start auto-play
+        if (totalSlides > 1) {
+          startAutoPlay();
+
+          // Pause auto-play on hover
+          const carouselContainer = document.querySelector('.carousel-container');
+          if (carouselContainer) {
+            carouselContainer.addEventListener('mouseenter', stopAutoPlay);
+            carouselContainer.addEventListener('mouseleave', startAutoPlay);
+          }
+
+          // Pause auto-play when user interacts with controls
+          [prevBtn, nextBtn, ...dots].forEach(element => {
+            element.addEventListener('click', () => {
+              stopAutoPlay();
+              setTimeout(startAutoPlay, 3000); // Resume after 3 seconds
+            });
+          });
+        }
+
+        // Touch/swipe support for mobile
+        let startX = 0;
+        let isDragging = false;
+
+        carouselTrack.addEventListener('touchstart', function(e) {
+          startX = e.touches[0].clientX;
+          isDragging = true;
+          stopAutoPlay();
+        });
+
+        carouselTrack.addEventListener('touchmove', function(e) {
+          if (!isDragging) return;
+          e.preventDefault();
+        });
+
+        carouselTrack.addEventListener('touchend', function(e) {
+          if (!isDragging) return;
+          
+          const endX = e.changedTouches[0].clientX;
+          const diffX = startX - endX;
+          
+          // Minimum swipe distance
+          if (Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+              // Swipe left - next slide
+              currentSlide = (currentSlide + 1) % totalSlides;
+            } else {
+              // Swipe right - previous slide
+              currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            }
+            updateCarousel();
+          }
+          
+          isDragging = false;
+          setTimeout(startAutoPlay, 3000);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'ArrowLeft') {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+            stopAutoPlay();
+            setTimeout(startAutoPlay, 3000);
+          } else if (e.key === 'ArrowRight') {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateCarousel();
+            stopAutoPlay();
+            setTimeout(startAutoPlay, 3000);
+          }
+        });
+      }
+    });
+
+    // Teacher Modal Functions
+    function openTeacherModal(name, description, expertise, imagePath) {
+      const modal = document.getElementById('teacherModal');
+      const modalName = document.getElementById('modalTeacherName');
+      const modalDescription = document.getElementById('modalTeacherDescription');
+      const modalExpertise = document.getElementById('modalTeacherExpertise');
+      const modalImage = document.getElementById('modalTeacherImage');
+
+      modalName.textContent = name;
+      modalDescription.textContent = description;
+      modalExpertise.textContent = expertise;
+      modalImage.src = imagePath;
+      modalImage.alt = name;
+
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    function closeTeacherModal() {
+      const modal = document.getElementById('teacherModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = 'auto'; // Restore scrolling
+    }
+
+    // Modal event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('teacherModal');
+      const closeBtn = document.querySelector('.teacher-modal-close');
+
+      // Close modal when clicking the X button
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeTeacherModal);
+      }
+
+      // Close modal when clicking outside of it
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeTeacherModal();
+          }
+        });
+      }
+
+      // Close modal with Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeTeacherModal();
+        }
+      });
     });
   </script>
+
+  <!-- Teacher Details Modal -->
+  <div id="teacherModal" class="teacher-modal">
+    <div class="teacher-modal-content">
+      <div class="teacher-modal-header">
+        <h2 id="modalTeacherName" class="teacher-modal-title"></h2>
+        <span class="teacher-modal-close">&times;</span>
+      </div>
+      <div class="teacher-modal-body">
+        <div class="teacher-modal-image">
+          <img id="modalTeacherImage" src="" alt="Teacher Photo">
+        </div>
+        <div class="teacher-modal-info">
+          <div class="teacher-modal-section">
+            <h3>About</h3>
+            <p id="modalTeacherDescription"></p>
+          </div>
+          <div class="teacher-modal-section">
+            <h3>Expertise</h3>
+            <p id="modalTeacherExpertise"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .teacher-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+    }
+
+    .teacher-modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 0;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .teacher-modal-header {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .teacher-modal-title {
+      margin: 0;
+      color: #333;
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+
+    .teacher-modal-close {
+      color: #333;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .teacher-modal-close:hover {
+      color: #666;
+    }
+
+    .teacher-modal-body {
+      padding: 30px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .teacher-modal-image {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .teacher-modal-image img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #FFD700;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .teacher-modal-section {
+      margin-bottom: 25px;
+    }
+
+    .teacher-modal-section h3 {
+      color: #333;
+      font-size: 1.3em;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #FFD700;
+      display: inline-block;
+    }
+
+    .teacher-modal-section p {
+      color: #666;
+      line-height: 1.6;
+      font-size: 1em;
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .teacher-modal-content {
+        width: 95%;
+        margin: 10% auto;
+      }
+
+      .teacher-modal-header {
+        padding: 15px 20px;
+      }
+
+      .teacher-modal-title {
+        font-size: 1.5em;
+      }
+
+      .teacher-modal-body {
+        padding: 20px;
+      }
+
+      .teacher-modal-image img {
+        width: 120px;
+        height: 120px;
+      }
+    }
+  </style>
 </body>
 </html>

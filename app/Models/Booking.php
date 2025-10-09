@@ -82,7 +82,7 @@ class Booking extends Model
             'status' => 'in:pending,confirmed,cancelled,rejected',
             'band_name' => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|max:20',
-            'reference_code' => 'nullable|string|size:4|unique:bookings,reference_code',
+            'reference_code' => 'nullable|string|regex:/^[0-9]{13}$/|unique:bookings,reference_code',
             'image_path' => 'nullable|string|max:500',
         ];
     }
@@ -97,7 +97,7 @@ class Booking extends Model
             'status' => 'sometimes|in:pending,confirmed,cancelled,rejected',
             'band_name' => 'sometimes|nullable|string|max:255',
             'contact_number' => 'sometimes|nullable|string|max:20',
-            'reference_code' => 'sometimes|nullable|string|size:4|unique:bookings,reference_code,' . $id,
+            'reference_code' => 'sometimes|nullable|string|regex:/^[0-9]{13}$/|unique:bookings,reference_code,' . $id,
             'image_path' => 'sometimes|nullable|string|max:500',
         ];
     }

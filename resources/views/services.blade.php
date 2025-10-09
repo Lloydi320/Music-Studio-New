@@ -38,6 +38,13 @@
         @if(Auth::check() && Auth::user()->isAdmin())
         <li><a href="/admin/calendar" style="color: #ff6b35; font-weight: bold;">📅 Admin Calendar</a></li>
         @endif
+        @if(!Auth::check())
+        <li class="nav-login-mobile">
+          <a href="/login" style="color: #FFD700; padding: 15px 20px; font-size: 1.1rem; text-decoration: none; width: 100%; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: block;">
+            Login
+          </a>
+        </li>
+        @endif
         @if(Auth::check())
         <li class="nav-signout-desktop-hidden">
           <form action="/logout" method="POST" style="margin: 0;">
@@ -114,8 +121,6 @@
           </div>
         </div>
         </div>
-    @else
-      <a href="/login" class="book-btn" style="margin-left: 30px;">Login</a>
     @endif
   </header>
 
@@ -252,9 +257,16 @@
             <div class="form-group">
               <label for="duration">⏱️ Duration</label>
               <select id="duration" name="duration" aria-describedby="duration-help" disabled>
-                <option value="1" selected>1 hour (Fixed)</option>
+                <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="3">3 hours</option>
+                <option value="4">4 hours</option>
+                <option value="5">5 hours</option>
+                <option value="6">6 hours</option>
+                <option value="7">7 hours</option>
+                <option value="8">8 hours</option>
               </select>
-              <small id="duration-help" class="form-help">Duration is fixed at 1 hour for rescheduling</small>
+              <small id="duration-help" class="form-help">Duration is fixed based on your original booking</small>
             </div>
           </div>
           
@@ -715,7 +727,7 @@
     const durationSelect = document.getElementById('duration');
     const newTimeSelect = document.getElementById('newTime');
     
-    // Initialize time slots with fixed 1-hour duration
+    // Initialize time slots with default 1-hour duration (will be updated when reference is validated)
     generateRescheduleTimeSlots(1);
     
     // Function to show appropriate fields based on booking type
@@ -808,11 +820,27 @@
                         const bookingType = result.booking.service_type || result.booking.type;
                         if (bookingType === 'Studio Rental' || bookingType === 'studio_rental') {
                             showBookingFields('studio_rental');
+                            
+                            // Pre-populate duration field with original booking duration
+                            const durationSelect = document.getElementById('duration');
+                            if (durationSelect && result.booking.duration) {
+                                durationSelect.value = result.booking.duration;
+                                // Update time slots based on the original duration
+                                generateRescheduleTimeSlots(parseInt(result.booking.duration));
+                            }
                         } else if (bookingType === 'Instrument Rental' || bookingType === 'instrument_rental') {
                             showBookingFields('instrument_rental');
                         } else {
                             // Default to studio rental if type is unclear
                             showBookingFields('studio_rental');
+                            
+                            // Pre-populate duration field with original booking duration
+                            const durationSelect = document.getElementById('duration');
+                            if (durationSelect && result.booking.duration) {
+                                durationSelect.value = result.booking.duration;
+                                // Update time slots based on the original duration
+                                generateRescheduleTimeSlots(parseInt(result.booking.duration));
+                            }
                         }
                     } else {
                         isReferenceValid = false;

@@ -583,8 +583,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const referenceValue = referenceCodeInput.value.trim();
         
         // Check if reference code is empty - show warning but allow submission
-        if (!referenceValue || referenceValue.length !== 4) {
-          showReferenceWarning('Please enter a valid 4-digit GCash reference number.', form.id);
+        if (!referenceValue || referenceValue.length < 1) {
+          showReferenceWarning('Please enter a valid GCash reference number.', form.id);
         }
         
         // Check if validation failed (duplicate reference) - allow submission but show warning

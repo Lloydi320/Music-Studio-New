@@ -877,6 +877,9 @@
         document.getElementById('reschedule_time_slot').value = currentTimeSlot;
         document.getElementById('reschedule_duration').value = currentDuration;
         
+        // Disable the duration field to prevent changes
+        document.getElementById('reschedule_duration').disabled = true;
+        
         // Show the modal
         openRescheduleModal();
     }

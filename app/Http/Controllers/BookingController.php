@@ -37,12 +37,11 @@ class BookingController extends Controller
             'duration' => 'required|integer|min:1|max:8',
             'service_type' => 'nullable|string|in:studio_rental,solo_rehearsal,instrument_rental',
             'band_name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
             'contact_number' => 'nullable|string|size:11|regex:/^[0-9]{11}$/',
-            'reference_code' => 'nullable|string|size:4|unique:bookings,reference_code',
+            'reference_code' => 'nullable|string|regex:/^[0-9]{13}$/|unique:bookings,reference_code',
             'upload_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
-            'reference_code.unique' => 'Reference number "' . $request->reference_code . '" already exists. Please use a different reference number from GCash 4-digits last number to proceed booking.'
+            'reference_code.unique' => 'Reference number "' . $request->reference_code . '" already exists. Please use a different reference number from GCash to proceed booking.'
         ]);
     
         // Parse the time slot to get start and end times
@@ -133,7 +132,7 @@ class BookingController extends Controller
             'total_amount' => $totalAmount,
             'service_type' => $request->service_type ?? 'studio_rental', // Use request service_type or default to studio_rental
             'band_name' => $request->band_name,
-            'email' => $request->email,
+            'email' => Auth::user()->email, // Use authenticated user's email
             'contact_number' => $request->contact_number,
             'reference_code' => $request->reference_code,
             'image_path' => $imagePath,
@@ -210,7 +209,10 @@ class BookingController extends Controller
             'date' => 'required|date',
         ]);
         
-        $bookings = Booking::where('date', $request->date)
+        // Parse the date with proper timezone handling to ensure consistent querying
+        $queryDate = \Carbon\Carbon::parse($request->date)->setTimezone(config('app.timezone', 'Asia/Manila'))->format('Y-m-d');
+        
+        $bookings = Booking::whereDate('date', $queryDate)
             ->whereIn('status', ['pending', 'confirmed'])
             ->get(['time_slot', 'user_id', 'duration', 'status', 'reference']); // Added status and reference
         
@@ -388,14 +390,14 @@ class BookingController extends Controller
         
         if ($bookingType === 'studio_rental') {
             $request->validate([
-                'reference_number' => 'required|string|size:4',
+                'reference_number' => 'required|string|regex:/^[0-9]{13}$/',
                 'new_date' => 'required|date|after_or_equal:today',
                 'new_time_slot' => 'required|string',
                 'duration' => 'required|integer|min:1|max:8'
             ]);
         } else {
             $request->validate([
-                'reference_number' => 'required|string|size:4',
+                'reference_number' => 'required|string|regex:/^[0-9]{13}$/',
                 'start_date' => 'required|date|after_or_equal:today',
                 'end_date' => 'required|date|after:start_date'
             ]);
@@ -414,6 +416,9 @@ class BookingController extends Controller
                 if (!$booking) {
                     return response()->json(['error' => 'Studio booking not found'], 404);
                 }
+
+                // Use original booking duration instead of request duration
+                $originalDuration = $booking->duration;
 
                 // Check for time slot conflicts
                 $conflictingBooking = Booking::where('date', $request->new_date)
@@ -437,7 +442,7 @@ class BookingController extends Controller
                     'requested_data' => [
                         'new_date' => $request->new_date,
                         'new_time_slot' => $request->new_time_slot,
-                        'new_duration' => $request->duration,
+                        'new_duration' => $originalDuration, // Use original duration
                         'booking_type' => 'studio_rental'
                     ],
                     'original_date' => $booking->date,
@@ -445,7 +450,7 @@ class BookingController extends Controller
                     'original_duration' => $booking->duration,
                     'requested_date' => $request->new_date,
                     'requested_time_slot' => $request->new_time_slot,
-                    'requested_duration' => $request->duration,
+                    'requested_duration' => $originalDuration, // Use original duration
                     'reason' => $request->reason,
                     'has_conflict' => $conflictingBooking !== null,
                     'conflict_details' => $conflictingBooking ? [
@@ -586,14 +591,14 @@ class BookingController extends Controller
         
         if ($bookingType === 'studio_rental') {
             $request->validate([
-                'reference_number' => 'required|string|size:4',
+                'reference_number' => 'required|string|regex:/^[0-9]{13}$/',
                 'new_date' => 'required|date|after_or_equal:today',
                 'new_time_slot' => 'required|string',
                 'duration' => 'required|integer|min:1|max:8'
             ]);
         } else {
             $request->validate([
-                'reference_number' => 'required|string|size:4',
+                'reference_number' => 'required|string|regex:/^[0-9]{13}$/',
                 'start_date' => 'required|date|after_or_equal:today',
                 'end_date' => 'required|date|after:start_date'
             ]);
@@ -840,20 +845,10 @@ class BookingController extends Controller
 
     /**
      * Return all booked dates as an array of date strings (YYYY-MM-DD).
-     * Includes dates when drums or full package are rented (studio unavailable).
+     * Only includes dates when ALL time slots are booked or when drums/full package are rented (studio unavailable).
      */
     public function getBookedDates()
     {
-        // Get studio booking dates
-        $studioBookingDates = \App\Models\Booking::whereIn('status', ['pending', 'confirmed'])
-            ->get()
-            ->map(function($booking) {
-                return \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
-            })
-            ->unique()
-            ->values()
-            ->toArray();
-
         // Get instrument rental dates that make studio unavailable
         // (drums and full package rentals)
         $instrumentRentalDates = \App\Models\InstrumentRental::whereIn('status', ['pending', 'confirmed'])
@@ -864,8 +859,8 @@ class BookingController extends Controller
             ->get()
             ->flatMap(function($rental) {
                 $dates = [];
-                $startDate = \Carbon\Carbon::parse($rental->rental_start_date);
-                $endDate = \Carbon\Carbon::parse($rental->rental_end_date);
+                $startDate = \Carbon\Carbon::parse($rental->rental_start_date)->setTimezone(config('app.timezone', 'Asia/Manila'));
+                $endDate = \Carbon\Carbon::parse($rental->rental_end_date)->setTimezone(config('app.timezone', 'Asia/Manila'));
                 
                 // Add all dates in the rental period
                 $currentDate = $startDate->copy();
@@ -880,8 +875,19 @@ class BookingController extends Controller
             ->values()
             ->toArray();
 
+        // Get dates where ALL time slots are booked
+        // Studio operates 8 AM to 8 PM with 30-minute slots = 24 total slots per day
+        $totalSlotsPerDay = 24;
+        
+        $fullyBookedDates = \App\Models\Booking::whereIn('status', ['pending', 'confirmed'])
+            ->selectRaw('DATE(CONVERT_TZ(date, "+00:00", "' . config('app.timezone', 'Asia/Manila') . '")) as booking_date, COUNT(*) as booking_count')
+            ->groupBy('booking_date')
+            ->having('booking_count', '>=', $totalSlotsPerDay)
+            ->pluck('booking_date')
+            ->toArray();
+
         // Combine and return all unavailable dates
-        $allBookedDates = array_unique(array_merge($studioBookingDates, $instrumentRentalDates));
+        $allBookedDates = array_unique(array_merge($fullyBookedDates, $instrumentRentalDates));
         
         return response()->json(['booked_dates' => $allBookedDates]);
     }
@@ -892,7 +898,18 @@ class BookingController extends Controller
     public function getBookingsByDate(Request $request)
     {
         $date = $request->query('date');
-        $bookings = \App\Models\Booking::where('date', $date)->get(['id', 'reference', 'user_id', 'date', 'time_slot', 'duration', 'status']);
+        
+        // Parse the date with proper timezone handling to ensure consistent querying
+        $queryDate = \Carbon\Carbon::parse($date)->setTimezone(config('app.timezone', 'Asia/Manila'))->format('Y-m-d');
+        
+        $bookings = \App\Models\Booking::whereDate('date', $queryDate)
+            ->get(['id', 'reference', 'user_id', 'date', 'time_slot', 'duration', 'status'])
+            ->map(function($booking) {
+                // Convert the date to a simple Y-m-d format to avoid timezone issues
+                $booking->date = \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
+                return $booking;
+            });
+            
         return response()->json(['bookings' => $bookings]);
     }
 
@@ -924,7 +941,7 @@ class BookingController extends Controller
     public function checkReferenceCode(Request $request)
     {
         $request->validate([
-            'reference_code' => 'required|string|size:4'
+            'reference_code' => 'required|string|regex:/^[0-9]{13}$/'
         ]);
 
         // Check both bookings and instrument rentals tables

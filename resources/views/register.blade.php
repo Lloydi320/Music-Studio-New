@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -44,7 +44,7 @@
         }
 
         .register-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2a2a2a 0%, #FFD700 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -88,7 +88,7 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #FFD700;
             background: white;
         }
 
@@ -106,8 +106,8 @@
         .register-btn {
             width: 100%;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a1a;
             border: none;
             border-radius: 10px;
             font-size: 16px;
@@ -133,7 +133,7 @@
         }
 
         .login-link a {
-            color: #667eea;
+            color: #FFD700;
             text-decoration: none;
             font-weight: 500;
         }
@@ -244,7 +244,7 @@
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2a2a2a 0%, #FFD700 100%);
             color: white;
             padding: 20px;
             border-radius: 15px 15px 0 0;
@@ -304,8 +304,8 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a1a;
             border: none;
             padding: 12px 30px;
             border-radius: 8px;
@@ -323,7 +323,10 @@
 <body>
     <div class="register-container">
         <div class="register-header">
-            <h1>🍋 Lemon Hub Studio</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo" style="height: 40px; width: auto; filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.3));">
+                <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Lemon Hub Studio</h1>
+            </div>
             <p>Create your account to get started</p>
         </div>
         

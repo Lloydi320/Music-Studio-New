@@ -16,6 +16,7 @@ use App\Models\Booking;
 use App\Models\InstrumentRental;
 use App\Models\ActivityLog;
 use App\Models\RescheduleRequest;
+use App\Models\CarouselItem;
 
 class AdminController extends Controller
 {
@@ -1619,6 +1620,9 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Only confirmed bookings can be rescheduled.');
             }
             
+            // Use original booking duration instead of request duration
+            $originalDuration = $booking->duration;
+            
             // Check for time slot conflicts
             $conflictingBooking = Booking::where('date', $request->date)
                 ->where('time_slot', $request->time_slot)
@@ -1633,11 +1637,11 @@ class AdminController extends Controller
             // Store old values for logging
             $oldValues = $booking->toArray();
             
-            // Update booking details
+            // Update booking details (keep original duration)
             $booking->update([
                 'date' => $request->date,
                 'time_slot' => $request->time_slot,
-                'duration' => $request->duration,
+                'duration' => $originalDuration, // Use original duration
                 'reschedule_source' => 'system'
             ]);
             
@@ -2805,5 +2809,130 @@ class AdminController extends Controller
         }
         
         return null;
+    }
+
+    /**
+     * Show carousel management page
+     */
+    public function carouselManagement()
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $carouselItems = CarouselItem::ordered()->get();
+        
+        return view('admin.carousel', compact('user', 'carouselItems'));
+    }
+
+    /**
+     * Store a new carousel item
+     */
+    public function storeCarouselItem(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'expertise' => 'required|string',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'order_position' => 'required|integer|min:0'
+        ]);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('images/carousel'), $imageName);
+            $imagePath = $imageName; // Store only filename, not full path
+        }
+
+        CarouselItem::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'expertise' => $request->expertise,
+            'image_path' => $imagePath,
+            'order_position' => $request->order_position,
+            'is_active' => $request->has('is_active')
+        ]);
+
+        return redirect()->route('admin.carousel')->with('success', 'Carousel item created successfully!');
+    }
+
+    /**
+     * Update carousel item
+     */
+    public function updateCarouselItem(Request $request, $id)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $carouselItem = CarouselItem::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'expertise' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'order_position' => 'required|integer|min:0'
+        ]);
+
+        $updateData = [
+            'title' => $request->title,
+            'description' => $request->description,
+            'expertise' => $request->expertise,
+            'order_position' => $request->order_position,
+            'is_active' => $request->has('is_active')
+        ];
+
+        // Handle image upload if new image is provided
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($carouselItem->image_path && file_exists(public_path('images/carousel/' . $carouselItem->image_path))) {
+                unlink(public_path('images/carousel/' . $carouselItem->image_path));
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('images/carousel'), $imageName);
+            $updateData['image_path'] = $imageName; // Store only filename, not full path
+        }
+
+        $carouselItem->update($updateData);
+
+        return redirect()->route('admin.carousel')->with('success', 'Carousel item updated successfully!');
+    }
+
+    /**
+     * Delete carousel item
+     */
+    public function deleteCarouselItem($id)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $carouselItem = CarouselItem::findOrFail($id);
+
+        // Delete associated image
+        if ($carouselItem->image_path && file_exists(public_path('images/carousel/' . $carouselItem->image_path))) {
+            unlink(public_path('images/carousel/' . $carouselItem->image_path));
+        }
+
+        $carouselItem->delete();
+
+        return redirect()->route('admin.carousel')->with('success', 'Carousel item deleted successfully!');
     }
 }

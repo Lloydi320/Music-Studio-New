@@ -16,9 +16,7 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
-Route::get('/music-lessons', function () {
-    return view('music-lessons');
-})->name('music-lessons');
+Route::get('/music-lessons', [App\Http\Controllers\MusicLessonsController::class, 'index'])->name('music-lessons');
 
 
 
@@ -134,6 +132,12 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/activity-logs', [App\Http\Controllers\AdminController::class, 'activityLogs'])->name('admin.activity-logs');
     Route::delete('/activity-logs/clear', [App\Http\Controllers\AdminController::class, 'clearActivityLogs'])->name('admin.activity-logs.clear');
     Route::get('/instrument-bookings', [App\Http\Controllers\AdminController::class, 'instrumentBookings'])->name('admin.instrument-bookings');
+
+    // Carousel management routes
+    Route::get('/carousel', [App\Http\Controllers\AdminController::class, 'carouselManagement'])->name('admin.carousel');
+    Route::post('/carousel', [App\Http\Controllers\AdminController::class, 'storeCarouselItem'])->name('admin.carousel.store');
+    Route::put('/carousel/{id}', [App\Http\Controllers\AdminController::class, 'updateCarouselItem'])->name('admin.carousel.update');
+    Route::delete('/carousel/{id}', [App\Http\Controllers\AdminController::class, 'deleteCarouselItem'])->name('admin.carousel.delete');
 
     Route::patch('/bookings/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectBooking'])->name('admin.booking.reject');
     Route::patch('/bookings/{id}/reschedule', [App\Http\Controllers\AdminController::class, 'rescheduleBooking'])->name('admin.booking.reschedule');

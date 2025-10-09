@@ -37,30 +37,23 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string|min:6',
-            'login_type' => 'sometimes|in:user,admin'
+            'password' => 'required|string|min:6'
         ]);
 
         $credentials = $request->only('email', 'password');
-        $loginType = $request->get('login_type', 'user');
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $user = Auth::user();
 
-            // For admin login, check if user has admin privileges
-            if ($loginType === 'admin' && !$user->isAdmin()) {
-                Auth::logout();
-                return back()->withErrors([
-                    'email' => 'Access denied. Admin privileges required.',
-                ]);
-            }
-
             $request->session()->regenerate();
+
+            // Automatically determine user type based on is_admin field
+            $userType = $user->isAdmin() ? 'admin' : 'user';
 
             Log::info('User logged in', [
                 'user_id' => $user->id,
                 'email' => $user->email,
-                'login_type' => $loginType
+                'user_type' => $userType
             ]);
 
             // Redirect based on user type
