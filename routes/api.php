@@ -20,6 +20,8 @@ Route::post('/check-reference-code', [BookingController::class, 'checkReferenceC
 
 // Get booked dates for calendar
 Route::get('/booked-dates', [BookingController::class, 'getBookedDates']);
+// Get dates that have any studio bookings (band or solo rehearsal)
+Route::get('/has-booking-dates', [BookingController::class, 'getHasBookingDates']);
 
 // Get booked dates for instrument rental conflict checking
 Route::get('/instrument-rental/booked-dates', [InstrumentRentalController::class, 'getBookedDates']);

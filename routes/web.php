@@ -63,6 +63,8 @@ Route::get('/api/user-rentals', [InstrumentRentalController::class, 'getUserRent
 Route::get('/api/rental/{reference}', [InstrumentRentalController::class, 'getByReference']);
 Route::post('/api/rental/{reference}/cancel', [InstrumentRentalController::class, 'cancelByReference'])->middleware('auth');
 Route::post('/api/rental/{reference}/status', [InstrumentRentalController::class, 'updateStatus']);
+Route::get('/api/instrument-booked-dates', [InstrumentRentalController::class, 'getBookedDates']);
+Route::get('/api/instrument-bookings-by-date', [InstrumentRentalController::class, 'getBookingsByDate']);
 
 // Removed this route as it conflicts with API routes
 

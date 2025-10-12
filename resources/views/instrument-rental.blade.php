@@ -1981,8 +1981,8 @@
             </div>
 
             <div class="form-group">
-              <label for="notes">Special Requirements or Notes:</label>
-              <textarea name="notes" id="notes" rows="3" placeholder="Any special requirements, setup needs, or additional information..."></textarea>
+              <label for="special_requests">Special Requirements or Notes:</label>
+              <textarea name="special_requests" id="special_requests" rows="3" placeholder="Any special requirements, setup needs, or additional information..."></textarea>
             </div>
           </section>
 
@@ -2167,17 +2167,22 @@
                 
                 <div class="form-group">
                   <label class="form-label" for="modalFullName">FULL NAME *</label>
-                  <input type="text" id="modalFullName" name="full_name" class="form-input" required>
+                  <input type="text" id="modalFullName" name="name" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="modalEmail">EMAIL ADDRESS *</label>
+                  <input type="email" id="modalEmail" name="email" class="form-input" required>
                 </div>
                 
                 <div class="form-group">
                   <label class="form-label" for="modalContactNumber">CONTACT NUMBER *</label>
-                  <input type="tel" id="modalContactNumber" name="contact_number" class="form-input" required>
+                  <input type="tel" id="modalContactNumber" name="phone" class="form-input" required>
                 </div>
                 
                 <div class="form-group">
-                  <label class="form-label" for="modalReferenceCode">GCASH PAYMENT REFERENCE NUMBER *</label>
-                  <input type="text" id="modalReferenceCode" name="reference_code" class="form-input" maxlength="13" pattern="[0-9]{13}" placeholder="Enter 13-digit reference number" required>
+                  <label class="form-label" for="modalReferenceCode">GCASH PAYMENT REFERENCE NUMBER</label>
+                  <input type="text" id="modalReferenceCode" name="reference_number" class="form-input" maxlength="13" pattern="[0-9]{13}" placeholder="Enter 13-digit reference number">
                   <!-- Error message container for inline validation -->
                   <div id="modalReferenceErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
                     <span id="modalReferenceErrorText">Reference number already exists.</span>
@@ -2231,6 +2236,103 @@
         </div>
     </div>
   </main>
+
+  <!-- Calendar Section for Viewing Rental Bookings -->
+  <section class="calendar-section" style="padding: 40px 20px; background: #f8f9fa;">
+    <div class="container" style="max-width: 1200px; margin: 0 auto;">
+      <h2 style="text-align: center; margin-bottom: 30px; color: #333;">
+        <i class="fas fa-calendar-alt" style="color: #ffd700; margin-right: 10px;"></i>
+        Instrument Rental Calendar
+      </h2>
+      <p style="text-align: center; color: #666; margin-bottom: 40px;">
+        View existing instrument rental bookings by selecting a date
+      </p>
+      
+      <!-- Floating Action Button for Calendar -->
+      <button class="calendar-fab" id="calendarFab" title="Toggle Calendar" style="
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
+        border: none;
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+        cursor: pointer;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #333;">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
+          <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+      
+      <div class="calendar-container hidden" id="calendarContainer" style="
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        max-width: 800px;
+        margin: 0 auto;
+      ">
+        <div id="calendar-header" style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding: 0 10px;
+        ">
+          <button id="prevMonth" style="
+            background: #ffd700;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #333;
+            transition: all 0.3s ease;
+          ">&#9664;</button>
+          <span id="monthYear" style="
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+          "></span>
+          <button id="nextMonth" style="
+            background: #ffd700;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #333;
+            transition: all 0.3s ease;
+          ">&#9654;</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid" style="
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 2px;
+          margin-bottom: 20px;
+        "></div>
+        <div class="time-slots" id="timeSlots" style="
+          min-height: 100px;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border: 2px solid #e9ecef;
+        "></div>
+      </div>
+    </div>
+  </section>
 
   <!-- Add spacing before footer -->
   <div style="height: 100px; margin-top: 50px;"></div>
@@ -2755,7 +2857,7 @@
         
         // Get additional form values
         const venueType = document.querySelector('select[name="venue_type"]').value;
-        const notes = document.querySelector('textarea[name="notes"]').value;
+        const notes = document.querySelector('textarea[name="special_requests"]').value;
         const documentationConsent = document.querySelector('input[name="documentation_consent"]').checked;
         
         // Populate hidden form fields
@@ -3117,6 +3219,286 @@
         dropdown.classList.remove('show');
       }
     });
+
+    // Calendar functionality for instrument rentals
+    let currentDate = new Date();
+    let selectedDate = null;
+    let bookedDates = [];
+
+    // Initialize calendar when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      generateCalendar();
+      fetchBookedDates();
+    });
+
+    // Toggle calendar visibility
+    function toggleCalendar() {
+      const calendarContainer = document.getElementById('calendarContainer');
+      const calendarFab = document.getElementById('calendarFab');
+      
+      if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
+        calendarContainer.style.display = 'block';
+        calendarFab.innerHTML = '<i class="fas fa-times"></i>';
+        calendarFab.style.backgroundColor = '#ef4444';
+      } else {
+        calendarContainer.style.display = 'none';
+        calendarFab.innerHTML = '<i class="fas fa-calendar-alt"></i>';
+        calendarFab.style.backgroundColor = '#3b82f6';
+      }
+    }
+
+    // Generate calendar
+    function generateCalendar() {
+      const calendarGrid = document.getElementById('calendarGrid');
+      const monthYear = document.getElementById('monthYear');
+      
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      monthYear.textContent = new Date(year, month).toLocaleDateString('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+      });
+      
+      calendarGrid.innerHTML = '';
+      
+      // Add day headers
+      const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      dayHeaders.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'calendar-day-header';
+        dayHeader.textContent = day;
+        calendarGrid.appendChild(dayHeader);
+      });
+      
+      // Get first day of month and number of days
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      // Add empty cells for days before month starts
+      for (let i = 0; i < firstDay; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        calendarGrid.appendChild(emptyDay);
+      }
+      
+      // Add days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day;
+        
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Mark past dates
+        if (dateStr < today) {
+          dayElement.classList.add('past');
+        }
+        
+        // Mark booked dates
+        if (bookedDates.includes(dateStr)) {
+          dayElement.classList.add('booked');
+        }
+        
+        // Mark selected date
+        if (selectedDate === dateStr) {
+          dayElement.classList.add('selected');
+        }
+        
+        // Add click event
+        dayElement.addEventListener('click', () => selectDate(dateStr, dayElement));
+        
+        calendarGrid.appendChild(dayElement);
+      }
+    }
+
+    // Select date and fetch booking info
+    function selectDate(dateStr, element) {
+      // Remove previous selection
+      document.querySelectorAll('.calendar-day.selected').forEach(day => {
+        day.classList.remove('selected');
+      });
+      
+      // Add selection to clicked date
+      element.classList.add('selected');
+      selectedDate = dateStr;
+      
+      // Fetch booking information for this date
+      fetchBookingInfo(dateStr);
+    }
+
+    // Fetch booked dates
+    function fetchBookedDates() {
+      fetch('/api/instrument-booked-dates')
+        .then(response => response.json())
+        .then(data => {
+          bookedDates = data.booked_dates || [];
+          generateCalendar();
+        })
+        .catch(error => {
+          console.error('Error fetching booked dates:', error);
+        });
+    }
+
+    // Fetch booking information for selected date
+    function fetchBookingInfo(date) {
+      const bookingInfo = document.getElementById('bookingInfo');
+      const bookingContent = document.getElementById('bookingContent');
+      
+      bookingContent.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+      bookingInfo.style.display = 'block';
+      
+      fetch(`/api/instrument-bookings-by-date?date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.bookings.length > 0) {
+            displayBookingInfo(data.bookings, date);
+          } else {
+            displayNoBookings(date);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching booking info:', error);
+          bookingContent.innerHTML = '<div style="text-align: center; padding: 20px; color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Error loading booking information</div>';
+        });
+    }
+
+    // Display booking information
+    function displayBookingInfo(bookings, date) {
+      const bookingContent = document.getElementById('bookingContent');
+      
+      let html = `
+        <div style="margin-bottom: 15px;">
+          <h4 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">
+            <i class="fas fa-calendar-day" style="color: #3b82f6; margin-right: 8px;"></i>
+            ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </h4>
+          <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">
+            ${bookings.length} instrument rental${bookings.length > 1 ? 's' : ''} for this date
+          </p>
+        </div>
+      `;
+      
+      bookings.forEach((booking, index) => {
+        const statusColor = booking.status === 'confirmed' ? '#10b981' : '#f59e0b';
+        const statusIcon = booking.status === 'confirmed' ? 'fa-check-circle' : 'fa-clock';
+        
+        html += `
+          <div style="
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: ${index < bookings.length - 1 ? '12px' : '0'};
+          ">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <h5 style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">
+                  ${booking.instrument_name}
+                </h5>
+                <p style="margin: 2px 0 0 0; color: #6b7280; font-size: 13px; text-transform: capitalize;">
+                  ${booking.instrument_type.replace('_', ' ')}
+                </p>
+              </div>
+              <span style="
+                background: ${statusColor};
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              ">
+                <i class="fas ${statusIcon}" style="margin-right: 4px;"></i>
+                ${booking.status}
+              </span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <div>
+                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Customer</p>
+                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">${booking.customer_name}</p>
+              </div>
+              <div>
+                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Total Cost</p>
+                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px; font-weight: 600;">₱${booking.total_cost}</p>
+              </div>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Rental Period</p>
+              <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">
+                ${new Date(booking.rental_start_date).toLocaleDateString()} - ${new Date(booking.rental_end_date).toLocaleDateString()}
+              </p>
+            </div>
+            
+            ${booking.pickup_location ? `
+              <div style="margin-bottom: 10px;">
+                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Pickup Location</p>
+                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">${booking.pickup_location}</p>
+              </div>
+            ` : ''}
+            
+            ${booking.transportation ? `
+              <div style="margin-bottom: 10px;">
+                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Transportation</p>
+                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px; text-transform: capitalize;">${booking.transportation}</p>
+              </div>
+            ` : ''}
+            
+            ${booking.special_requests ? `
+              <div>
+                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Special Requests</p>
+                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">${booking.special_requests}</p>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      
+      bookingContent.innerHTML = html;
+    }
+
+    // Display no bookings message
+    function displayNoBookings(date) {
+      const bookingContent = document.getElementById('bookingContent');
+      
+      bookingContent.innerHTML = `
+        <div style="text-align: center; padding: 30px 20px;">
+          <div style="
+            width: 60px;
+            height: 60px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px auto;
+          ">
+            <i class="fas fa-guitar" style="color: #9ca3af; font-size: 24px;"></i>
+          </div>
+          <h4 style="margin: 0 0 8px 0; color: #1f2937; font-size: 16px; font-weight: 600;">
+            No instrument rentals for this date
+          </h4>
+          <p style="margin: 0; color: #6b7280; font-size: 14px;">
+            ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+      `;
+    }
+
+    // Navigate calendar months
+    function previousMonth() {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      generateCalendar();
+    }
+
+    function nextMonth() {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      generateCalendar();
+    }
   </script>
 </body>
 </html>

@@ -893,6 +893,39 @@ class BookingController extends Controller
     }
 
     /**
+     * Return all dates that have at least one studio booking (band or solo rehearsal).
+     * This does NOT include instrument rentals and does not disable the date —
+     * it is used for the home page calendar red dot indicator.
+     */
+    public function getHasBookingDates()
+    {
+        try {
+            // Collect dates that have any pending or confirmed bookings
+            // Avoid CONVERT_TZ to prevent nulls when MySQL timezone tables are missing
+            $datesWithBookings = \App\Models\Booking::whereIn('status', ['pending', 'confirmed'])
+                ->get(['date'])
+                ->map(function ($booking) {
+                    // Normalize to YYYY-MM-DD regardless of stored timezone
+                    return \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
+                })
+                ->unique()
+                ->values()
+                ->toArray();
+
+            return response()->json([
+                'booked_dates' => $datesWithBookings
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to fetch dates with bookings', [
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'booked_dates' => []
+            ], 500);
+        }
+    }
+
+    /**
      * Return all bookings for a given date as JSON.
      */
     public function getBookingsByDate(Request $request)
@@ -902,15 +935,35 @@ class BookingController extends Controller
         // Parse the date with proper timezone handling to ensure consistent querying
         $queryDate = \Carbon\Carbon::parse($date)->setTimezone(config('app.timezone', 'Asia/Manila'))->format('Y-m-d');
         
+        // Get regular bookings
         $bookings = \App\Models\Booking::whereDate('date', $queryDate)
             ->get(['id', 'reference', 'user_id', 'date', 'time_slot', 'duration', 'status'])
             ->map(function($booking) {
                 // Convert the date to a simple Y-m-d format to avoid timezone issues
                 $booking->date = \Carbon\Carbon::parse($booking->date)->format('Y-m-d');
+                $booking->type = 'booking';
                 return $booking;
             });
+        
+        // Get instrument rentals that include this date within their rental range
+        $instrumentRentals = \App\Models\InstrumentRental::whereIn('status', ['pending', 'confirmed'])
+            ->where('rental_start_date', '<=', $queryDate)
+            ->where('rental_end_date', '>=', $queryDate)
+            ->get(['id', 'four_digit_code as reference', 'user_id', 'rental_start_date', 'rental_end_date', 'status', 'instrument_type', 'instrument_name', 'rental_duration_days'])
+            ->map(function($rental) use ($queryDate) {
+                // Set the date to the queried date for consistency
+                $rental->date = $queryDate;
+                $rental->type = 'instrument_rental';
+                // Add time_slot and duration for consistency with bookings
+                $rental->time_slot = 'Full Day';
+                $rental->duration = $rental->rental_duration_days . ' day(s)';
+                return $rental;
+            });
+        
+        // Combine both collections
+        $allBookings = $bookings->concat($instrumentRentals);
             
-        return response()->json(['bookings' => $bookings]);
+        return response()->json(['bookings' => $allBookings]);
     }
 
     /**

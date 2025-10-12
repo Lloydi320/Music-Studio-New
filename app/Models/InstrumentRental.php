@@ -35,6 +35,9 @@ class InstrumentRental extends Model
         'documentation_consent',
         'reservation_fee',
         'security_deposit',
+        'name',
+        'email',
+        'phone',
     ];
 
     protected $casts = [

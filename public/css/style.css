@@ -1301,6 +1301,17 @@ body::after {
   margin: 4px auto 0;
 }
 
+/* Dates that have any band/solo bookings (indicator only) */
+.calendar-grid .has-booking::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: red;
+  display: block;
+  border-radius: 50%;
+  margin: 4px auto 0;
+}
+
 
 .time-slots {
   margin-top: 10px;

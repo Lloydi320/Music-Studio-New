@@ -47,8 +47,9 @@ document.addEventListener('DOMContentLoaded', function() {
         calendarGrid.appendChild(dayHeader);
       });
 
-      // Fetch booked dates for this month
+      // Fetch booked dates for this month (fully unavailable) and dates that have any bookings
       let bookedDates = [];
+      let hasBookingDates = [];
       try {
         const response = await fetch(`/api/booked-dates`);
         const data = await response.json();
@@ -68,10 +69,31 @@ document.addEventListener('DOMContentLoaded', function() {
           bookedDates = [];
         }
         
-        console.log('📊 Booked dates:', bookedDates);
+        console.log('📊 Unavailable booked dates:', bookedDates);
       } catch (error) {
         console.error('Error fetching booked dates:', error);
         bookedDates = [];
+      }
+
+      // Fetch dates that have any band/solo bookings
+      try {
+        const resp2 = await fetch(`/api/has-booking-dates`);
+        const data2 = await resp2.json();
+        if (data2.booked_dates) {
+          if (typeof data2.booked_dates === 'object' && !Array.isArray(data2.booked_dates)) {
+            hasBookingDates = Object.values(data2.booked_dates);
+          } else {
+            hasBookingDates = data2.booked_dates;
+          }
+        } else if (Array.isArray(data2)) {
+          hasBookingDates = data2;
+        } else {
+          hasBookingDates = [];
+        }
+        console.log('📍 Dates with any bookings:', hasBookingDates);
+      } catch (error) {
+        console.error('Error fetching has-booking dates:', error);
+        hasBookingDates = [];
       }
 
       // Calculate the start date for the calendar grid (first day of the week that contains the first day of the month)
@@ -110,13 +132,19 @@ document.addEventListener('DOMContentLoaded', function() {
           circle.className = 'day-circle';
           dayElement.appendChild(circle);
           
-          // Check if date has bookings
+          // Check if date is fully unavailable (instrument rentals or fully booked)
           if (bookedDates.includes(dateKey)) {
             dayElement.classList.add('booked');
             dayElement.title = 'Click to view booking details';
             // Remove the pointer-events: none to allow clicking
             dayElement.style.cursor = 'pointer';
             console.log('✅ Date is booked:', dateKey);
+          }
+
+          // If there are bookings (band or solo) but the date isn't fully unavailable,
+          // add a red dot indicator without disabling interactions
+          if (!dayElement.classList.contains('booked') && hasBookingDates.includes(dateKey)) {
+            dayElement.classList.add('has-booking');
           }
           
           // Check if date is in the past
@@ -210,6 +238,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const statusElement = document.createElement('div');
             statusElement.className = `booking-status status-${booking.status.toLowerCase()}`;
             statusElement.textContent = booking.status.charAt(0).toUpperCase() + booking.status.slice(1);
+            
+            // Add booking type and additional info for instrument rentals
+            if (booking.type === 'instrument_rental') {
+              const typeElement = document.createElement('div');
+              typeElement.className = 'booking-type';
+              typeElement.textContent = `${booking.instrument_type} - ${booking.duration}`;
+              bookingDiv.appendChild(typeElement);
+            }
             
             // Append elements to booking div
             bookingDiv.appendChild(timeElement);
