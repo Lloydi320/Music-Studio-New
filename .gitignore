@@ -34,3 +34,14 @@ Thumbs.db
 *.MKV
 *.wmv
 *.WMV
+
+# Deployment files
+*.tar.gz
+*.zip
+music-studio-deploy.tar.gz
+music-studio.tar.gz
+
+# Database exports
+*.sql
+database_export.sql
+lemon_hub_studio*.sql
