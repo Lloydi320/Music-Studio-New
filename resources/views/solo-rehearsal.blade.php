@@ -773,13 +773,14 @@
   </div>
 
   <!-- Booking Modal -->
-  <div id="bookingModal" class="modal">
+  <div id="studioRentalModal" class="modal">
     <div class="modal-container">
       <div class="modal-content">
         <div class="modal-left">
           <div class="modal-header">
             <h3 class="modal-title">Solo Rehearsal Booking</h3>
             <p class="modal-subtitle">Booking Summary</p>
+            <p class="duration">🕒 <span id="modalDurationLabel">1 hr</span></p>
           </div>
           
           <div class="booking-details">
@@ -818,7 +819,7 @@
             <h3>Enter Details</h3>
           </div>
           
-          <form id="soloRehearsalForm" action="{{ route('booking.store') }}" method="POST" enctype="multipart/form-data">
+          <form id="studioRentalForm" action="{{ route('booking.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="service_type" value="solo_rehearsal">
             <input type="hidden" name="date" id="modalBookingDate">
@@ -901,6 +902,179 @@
     <p>Professional Music Studio Services</p>
   </div>
 </footer>
+
+<!-- Success Confirmation Modal (exact copy from band rehearsal) -->
+<div id="successModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="modal-content" style="
+      max-width: 720px;
+      border-radius: 20px;
+      padding: 30px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    ">
+      
+      <!-- Left Section: Icon and Title -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+      ">
+        <!-- Success Icon -->
+        <div style="
+          width: 60px;
+          height: 60px;
+          margin-bottom: 16px;
+          background: #10b981;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: bounceIn 0.6s ease-out 0.2s both;
+        ">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20,6 9,17 4,12"></polyline>
+          </svg>
+        </div>
+        
+        <!-- Title -->
+        <h2 style="
+          color: #10b981;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: -0.3px;
+          animation: fadeInUp 0.5s ease-out 0.3s both;
+          white-space: nowrap;
+        ">Booking<br>Confirmed!</h2>
+      </div>
+      
+      <!-- Right Section: Details -->
+      <div style="
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <!-- Success Message -->
+        <div id="successMessage" style="
+          background: #f0fdf4;
+          color: #166534;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #bbf7d0;
+          font-weight: 400;
+          line-height: 1.5;
+          font-size: 14px;
+          animation: fadeInUp 0.5s ease-out 0.4s both;
+        ">
+          <!-- Success message will be populated here -->
+        </div>
+        
+        <!-- Bottom Section -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+        ">
+          <!-- Email confirmation text -->
+          <p style="
+            color: #6b7280;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.5s both;
+            flex: 1;
+          ">You will receive an email confirmation shortly.</p>
+          
+          <!-- Countdown -->
+          <div style="
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.6s both;
+            text-align: right;
+            flex-shrink: 0;
+          ">
+            Redirecting in <span id="countdown" style="color: #374151; font-weight: 500;">5</span> seconds...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modern CSS Animations (copied to match band rehearsal) -->
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #successModal .modal-content {
+    max-width: 90% !important;
+    margin: 20px !important;
+    padding: 30px 20px !important;
+  }
+  
+  #successModal h2 {
+    font-size: 24px !important;
+  }
+  
+  #successModal .modal-container {
+    padding: 20px !important;
+  }
+}
+</style>
 
   <script>
 // Reference Code Validation
@@ -1013,56 +1187,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Solo rehearsal specific pricing calculation
-document.addEventListener('DOMContentLoaded', function() {
-      const durationSelect = document.getElementById('durationSelect');
-      const modalPrice = document.getElementById('modalPrice');
-      const gcashAmount = document.getElementById('gcashAmount');
-      const totalPriceInput = document.getElementById('totalPrice');
-      const selectedDurationInput = document.getElementById('selectedDuration');
-      const modalDuration = document.getElementById('modalDuration');
-      
-      // Solo rehearsal pricing: ₱300 per hour
-      const hourlyRate = 300;
-      
-      function updateSoloRehearsalPrice() {
-        if (durationSelect) {
-          const duration = parseInt(durationSelect.value) || 1;
-          const totalPrice = hourlyRate * duration;
-          
-          // Update modal price display
-          if (modalPrice) {
-            modalPrice.textContent = `₱${totalPrice}`;
-          }
-          
-          // Update GCash amount
-          if (gcashAmount) {
-            gcashAmount.textContent = `₱${totalPrice}`;
-          }
-          
-          // Update hidden form fields
-          if (totalPriceInput) {
-            totalPriceInput.value = totalPrice;
-          }
-          
-          if (selectedDurationInput) {
-            selectedDurationInput.value = duration;
-          }
-          
-          // Update modal duration display
-          if (modalDuration) {
-            modalDuration.textContent = `${duration} hour${duration > 1 ? 's' : ''}`;
-          }
-        }
-      }
-      
-      // Listen for duration changes
-      if (durationSelect) {
-        durationSelect.addEventListener('change', updateSoloRehearsalPrice);
-        // Initialize with default value
-        updateSoloRehearsalPrice();
-      }
-    });
+// Pricing handled by booking.js; no inline solo pricing script needed here.
   </script>
   <script src="{{ asset('js/script.js') }}"></script>
   <script src="{{ asset('js/booking.js') }}"></script>

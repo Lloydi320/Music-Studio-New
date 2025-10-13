@@ -21,7 +21,6 @@
             </div>
         </div>
         <div class="header-actions">
-            <button class="toggle-theme-btn" onclick="toggleTheme()">Toggle theme</button>
             <a href="https://calendar.google.com" target="_blank" class="open-calendar-btn">Open Calendar</a>
         </div>
     </div>

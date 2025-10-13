@@ -667,48 +667,87 @@
         });
     }
 
-    // Function to generate time slots based on duration
-    function generateRescheduleTimeSlots(durationHours) {
+    // Helpers for reschedule time slot generation with booking overlap filtering
+    let lastReschedDateISO = null;
+    let lastReschedBookings = [];
+
+    function formatTime12h(dateObj) {
+        return dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    }
+
+    function parseTimeStringToDate(timeStr, baseDateISO) {
+        // Supports "08:00 AM" or "08:00AM"
+        const cleaned = timeStr.replace(/\s/g, '');
+        const match = cleaned.match(/^(\d{2}):(\d{2})(AM|PM)$/i);
+        if (!match) return null;
+        const [, hh, mm, ap] = match;
+        let hours = parseInt(hh, 10);
+        const minutes = parseInt(mm, 10);
+        if (ap.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+        if (ap.toUpperCase() === 'AM' && hours === 12) hours = 0;
+        const base = baseDateISO ? new Date(baseDateISO + 'T00:00:00') : new Date();
+        base.setHours(hours, minutes, 0, 0);
+        return base;
+    }
+
+    function parseTimeRange(rangeStr, baseDateISO) {
+        const parts = rangeStr.split('-');
+        if (parts.length < 2) return [null, null];
+        const startStr = parts[0].trim();
+        const endStr = parts[1].trim();
+        const start = parseTimeStringToDate(startStr, baseDateISO);
+        const end = parseTimeStringToDate(endStr, baseDateISO);
+        return [start, end];
+    }
+
+    // Generate reschedule time slots based on duration and filter out overlaps with existing bookings
+    function generateRescheduleTimeSlots(durationHours, baseDateISO = null, bookings = []) {
         const timeSelect = document.getElementById('newTime');
         if (!timeSelect) return;
-        
+
         // Clear existing options except the first one
         timeSelect.innerHTML = '<option value="">Select a time slot</option>';
-        
+
         const openingHour = 8;
         const closingHour = 20; // 8 PM
         const durationMinutes = durationHours * 60;
-        
+
+        // Build a date anchored to selected day to compare ranges properly
+        const baseDate = baseDateISO ? new Date(baseDateISO + 'T00:00:00') : new Date();
+        baseDate.setHours(0, 0, 0, 0);
+
         let currentHour = openingHour;
         let currentMinute = 0;
-        
+
         while (currentHour < closingHour) {
-            const startTime = new Date();
+            const startTime = new Date(baseDate);
             startTime.setHours(currentHour, currentMinute, 0, 0);
-            
+
             const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-            
+
             // Check if end time doesn't exceed closing hour
             if (endTime.getHours() <= closingHour) {
-                const startTimeStr = startTime.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                }).replace(/\s/g, '');
-                const endTimeStr = endTime.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                }).replace(/\s/g, '');
+                // Only treat pending or confirmed bookings as blockers
+                const blockingBookings = (bookings || []).filter(b => {
+                    const status = (b.status || '').toLowerCase();
+                    return status === 'pending' || status === 'confirmed';
+                });
+                const overlaps = blockingBookings.some(b => {
+                    const [bStart, bEnd] = parseTimeRange(b.time_slot, baseDateISO);
+                    if (!bStart || !bEnd) return false;
+                    return startTime < bEnd && endTime > bStart; // true if overlap
+                });
                 
-                const timeSlot = `${startTimeStr} - ${endTimeStr}`;
-                const option = document.createElement('option');
-                option.value = timeSlot;
-                option.textContent = timeSlot;
-                timeSelect.appendChild(option);
+                if (!overlaps) {
+                    const timeSlot = `${formatTime12h(startTime)} - ${formatTime12h(endTime)}`;
+                    const option = document.createElement('option');
+                    option.value = timeSlot;
+                    option.textContent = timeSlot;
+                    timeSelect.appendChild(option);
+                }
             }
-            
-            // Increment by 30 minutes
+
+            // Increment by 30 minutes to offer finer selection
             currentMinute += 30;
             if (currentMinute >= 60) {
                 currentMinute = 0;
@@ -727,8 +766,41 @@
     const durationSelect = document.getElementById('duration');
     const newTimeSelect = document.getElementById('newTime');
     
-    // Initialize time slots with default 1-hour duration (will be updated when reference is validated)
-    generateRescheduleTimeSlots(1);
+    // Initialize time slots with default 1-hour duration (updated after reference/date selection)
+    generateRescheduleTimeSlots(1, lastReschedDateISO, lastReschedBookings);
+
+    // When date changes, fetch bookings and regenerate filtered time slots
+    if (newDateInput) {
+        newDateInput.addEventListener('change', function() {
+            const dateVal = this.value;
+            lastReschedDateISO = dateVal;
+            if (!dateVal) {
+                generateRescheduleTimeSlots(parseInt(durationSelect?.value || '1', 10));
+                return;
+            }
+            fetch(`/api/bookings?date=${dateVal}`)
+                .then(res => res.json())
+                .then(bookings => {
+                    lastReschedBookings = bookings || [];
+                    const d = parseInt(durationSelect?.value || '1', 10);
+                    generateRescheduleTimeSlots(d, lastReschedDateISO, lastReschedBookings);
+                })
+                .catch(() => {
+                    // On error, still show slots without filtering
+                    lastReschedBookings = [];
+                    const d = parseInt(durationSelect?.value || '1', 10);
+                    generateRescheduleTimeSlots(d, lastReschedDateISO, lastReschedBookings);
+                });
+        });
+    }
+
+    // When duration changes, regenerate using last fetched bookings
+    if (durationSelect) {
+        durationSelect.addEventListener('change', function() {
+            const d = parseInt(this.value || '1', 10);
+            generateRescheduleTimeSlots(d, lastReschedDateISO, lastReschedBookings);
+        });
+    }
     
     // Function to show appropriate fields based on booking type
     function showBookingFields(bookingType) {
@@ -1132,7 +1204,9 @@
     }
     
     // Check for date conflicts based on booking type
-    const bookedDates = isInstrumentRental ? rescheduleInstrumentBookedDates : rescheduleBookedDates;
+    // For studio rescheduling, also block days that have instrument rentals
+    const combinedBookedDates = Array.from(new Set([...(rescheduleBookedDates || []), ...(rescheduleInstrumentBookedDates || [])]));
+    const bookedDates = isInstrumentRental ? (rescheduleInstrumentBookedDates || []) : combinedBookedDates;
     
     if (selectedDate && bookedDates.includes(selectedDate)) {
       // Prevent the date from being selected

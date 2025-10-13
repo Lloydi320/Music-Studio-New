@@ -1924,9 +1924,9 @@
               </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="eventDurationGroup" style="display: none;">
               <label for="event_duration_hours">Event Duration (Hours):</label>
-              <input type="number" name="event_duration_hours" min="1" max="12" value="7" required>
+              <input type="number" name="event_duration_hours" min="1" max="12" value="7">
               <small>Maximum 7 hours included. ₱200 per exceeding hour.</small>
             </div>
 
@@ -1940,15 +1940,23 @@
 
           <section class="form-section">
             <h3><i class="fas fa-calendar-alt"></i> Rental Period</h3>
-            
-            <div class="form-group">
-              <label for="rental_start_date">Start Date:</label>
-              <input type="date" id="rental_start_date" name="rental_start_date" required min="{{ date('Y-m-d') }}">
+            <div class="form-group" id="rentTypeGroup">
+              <label for="rent_type">Rent Type:</label>
+              <select id="rent_type" name="rent_type" required>
+                <option value="">Select Rent Type</option>
+                <option value="single">Single Day Rent</option>
+                <option value="multiple">Multiple Day Rent</option>
+              </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="startDateGroup" style="display: none;">
+              <label for="rental_start_date" id="startDateLabel">Start Date:</label>
+              <input type="date" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d') }}">
+            </div>
+
+            <div class="form-group" id="endDateGroup" style="display: none;">
               <label for="rental_end_date">End Date:</label>
-              <input type="date" id="rental_end_date" name="rental_end_date" required>
+              <input type="date" id="rental_end_date" name="rental_end_date">
             </div>
 
             <div class="form-group">
@@ -1957,27 +1965,43 @@
             </div>
 
             <div class="form-group">
-              <label for="pickup_location">Pickup Location:</label>
-              <select name="pickup_location" required>
-                <option value="Studio">Studio (288H Sto.Domingo Street, Calamba)</option>
-                <option value="Delivery">Delivery (Additional fee may apply)</option>
+              <label for="transportation">Transportation Method:</label>
+              <select name="transportation" id="transportation_select">
+                <option value="none">Self Pickup</option>
+                <option value="delivery">Deliver</option>
               </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="pickupLocationGroup">
+              <label for="pickup_location">Pickup Location:</label>
+              <select name="pickup_location" id="pickup_location" disabled>
+                <option value="Studio" selected>Studio (288H Sto.Domingo Street, Calamba)</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="returnLocationGroup">
               <label for="return_location">Return Location:</label>
-              <select name="return_location" required>
+              <select name="return_location" id="return_location">
                 <option value="Studio">Studio (288H Sto.Domingo Street, Calamba)</option>
                 <option value="Pickup">Pickup Service (Additional fee may apply)</option>
               </select>
             </div>
 
-            <div class="form-group">
-              <label for="transportation">Transportation Service:</label>
-              <select name="transportation" id="transportation_select">
-                <option value="none">No Transportation (Self Pickup)</option>
-                <option value="delivery">Delivery & Pickup (₱500-₱600 within Laguna)</option>
-              </select>
+            <!-- Self Pickup: Pick-up Time (shown only when self pickup is selected) -->
+            <div class="form-group" id="pickupTimeGroup" style="display: none;">
+              <label for="pickup_time">Pick-up Time:</label>
+              <input type="time" id="pickup_time" name="pickup_time">
+            </div>
+
+            <div class="form-group" id="deliveryLocationGroup" style="display: none;">
+              <label for="delivery_location">Delivery Location:</label>
+              <input type="text" id="delivery_location" name="delivery_location" placeholder="Enter event delivery address">
+            </div>
+
+            <div class="form-group" id="pickupFromEventGroup" style="display: none;">
+              <label>
+                <input type="checkbox" id="pickup_from_event" name="pickup_from_event" value="1"> Pick up from event location
+              </label>
             </div>
 
             <div class="form-group">
@@ -2157,6 +2181,7 @@
                 <input type="hidden" id="modalDurationInput" name="rental_duration">
                 <input type="hidden" id="modalEventDurationInput" name="event_duration_hours">
                 <input type="hidden" id="modalPickupLocationInput" name="pickup_location">
+                <input type="hidden" id="modalPickupTimeInput" name="pickup_time">
                 <input type="hidden" id="modalReturnLocationInput" name="return_location">
                 <input type="hidden" id="modalTransportationInput" name="transportation">
                 <input type="hidden" id="modalFullPackageInput" name="full_package">
@@ -2164,6 +2189,8 @@
                 <input type="hidden" id="modalVenueTypeInput" name="venue_type">
                 <input type="hidden" id="modalNotesInput" name="notes">
                 <input type="hidden" id="modalDocumentationConsentInput" name="documentation_consent">
+                <input type="hidden" id="modalDeliveryLocationInput" name="delivery_location">
+                <input type="hidden" id="modalPickupFromEventInput" name="pickup_from_event">
                 
                 <div class="form-group">
                   <label class="form-label" for="modalFullName">FULL NAME *</label>
@@ -2236,106 +2263,7 @@
         </div>
     </div>
   </main>
-
-  <!-- Calendar Section for Viewing Rental Bookings -->
-  <section class="calendar-section" style="padding: 40px 20px; background: #f8f9fa;">
-    <div class="container" style="max-width: 1200px; margin: 0 auto;">
-      <h2 style="text-align: center; margin-bottom: 30px; color: #333;">
-        <i class="fas fa-calendar-alt" style="color: #ffd700; margin-right: 10px;"></i>
-        Instrument Rental Calendar
-      </h2>
-      <p style="text-align: center; color: #666; margin-bottom: 40px;">
-        View existing instrument rental bookings by selecting a date
-      </p>
-      
-      <!-- Floating Action Button for Calendar -->
-      <button class="calendar-fab" id="calendarFab" title="Toggle Calendar" style="
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #ffd700 0%, #dbb411 100%);
-        border: none;
-        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
-        cursor: pointer;
-        z-index: 1000;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      ">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #333;">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-          <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2"/>
-          <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2"/>
-          <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
-        </svg>
-      </button>
-      
-      <div class="calendar-container hidden" id="calendarContainer" style="
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        padding: 30px;
-        max-width: 800px;
-        margin: 0 auto;
-      ">
-        <div id="calendar-header" style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-          padding: 0 10px;
-        ">
-          <button id="prevMonth" style="
-            background: #ffd700;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-size: 18px;
-            color: #333;
-            transition: all 0.3s ease;
-          ">&#9664;</button>
-          <span id="monthYear" style="
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-          "></span>
-          <button id="nextMonth" style="
-            background: #ffd700;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-size: 18px;
-            color: #333;
-            transition: all 0.3s ease;
-          ">&#9654;</button>
-        </div>
-        <div class="calendar-grid" id="calendarGrid" style="
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 2px;
-          margin-bottom: 20px;
-        "></div>
-        <div class="time-slots" id="timeSlots" style="
-          min-height: 100px;
-          padding: 20px;
-          background: #f8f9fa;
-          border-radius: 8px;
-          border: 2px solid #e9ecef;
-        "></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Add spacing before footer -->
-  <div style="height: 100px; margin-top: 50px;"></div>
+  <!-- Instrument Rental Calendar section removed -->
 
   <footer class="booking-footer">
     <div class="footer-content">
@@ -2353,6 +2281,18 @@
       const startDateInput = document.getElementById('rental_start_date');
       const endDateInput = document.getElementById('rental_end_date');
       const durationInput = document.getElementById('rental_duration');
+      const rentTypeSelect = document.getElementById('rent_type');
+      const eventDurationGroup = document.getElementById('eventDurationGroup');
+      const startDateGroup = document.getElementById('startDateGroup');
+      const endDateGroup = document.getElementById('endDateGroup');
+      const transportationSelect = document.getElementById('transportation_select');
+      const deliveryLocationGroup = document.getElementById('deliveryLocationGroup');
+      const pickupFromEventGroup = document.getElementById('pickupFromEventGroup');
+      const pickupLocationSelect = document.getElementById('pickup_location');
+      const returnLocationSelect = document.getElementById('return_location');
+      const pickupTimeGroup = document.getElementById('pickupTimeGroup');
+      const pickupTimeInput = document.getElementById('pickup_time');
+      const eventDurationInput = document.querySelector('input[name="event_duration_hours"]');
       const form = document.getElementById('rentalForm');
 
       // Available instruments data
@@ -2362,12 +2302,19 @@
       // Store booked dates for conflict checking
       let bookedDates = [];
       
-      // Fetch booked dates from API
+      // Fetch booked dates from APIs (instrument rentals + ANY studio booking days)
       async function fetchBookedDates() {
         try {
-          const response = await fetch('/api/instrument-rental/booked-dates');
-          const data = await response.json();
-          bookedDates = data.booked_dates || [];
+          const [instrumentResp, studioResp] = await Promise.all([
+            fetch('/api/instrument-rental/booked-dates'),
+            fetch('/api/has-booking-dates')
+          ]);
+          const instrumentData = await instrumentResp.json();
+          const studioData = await studioResp.json();
+          const instrumentDates = instrumentData.booked_dates || [];
+          const studioDates = studioData.booked_dates || [];
+          // Merge and de-duplicate
+          bookedDates = Array.from(new Set([...instrumentDates, ...studioDates]));
           updateDatePickerConstraints();
         } catch (error) {
           console.error('Error fetching booked dates:', error);
@@ -2495,7 +2442,7 @@
           alertDiv.className = 'date-conflict-alert';
           alertDiv.style.display = 'block';
           alertDiv.innerHTML = `
-            <strong>Date Unavailable:</strong> ${formattedDate} is already booked for studio/band or solo rehearsal. Please choose a different date.
+            <strong>Date Unavailable:</strong> ${formattedDate} has an existing studio booking or instrument rental. Please choose a different date.
           `;
           
           input.parentNode.insertBefore(alertDiv, input.nextSibling);
@@ -2604,18 +2551,78 @@
       function calculateDuration() {
         const startDate = new Date(startDateInput.value);
         const endDate = new Date(endDateInput.value);
-        
-        if (startDate && endDate && endDate >= startDate) {
-          const diffTime = Math.abs(endDate - startDate);
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end dates
-          durationInput.value = `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
+
+        if (rentType === 'single') {
+          if (startDateInput.value) {
+            endDateInput.value = startDateInput.value;
+            durationInput.value = '1 day';
+          } else {
+            durationInput.value = '0 days';
+          }
         } else {
-          durationInput.value = '0 days';
+          if (startDate && endDate && endDate >= startDate) {
+            const diffTime = Math.abs(endDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end dates
+            durationInput.value = `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+          } else {
+            durationInput.value = '0 days';
+          }
         }
-        
+
         updatePriceSummary();
       }
 
+      // Toggle UI based on rent type selection
+      function toggleRentTypeUI() {
+        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
+
+        if (!rentType) {
+          // Hide dependent fields until user chooses
+          if (startDateGroup) startDateGroup.style.display = 'none';
+          if (endDateGroup) endDateGroup.style.display = 'none';
+          if (eventDurationGroup) eventDurationGroup.style.display = 'none';
+          durationInput.value = '0 days';
+          startDateInput.value = '';
+          endDateInput.value = '';
+          return;
+        }
+
+        // Always show start date after choosing rent type
+        if (startDateGroup) startDateGroup.style.display = 'block';
+
+        if (rentType === 'single') {
+          // Single day: hide end date, show event duration
+          if (endDateGroup) endDateGroup.style.display = 'none';
+          if (eventDurationGroup) eventDurationGroup.style.display = 'block';
+
+          // When selecting single-day, keep end date equal to start date
+          if (startDateInput.value) {
+            endDateInput.value = startDateInput.value;
+            durationInput.value = '1 day';
+          } else {
+            durationInput.value = '0 days';
+          }
+        } else {
+          // Multiple day: show both dates, hide event duration
+          if (endDateGroup) endDateGroup.style.display = 'block';
+          if (eventDurationGroup) eventDurationGroup.style.display = 'none';
+
+          // Clear duration until both dates are selected
+          if (!(startDateInput.value && endDateInput.value)) {
+            durationInput.value = '0 days';
+          }
+        }
+
+        updatePriceSummary();
+      }
+
+      // Attach listener for rent type changes
+      if (rentTypeSelect) {
+        rentTypeSelect.addEventListener('change', toggleRentTypeUI);
+        // Initialize on load (fields hidden until chosen)
+        toggleRentTypeUI();
+      }
              startDateInput.addEventListener('change', calculateDuration);
        endDateInput.addEventListener('change', calculateDuration);
 
@@ -2636,17 +2643,49 @@
          
          updatePriceSummary();
        });
-       document.getElementById('transportation_select').addEventListener('change', updatePriceSummary);
+       // Transportation method UI toggling
+       function toggleTransportationUI() {
+         const method = transportationSelect ? transportationSelect.value : 'none';
+         if (method === 'delivery') {
+           if (deliveryLocationGroup) deliveryLocationGroup.style.display = 'block';
+           if (pickupFromEventGroup) pickupFromEventGroup.style.display = 'block';
+            if (pickupTimeGroup) pickupTimeGroup.style.display = 'none';
+           if (pickupLocationSelect) pickupLocationSelect.disabled = true; // fixed Studio
+            if (returnLocationSelect) returnLocationSelect.disabled = false; // allow change when delivery
+         } else {
+           if (deliveryLocationGroup) deliveryLocationGroup.style.display = 'none';
+           if (pickupFromEventGroup) pickupFromEventGroup.style.display = 'none';
+            if (pickupTimeGroup) pickupTimeGroup.style.display = 'block';
+           if (pickupLocationSelect) pickupLocationSelect.disabled = true; // fixed Studio
+            if (returnLocationSelect) {
+              returnLocationSelect.value = 'Studio';
+              returnLocationSelect.disabled = true; // lock to Studio for self pickup
+            }
+         }
+         updatePriceSummary();
+       }
+
+       if (transportationSelect) {
+         transportationSelect.addEventListener('change', toggleTransportationUI);
+         toggleTransportationUI();
+       }
        
-       // Add event listener for event duration hours
-       document.querySelector('input[name="event_duration_hours"]').addEventListener('input', updatePriceSummary);
+       // Event duration affects price only for single-day rentals
+       if (eventDurationInput) {
+         eventDurationInput.addEventListener('input', function() {
+           if (rentTypeSelect && rentTypeSelect.value === 'single') {
+             updatePriceSummary();
+           }
+         });
+       }
 
              // Update price summary
        function updatePriceSummary() {
          const selectedType = instrumentTypeSelect.value;
          const fullPackage = document.getElementById('full_package').checked;
-         const transportation = document.getElementById('transportation_select').value;
-         const eventDurationHours = parseInt(document.querySelector('input[name="event_duration_hours"]').value) || 7;
+         const transportation = transportationSelect.value;
+         const rentType = rentTypeSelect ? rentTypeSelect.value : '';
+         const eventDurationHours = rentType === 'single' ? (parseInt(eventDurationInput.value) || 7) : 0;
          
          let dailyRate = 0;
          let duration = parseInt(durationInput.value) || 0;
@@ -2663,7 +2702,7 @@
          
          // Calculate extra hour charges (₱200 per exceeding hour after 7 hours)
          const maxIncludedHours = 7;
-         const extraHours = Math.max(0, eventDurationHours - maxIncludedHours);
+         const extraHours = rentType === 'single' ? Math.max(0, eventDurationHours - maxIncludedHours) : 0;
          const extraHourCharges = extraHours * 200;
          
          const total = subtotal + transportationFee + reservationFee + extraHourCharges;
@@ -2682,14 +2721,19 @@
          document.getElementById('summary_total').textContent = `₱${total.toFixed(2)}`;
          
          // Update the event duration note to show extra charges if applicable
-         const eventDurationInput = document.querySelector('input[name="event_duration_hours"]');
          const noteElement = eventDurationInput.parentNode.querySelector('small');
-         if (extraHours > 0) {
-           noteElement.textContent = `Maximum 7 hours included. ₱200 per exceeding hour. (Extra ${extraHours} hour(s): ₱${extraHourCharges.toFixed(2)})`;
-           noteElement.style.color = '#e67e22';
-           noteElement.style.fontWeight = 'bold';
+         if (rentType === 'single') {
+           if (extraHours > 0) {
+             noteElement.textContent = `Maximum 7 hours included. ₱200 per exceeding hour. (Extra ${extraHours} hour(s): ₱${extraHourCharges.toFixed(2)})`;
+             noteElement.style.color = '#e67e22';
+             noteElement.style.fontWeight = 'bold';
+           } else {
+             noteElement.textContent = 'Maximum 7 hours included. ₱200 per exceeding hour.';
+             noteElement.style.color = '';
+             noteElement.style.fontWeight = '';
+           }
          } else {
-           noteElement.textContent = 'Maximum 7 hours included. ₱200 per exceeding hour.';
+           noteElement.textContent = 'Event duration is not applicable for multiple-day rentals.';
            noteElement.style.color = '';
            noteElement.style.fontWeight = '';
          }
@@ -2743,12 +2787,28 @@
       
       // Form validation function
       function validateForm() {
-        // Check if dates are filled
-        if (!startDateInput.value || !endDateInput.value) {
-          alert('Please select both start date and end date.');
+        // Ensure rent type chosen first
+        if (!rentTypeSelect.value) {
+          alert('Please choose a rent type first.');
           return false;
         }
-        
+
+        const rentType = rentTypeSelect.value;
+        // Check required dates based on rent type
+        if (rentType === 'single') {
+          if (!startDateInput.value) {
+            alert('Please select a date for single-day rental.');
+            return false;
+          }
+          endDateInput.value = startDateInput.value;
+          durationInput.value = '1 day';
+        } else {
+          if (!startDateInput.value || !endDateInput.value) {
+            alert('Please select both start and end dates.');
+            return false;
+          }
+        }
+
         const startDate = new Date(startDateInput.value);
         const endDate = new Date(endDateInput.value);
         const today = new Date();
@@ -2759,7 +2819,7 @@
           return false;
         }
         
-        if (endDate <= startDate) {
+        if (rentType !== 'single' && endDate <= startDate) {
           alert('End date must be after start date.');
           return false;
         }
@@ -2770,6 +2830,20 @@
           alert('Please select both instrument type and specific instrument.');
           return false;
         }
+
+        // Transportation-specific validation
+        if (transportationSelect.value === 'delivery') {
+          const deliveryLocation = document.getElementById('delivery_location').value.trim();
+          if (!deliveryLocation) {
+            alert('Please enter a delivery location.');
+            return false;
+          }
+        } else {
+          if (pickupTimeInput && !pickupTimeInput.value) {
+            alert('Please select a pick-up time for self pickup.');
+            return false;
+          }
+        }
         
         return true;
       }
@@ -2778,7 +2852,8 @@
       function populateModal() {
         const selectedType = instrumentTypeSelect.value;
         const selectedInstrument = instrumentNameSelect.value;
-        const eventDurationHours = parseInt(document.querySelector('input[name="event_duration_hours"]').value) || 7;
+        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
+        const eventDurationHours = rentType === 'single' ? (parseInt(document.querySelector('input[name="event_duration_hours"]').value) || 7) : 0;
         const transportation = document.getElementById('transportation_select').value;
         const pickupLocation = document.querySelector('select[name="pickup_location"]').value;
         const returnLocation = document.querySelector('select[name="return_location"]').value;
@@ -2824,9 +2899,14 @@
         const rentalPeriod = `${formatDate(startDate)} - ${formatDate(endDate)} (${duration} days)`;
         document.getElementById('modalRentalPeriod').textContent = rentalPeriod;
         
-        document.getElementById('modalEventDuration').textContent = `${eventDurationHours} hours`;
-        
-        const deliveryInfo = transportation === 'delivery' ? `Delivery to ${pickupLocation}` : 'Pickup Only';
+        document.getElementById('modalEventDuration').textContent = rentType === 'single' ? `${eventDurationHours} hours` : '-';
+
+        const deliveryLocationVal = document.getElementById('delivery_location').value || '';
+        const pickupFromEvent = document.getElementById('pickup_from_event').checked;
+        const pickupTimeVal = (document.getElementById('pickup_time') && document.getElementById('pickup_time').value) || '';
+        const deliveryInfo = transportation === 'delivery'
+          ? `Deliver to ${deliveryLocationVal || 'specified location'}; Pickup from event: ${pickupFromEvent ? 'Yes' : 'No'}`
+          : `Self Pickup at ${pickupLocation}${pickupTimeVal ? ' (Pick-up time: ' + pickupTimeVal + ')' : ''}`;
         document.getElementById('modalDeliveryInfo').textContent = deliveryInfo;
         
         // Populate price breakdown
@@ -2872,8 +2952,9 @@
         document.getElementById('modalStartDateInput').value = startDateInput.value;
         document.getElementById('modalEndDateInput').value = endDateInput.value;
         document.getElementById('modalDurationInput').value = durationInput.value;
-        document.getElementById('modalEventDurationInput').value = eventDurationHours;
+        document.getElementById('modalEventDurationInput').value = rentType === 'single' ? eventDurationHours : 0;
         document.getElementById('modalPickupLocationInput').value = pickupLocation;
+        document.getElementById('modalPickupTimeInput').value = pickupTimeVal;
         document.getElementById('modalReturnLocationInput').value = returnLocation;
         document.getElementById('modalTransportationInput').value = transportation;
         document.getElementById('modalFullPackageInput').value = fullPackage ? '1' : '0';
@@ -2890,8 +2971,15 @@
       startDateInput.addEventListener('change', function() {
         const startDate = new Date(this.value);
         const minEndDate = new Date(startDate);
-        minEndDate.setDate(minEndDate.getDate() + 1);
-        endDateInput.min = minEndDate.toISOString().split('T')[0];
+        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
+        if (rentType === 'single') {
+          // End date mirrors start date for single-day rent
+          endDateInput.value = this.value;
+          endDateInput.min = this.value;
+        } else {
+          minEndDate.setDate(minEndDate.getDate() + 1);
+          endDateInput.min = minEndDate.toISOString().split('T')[0];
+        }
       });
       
       // Reference code validation functionality
@@ -3207,7 +3295,7 @@
     // User dropdown functionality
     function toggleUserDropdown() {
       const dropdown = document.getElementById('userDropdown');
-      dropdown.classList.toggle('show');
+      if (dropdown) dropdown.classList.toggle('show');
     }
 
     // Close dropdown when clicking outside
@@ -3220,285 +3308,12 @@
       }
     });
 
-    // Calendar functionality for instrument rentals
-    let currentDate = new Date();
-    let selectedDate = null;
-    let bookedDates = [];
-
-    // Initialize calendar when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      generateCalendar();
-      fetchBookedDates();
-    });
-
-    // Toggle calendar visibility
-    function toggleCalendar() {
-      const calendarContainer = document.getElementById('calendarContainer');
-      const calendarFab = document.getElementById('calendarFab');
-      
-      if (calendarContainer.style.display === 'none' || calendarContainer.style.display === '') {
-        calendarContainer.style.display = 'block';
-        calendarFab.innerHTML = '<i class="fas fa-times"></i>';
-        calendarFab.style.backgroundColor = '#ef4444';
-      } else {
-        calendarContainer.style.display = 'none';
-        calendarFab.innerHTML = '<i class="fas fa-calendar-alt"></i>';
-        calendarFab.style.backgroundColor = '#3b82f6';
-      }
-    }
-
-    // Generate calendar
-    function generateCalendar() {
-      const calendarGrid = document.getElementById('calendarGrid');
-      const monthYear = document.getElementById('monthYear');
-      
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      
-      monthYear.textContent = new Date(year, month).toLocaleDateString('en-US', { 
-        month: 'long', 
-        year: 'numeric' 
-      });
-      
-      calendarGrid.innerHTML = '';
-      
-      // Add day headers
-      const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      dayHeaders.forEach(day => {
-        const dayHeader = document.createElement('div');
-        dayHeader.className = 'calendar-day-header';
-        dayHeader.textContent = day;
-        calendarGrid.appendChild(dayHeader);
-      });
-      
-      // Get first day of month and number of days
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      
-      // Add empty cells for days before month starts
-      for (let i = 0; i < firstDay; i++) {
-        const emptyDay = document.createElement('div');
-        emptyDay.className = 'calendar-day empty';
-        calendarGrid.appendChild(emptyDay);
-      }
-      
-      // Add days of the month
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.textContent = day;
-        
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Mark past dates
-        if (dateStr < today) {
-          dayElement.classList.add('past');
-        }
-        
-        // Mark booked dates
-        if (bookedDates.includes(dateStr)) {
-          dayElement.classList.add('booked');
-        }
-        
-        // Mark selected date
-        if (selectedDate === dateStr) {
-          dayElement.classList.add('selected');
-        }
-        
-        // Add click event
-        dayElement.addEventListener('click', () => selectDate(dateStr, dayElement));
-        
-        calendarGrid.appendChild(dayElement);
-      }
-    }
-
-    // Select date and fetch booking info
-    function selectDate(dateStr, element) {
-      // Remove previous selection
-      document.querySelectorAll('.calendar-day.selected').forEach(day => {
-        day.classList.remove('selected');
-      });
-      
-      // Add selection to clicked date
-      element.classList.add('selected');
-      selectedDate = dateStr;
-      
-      // Fetch booking information for this date
-      fetchBookingInfo(dateStr);
-    }
-
-    // Fetch booked dates
-    function fetchBookedDates() {
-      fetch('/api/instrument-booked-dates')
-        .then(response => response.json())
-        .then(data => {
-          bookedDates = data.booked_dates || [];
-          generateCalendar();
-        })
-        .catch(error => {
-          console.error('Error fetching booked dates:', error);
-        });
-    }
-
-    // Fetch booking information for selected date
-    function fetchBookingInfo(date) {
-      const bookingInfo = document.getElementById('bookingInfo');
-      const bookingContent = document.getElementById('bookingContent');
-      
-      bookingContent.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-      bookingInfo.style.display = 'block';
-      
-      fetch(`/api/instrument-bookings-by-date?date=${date}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.bookings.length > 0) {
-            displayBookingInfo(data.bookings, date);
-          } else {
-            displayNoBookings(date);
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching booking info:', error);
-          bookingContent.innerHTML = '<div style="text-align: center; padding: 20px; color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Error loading booking information</div>';
-        });
-    }
-
-    // Display booking information
-    function displayBookingInfo(bookings, date) {
-      const bookingContent = document.getElementById('bookingContent');
-      
-      let html = `
-        <div style="margin-bottom: 15px;">
-          <h4 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">
-            <i class="fas fa-calendar-day" style="color: #3b82f6; margin-right: 8px;"></i>
-            ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </h4>
-          <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">
-            ${bookings.length} instrument rental${bookings.length > 1 ? 's' : ''} for this date
-          </p>
-        </div>
-      `;
-      
-      bookings.forEach((booking, index) => {
-        const statusColor = booking.status === 'confirmed' ? '#10b981' : '#f59e0b';
-        const statusIcon = booking.status === 'confirmed' ? 'fa-check-circle' : 'fa-clock';
-        
-        html += `
-          <div style="
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: ${index < bookings.length - 1 ? '12px' : '0'};
-          ">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <h5 style="margin: 0; color: #1f2937; font-size: 15px; font-weight: 600;">
-                  ${booking.instrument_name}
-                </h5>
-                <p style="margin: 2px 0 0 0; color: #6b7280; font-size: 13px; text-transform: capitalize;">
-                  ${booking.instrument_type.replace('_', ' ')}
-                </p>
-              </div>
-              <span style="
-                background: ${statusColor};
-                color: white;
-                padding: 4px 8px;
-                border-radius: 12px;
-                font-size: 11px;
-                font-weight: 500;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-              ">
-                <i class="fas ${statusIcon}" style="margin-right: 4px;"></i>
-                ${booking.status}
-              </span>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-              <div>
-                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Customer</p>
-                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">${booking.customer_name}</p>
-              </div>
-              <div>
-                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Total Cost</p>
-                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px; font-weight: 600;">₱${booking.total_cost}</p>
-              </div>
-            </div>
-            
-            <div style="margin-bottom: 10px;">
-              <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Rental Period</p>
-              <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">
-                ${new Date(booking.rental_start_date).toLocaleDateString()} - ${new Date(booking.rental_end_date).toLocaleDateString()}
-              </p>
-            </div>
-            
-            ${booking.pickup_location ? `
-              <div style="margin-bottom: 10px;">
-                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Pickup Location</p>
-                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">${booking.pickup_location}</p>
-              </div>
-            ` : ''}
-            
-            ${booking.transportation ? `
-              <div style="margin-bottom: 10px;">
-                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Transportation</p>
-                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px; text-transform: capitalize;">${booking.transportation}</p>
-              </div>
-            ` : ''}
-            
-            ${booking.special_requests ? `
-              <div>
-                <p style="margin: 0; color: #6b7280; font-size: 12px; font-weight: 500;">Special Requests</p>
-                <p style="margin: 2px 0 0 0; color: #1f2937; font-size: 13px;">${booking.special_requests}</p>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      });
-      
-      bookingContent.innerHTML = html;
-    }
-
-    // Display no bookings message
-    function displayNoBookings(date) {
-      const bookingContent = document.getElementById('bookingContent');
-      
-      bookingContent.innerHTML = `
-        <div style="text-align: center; padding: 30px 20px;">
-          <div style="
-            width: 60px;
-            height: 60px;
-            background: #f3f4f6;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px auto;
-          ">
-            <i class="fas fa-guitar" style="color: #9ca3af; font-size: 24px;"></i>
-          </div>
-          <h4 style="margin: 0 0 8px 0; color: #1f2937; font-size: 16px; font-weight: 600;">
-            No instrument rentals for this date
-          </h4>
-          <p style="margin: 0; color: #6b7280; font-size: 14px;">
-            ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
-        </div>
-      `;
-    }
-
-    // Navigate calendar months
-    function previousMonth() {
-      currentDate.setMonth(currentDate.getMonth() - 1);
-      generateCalendar();
-    }
-
-    function nextMonth() {
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      generateCalendar();
-    }
+    // Instrument Rental Calendar scripts removed from this page
   </script>
 </body>
 </html>
+        // New hidden values for delivery
+        const deliveryHidden = document.getElementById('modalDeliveryLocationInput');
+        const pickupFromEventHidden = document.getElementById('modalPickupFromEventInput');
+        if (deliveryHidden) deliveryHidden.value = deliveryLocationVal;
+        if (pickupFromEventHidden) pickupFromEventHidden.value = pickupFromEvent ? '1' : '0';

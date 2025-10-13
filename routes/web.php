@@ -117,6 +117,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::post('/google-calendar/sync', [App\Http\Controllers\AdminController::class, 'syncBookingsToCalendar'])->name('admin.calendar.sync');
     Route::post('/google-calendar/sync-all', [App\Http\Controllers\AdminController::class, 'syncBookingsToCalendar'])->name('admin.calendar.sync-all');
     Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('admin.users');
+    Route::delete('/users/{id}', [App\Http\Controllers\AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::post('/make-admin', [App\Http\Controllers\AdminController::class, 'makeAdmin'])->name('admin.makeAdmin');
     Route::post('/remove-admin', [App\Http\Controllers\AdminController::class, 'removeAdmin'])->name('admin.removeAdmin');
     Route::post('/database/backup', [App\Http\Controllers\AdminController::class, 'createBackup'])->name('admin.database.backup');

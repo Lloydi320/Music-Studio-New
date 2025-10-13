@@ -1778,6 +1778,67 @@ class AdminController extends Controller
     }
 
     /**
+     * Delete a user account from the system
+     */
+    public function deleteUser($id)
+    {
+        /** @var User $currentUser */
+        $currentUser = Auth::user();
+        if (!Auth::check() || !$currentUser->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        try {
+            $user = User::findOrFail($id);
+
+            // Prevent deleting self
+            if ($user->id === $currentUser->id) {
+                return redirect()->back()->with('error', 'You cannot delete your own account.');
+            }
+
+            // Check if the target is an administrator
+            $adminRecord = DB::table('admin_users')->where('email', $user->email)->first();
+
+            if ($user->is_admin || $adminRecord) {
+                // Only super admins can delete administrator accounts
+                $currentAdminRecord = DB::table('admin_users')->where('email', $currentUser->email)->first();
+                if (!$currentAdminRecord || $currentAdminRecord->role !== 'super_admin') {
+                    return redirect()->back()->with('error', 'Only super admins can delete administrator accounts.');
+                }
+
+                // Protect super admin accounts from deletion
+                if ($adminRecord && $adminRecord->role === 'super_admin') {
+                    return redirect()->back()->with('error', 'Super admin accounts cannot be deleted.');
+                }
+            }
+
+            $oldValues = $user->toArray();
+
+            // Clean up admin_users table entry if exists
+            DB::table('admin_users')->where('email', $user->email)->delete();
+
+            // Delete user
+            $user->delete();
+
+            // Log deletion
+            ActivityLog::logActivity(
+                "Admin deleted user {$user->name} ({$user->email})",
+                ActivityLog::ACTION_USER_DELETED,
+                $currentUser->id,
+                'User',
+                $user->id,
+                $oldValues,
+                null,
+                ActivityLog::SEVERITY_HIGH
+            );
+
+            return redirect()->back()->with('success', "User {$user->name} has been deleted.");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete user: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Show activity logs / audit trail
      */
     public function activityLogs(Request $request)

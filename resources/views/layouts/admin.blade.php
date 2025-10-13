@@ -1545,7 +1545,7 @@
             display: block;
             animation: dropdownFadeIn 0.3s ease;
         }
-        
+
         @keyframes dropdownFadeIn {
             from {
                 opacity: 0;
@@ -1555,6 +1555,35 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+        /* Admin dropdown logout styles */
+        .admin-dropdown-content .dropdown-divider {
+            border-top: 1px solid #e9ecef;
+            margin: 0;
+        }
+        .admin-dropdown-content .logout-form {
+            padding: 12px;
+            background: #f8f9fa;
+        }
+        .admin-dropdown-content .logout-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .admin-dropdown-content .logout-btn i {
+            color: #ffffff;
+        }
+        .admin-dropdown-content .logout-btn:hover {
+            background: #dc2626;
         }
         
         .dropdown-header {
@@ -1700,6 +1729,15 @@
                             <p>No admin users found</p>
                         </div>
                     @endif
+
+                    <div class="dropdown-divider"></div>
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                        @csrf
+                        <button type="submit" class="dropdown-item logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign Out
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1751,7 +1789,7 @@
             <li>
                 <a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'active' : '' }}">
                     <i class="fas fa-users-cog"></i>
-                    Admin Users
+                    User Management
                 </a>
             </li>
             <li>
@@ -1779,12 +1817,7 @@
                 </a>
             </li>
 
-            <li>
-                <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Sign Out
-                </a>
-            </li>
+            
         </ul>
     </div>
     
@@ -1885,6 +1918,28 @@
                 adminDropdown.classList.remove('show');
             }
         }
+
+        // Admin dropdown toggle
+        function toggleAdminDropdown() {
+            const adminDropdown = document.getElementById('adminDropdown');
+            if (adminDropdown) {
+                adminDropdown.classList.toggle('show');
+            }
+            // Close notification dropdown if open
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            if (notificationDropdown && notificationDropdown.classList.contains('show')) {
+                notificationDropdown.classList.remove('show');
+            }
+        }
+
+        // Close admin dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const container = document.querySelector('.admin-dropdown');
+            const menu = document.getElementById('adminDropdown');
+            if (container && menu && !container.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
         
         function checkForNewBookings() {
             fetch('/admin/notifications/new-bookings')

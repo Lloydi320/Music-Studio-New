@@ -31,7 +31,7 @@
             </a>
             <a href="{{ route('admin.users') }}" class="nav-btn">
                 <i class="fas fa-users"></i>
-                <span>Admin Users</span>
+                <span>User Management</span>
             </a>
             <a href="{{ route('admin.analytics') }}" class="nav-btn">
                 <i class="fas fa-chart-bar"></i>

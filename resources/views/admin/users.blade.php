@@ -18,13 +18,7 @@
                 <p>Manage administrator access and permissions</p>
             </div>
         </div>
-        <div class="header-actions">
-            <button class="theme-toggle" onclick="toggleTheme()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.6859L5.5 18.5M17.6859 17.6859L18.5 18.5M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-        </div>
+        
     </div>
 
     @if(session('success'))
@@ -228,18 +222,12 @@
                                 <span class="detail-label">Last Name</span>
                                 <span class="detail-value">{{ explode(' ', $user->name)[1] ?? 'N/A' }}</span>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Date of Birth</span>
-                                <span class="detail-value">{{ $user->created_at->format('d-m-Y') }}</span>
-                            </div>
+                            
                             <div class="detail-item">
                                 <span class="detail-label">Email Address</span>
                                 <span class="detail-value">{{ $user->email }}</span>
                             </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Phone Number</span>
-                                <span class="detail-value">N/A</span>
-                            </div>
+                            
                             <div class="detail-item">
                                 <span class="detail-label">User Role</span>
                                 <span class="detail-value">{{ $user->is_admin ? 'Admin' : 'User' }}</span>
@@ -267,13 +255,28 @@
                 </div>
                 
                 <div class="profile-actions">
-                    <button class="edit-btn" onclick="editUser({{ $user->id }})">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M18.5 2.50023C18.8978 2.1024 19.4374 1.87891 20 1.87891C20.5626 1.87891 21.1022 2.1024 21.5 2.50023C21.8978 2.89805 22.1213 3.43762 22.1213 4.00023C22.1213 4.56284 21.8978 5.1024 21.5 5.50023L12 15.0002L8 16.0002L9 12.0002L18.5 2.50023Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Edit
-                    </button>
+                    @php
+                        // Determine if this profile belongs to an administrator
+                        $adminRecord = DB::table('admin_users')->where('email', $user->email)->first();
+                        $isAdminAccount = $user->is_admin || $adminRecord;
+                        $canDeleteAdmin = $isSuperAdmin && (!$adminRecord || $adminRecord->role !== 'super_admin');
+                        $canDelete = (!$isAdminAccount && $currentUser->is_admin) || ($isAdminAccount && $canDeleteAdmin);
+                    @endphp
+                    @if($canDelete && $user->id !== $currentUser->id)
+                    <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" style="display:inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" class="btn btn-danger btn-sm user-delete-btn" data-user-name="{{ $user->name }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M8 6V4h8v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Delete
+                        </button>
+                    </form>
+                    @endif
                 </div>
             </div>
             @endforeach
@@ -794,14 +797,60 @@
 }
 
 .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
     background: #ea4335;
-    color: white;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .btn-danger:hover {
     background: #d33b2c;
     box-shadow: 0 2px 8px rgba(234, 67, 53, 0.3);
 }
+
+.btn-danger:focus {
+    outline: 2px solid #fca5a5;
+    outline-offset: 2px;
+}
+
+.btn-danger:disabled {
+    background: #a1a1a1;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+}
+
+/* Loading state for Delete button */
+.btn-danger.loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-danger .btn-spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.5);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.btn-danger.loading .btn-spinner {
+    display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .text-muted {
     color: #6b7280;
@@ -871,6 +920,21 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Confirmation modal overlay */
+.confirm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 1000;
@@ -1120,12 +1184,108 @@ function toggleSection(sectionId) {
     }
 }
 
-// Load saved theme
+// Confirm delete modal logic
+function openDeleteModal(message, onConfirm) {
+    const overlay = document.getElementById('confirm-delete-overlay');
+    if (!overlay) {
+        if (typeof onConfirm === 'function') onConfirm();
+        return;
+    }
+    const msg = overlay.querySelector('#confirm-delete-message');
+    const okBtn = overlay.querySelector('#confirm-delete-ok');
+    const okLabel = okBtn.querySelector('.btn-label');
+    const cancelBtns = overlay.querySelectorAll('#confirm-delete-cancel, #confirm-delete-cancel-footer');
+    const cancelFooter = overlay.querySelector('#confirm-delete-cancel-footer');
+    msg.textContent = message;
+    overlay.style.display = 'flex';
+    overlay.focus();
+    if (cancelFooter) cancelFooter.focus(); // default focus on Cancel for safety
+    okBtn.onclick = function() {
+        // show loading state to prevent double submits
+        okBtn.disabled = true;
+        okBtn.setAttribute('aria-busy', 'true');
+        okBtn.classList.add('loading');
+        if (okLabel) {
+            okBtn.dataset.originalText = okLabel.textContent;
+            okLabel.textContent = 'Deleting...';
+        } else {
+            okBtn.dataset.originalText = okBtn.textContent;
+            okBtn.textContent = 'Deleting...';
+        }
+        if (typeof onConfirm === 'function') onConfirm();
+    };
+    cancelBtns.forEach(function(btn) {
+        btn.onclick = function() {
+            overlay.style.display = 'none';
+            okBtn.disabled = false;
+            okBtn.removeAttribute('aria-busy');
+            okBtn.classList.remove('loading');
+            if (okLabel && okBtn.dataset.originalText) {
+                okLabel.textContent = okBtn.dataset.originalText;
+            }
+        };
+    });
+
+    // Keyboard support: Esc to cancel, Enter activates focused button
+    overlay.onkeydown = function(e) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelFooter && cancelFooter.click();
+        } else if (e.key === 'Enter' && document.activeElement === okBtn) {
+            e.preventDefault();
+            okBtn.click();
+        }
+    };
+}
+
+// Load saved theme and wire delete buttons
 document.addEventListener('DOMContentLoaded', function() {
     const savedTheme = localStorage.getItem('admin-theme');
     if (savedTheme === 'dark') {
         document.body.classList.add('dark-theme');
     }
+
+    // Hook delete buttons
+    document.querySelectorAll('.user-delete-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const form = btn.closest('form');
+            const name = btn.getAttribute('data-user-name') || 'this user';
+            openDeleteModal(`Are you sure you want to delete ${name}? This action cannot be undone.`, function() {
+                form.submit();
+            });
+        });
+    });
+
+    // Close when clicking outside modal
+    const overlay = document.getElementById('confirm-delete-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                overlay.style.display = 'none';
+            }
+        });
+    }
 });
 </script>
+
+<!-- Confirm Delete Modal -->
+<div id="confirm-delete-overlay" class="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-delete-title" aria-describedby="confirm-delete-message" tabindex="-1">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="confirm-delete-title">Confirm Deletion</h3>
+            <button id="confirm-delete-cancel" class="close-btn" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-delete-message">Are you sure you want to delete this user? This action cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+            <button id="confirm-delete-cancel-footer" class="btn-secondary">Cancel</button>
+            <button id="confirm-delete-ok" class="btn-danger" type="button">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span class="btn-label">Delete</span>
+            </button>
+        </div>
+    </div>
+</div>
 @endsection

@@ -513,9 +513,17 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('modalSelectedDuration').textContent = durationSelect.options[durationSelect.selectedIndex].text;
         document.getElementById('modalDurationLabel').textContent = durationSelect.options[durationSelect.selectedIndex].text;
         
-        // Calculate and display price (₱100 per hour)
+        // Calculate and display price based on service type
         const duration = parseInt(durationSelect.value);
-        const totalPrice = duration * 100;
+        let hourlyRate = 100;
+        const pricingForm = document.getElementById('studioRentalForm');
+        if (pricingForm) {
+          const serviceTypeInput = pricingForm.querySelector('input[name="service_type"]');
+          if (serviceTypeInput && serviceTypeInput.value === 'solo_rehearsal') {
+            hourlyRate = 300;
+          }
+        }
+        const totalPrice = duration * hourlyRate;
         document.getElementById('modalTotalPrice').textContent = `₱${totalPrice}.00`;
         document.querySelector('.gcash-amount').textContent = `₱ ${totalPrice}.00`;
         
