@@ -29,6 +29,7 @@ class InstrumentRental extends Model
         'pickup_location',
         'return_location',
         'transportation',
+        'delivery_time',
         'id_provided',
         'venue_type',
         'event_duration_hours',

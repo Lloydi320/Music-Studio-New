@@ -578,9 +578,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Handle form submission via AJAX to show modal
   const bookingForm = document.getElementById('bookingForm');
   const studioRentalForm = document.getElementById('studioRentalForm');
+  const loadingOverlay = document.getElementById('loadingOverlay');
   
   function handleFormSubmission(form, e) {
     e.preventDefault();
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'flex';
+    }
     
     // Check reference code validation for both booking and studio rental forms
     if (form.id === 'studioRentalForm' || form.id === 'bookingForm') {
@@ -635,6 +639,11 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch(error => {
       console.error('Error:', error);
       showReferenceWarning('An error occurred while processing your booking. Please try again.', form.id);
+    })
+    .finally(() => {
+      if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+      }
     });
   }
   

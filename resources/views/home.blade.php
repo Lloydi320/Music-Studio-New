@@ -408,7 +408,7 @@
     <div class="services-modal-content">
       <div class="service-grid-popup">
         <a href="/booking" class="service-box-popup">
-          <img src="{{ asset('images/studio.jpg') }}" alt="Studio Rental" />
+          <img src="{{ asset('images/studio.jpg') }}" alt="Band Rehearsal" />
           <h3>Band Rehearsal</h3>
           <p>Book our acoustically treated studios for jamming, rehearsals, or recording. Fully equipped and flexible.</p>
           <small class="service-hint">Click to Book</small>
@@ -1428,7 +1428,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Show appropriate fields based on booking type
                         const bookingType = result.booking.service_type || result.booking.type;
-                        if (bookingType === 'Studio Rental' || bookingType === 'studio_rental') {
+                        if (bookingType === 'Band Rehearsal' || bookingType === 'studio_rental') {
                             showBookingFields('studio_rental');
                             
                             // Pre-populate duration field with original booking duration

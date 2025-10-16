@@ -35,7 +35,8 @@ class BookingController extends Controller
             'date' => 'required|date',
             'time_slot' => 'required|string',
             'duration' => 'required|integer|min:1|max:8',
-            'service_type' => 'nullable|string|in:studio_rental,solo_rehearsal,instrument_rental',
+            // Accept band_rehearsal alias and normalize later
+            'service_type' => 'nullable|string|in:studio_rental,band_rehearsal,solo_rehearsal,instrument_rental',
             'band_name' => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|size:11|regex:/^[0-9]{11}$/',
             'reference_code' => 'nullable|string|regex:/^[0-9]{13}$/|unique:bookings,reference_code',
@@ -118,8 +119,11 @@ class BookingController extends Controller
             $imagePath = $image->storeAs('booking_images', $imageName, 'public');
         }
 
-        // Calculate pricing based on service type
+        // Calculate pricing based on service type (normalize alias "band_rehearsal" to studio_rental)
         $serviceType = $request->service_type ?? 'studio_rental';
+        if ($serviceType === 'band_rehearsal') {
+            $serviceType = 'studio_rental';
+        }
         $hourlyRate = ($serviceType === 'solo_rehearsal') ? 300.00 : 250.00; // ₱300 for solo rehearsal, ₱250 for studio rental
         $totalAmount = $hourlyRate * $duration;
         
@@ -130,7 +134,7 @@ class BookingController extends Controller
             'duration' => $duration,
             'price' => $hourlyRate,
             'total_amount' => $totalAmount,
-            'service_type' => $request->service_type ?? 'studio_rental', // Use request service_type or default to studio_rental
+            'service_type' => $serviceType, // normalized
             'band_name' => $request->band_name,
             'email' => Auth::user()->email, // Use authenticated user's email
             'contact_number' => $request->contact_number,

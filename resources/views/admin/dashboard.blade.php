@@ -12,37 +12,7 @@
         </div>
     </div>
 
-    <!-- Navigation Section -->
-    <div class="dashboard-navigation">
-        <div class="section-header">
-            <h3>Quick Navigation</h3>
-            <button class="toggle-btn" onclick="toggleSection('navigation')">
-                <span id="navigation-icon">−</span>
-            </button>
-        </div>
-        <div class="nav-buttons" id="navigation-content">
-            <a href="{{ route('admin.bookings') }}" class="nav-btn">
-                <i class="fas fa-calendar-check"></i>
-                <span>Bookings</span>
-            </a>
-            <a href="{{ route('admin.calendar') }}" class="nav-btn">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Calendar</span>
-            </a>
-            <a href="{{ route('admin.users') }}" class="nav-btn">
-                <i class="fas fa-users"></i>
-                <span>User Management</span>
-            </a>
-            <a href="{{ route('admin.analytics') }}" class="nav-btn">
-                <i class="fas fa-chart-bar"></i>
-                <span>Reports</span>
-            </a>
-            <a href="{{ route('admin.database') }}" class="nav-btn">
-                <i class="fas fa-database"></i>
-                <span>Database Management</span>
-            </a>
-        </div>
-    </div>
+    
 
     <!-- Key Metrics -->    
     <div class="dashboard-stats">
@@ -215,65 +185,6 @@
     font-size: 1.1em;
     font-weight: 400;
     color: #e2e8f0;
-}
-
-.dashboard-navigation {
-    background: #2a2a2a;
-    padding: 12px 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    margin-bottom: 15px;
-    border: 1px solid #3a3a3a;
-    position: relative;
-}
-
-.dashboard-navigation h3 {
-    margin: 0 0 10px 0;
-    color: #81c784;
-    font-size: 1.3em;
-    font-weight: 600;
-    text-align: center;
-    border-bottom: 1px solid #3a3a3a;
-    padding-bottom: 8px;
-}
-
-.nav-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-}
-
-.nav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px;
-    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
-    color: #e2e8f0;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-    border: none;
-}
-
-.nav-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-    color: #1a1a1a;
-    text-decoration: none;
-}
-
-.nav-btn i {
-    font-size: 2em;
-    margin-bottom: 10px;
-    opacity: 0.9;
-}
-
-.nav-btn span {
-    font-size: 1em;
-    font-weight: 500;
-    text-align: center;
 }
 
 .dashboard-stats {
@@ -460,16 +371,6 @@
     
     .dashboard-stat-card {
         padding: 10px;
-    }
-    
-    .nav-buttons {
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 8px;
-    }
-    
-    .nav-btn {
-        padding: 8px;
-        font-size: 0.9em;
     }
     
     .charts-section {

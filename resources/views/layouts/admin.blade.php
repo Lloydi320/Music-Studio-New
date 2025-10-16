@@ -1766,13 +1766,19 @@
                 <div class="dropdown-menu">
                     <a href="{{ route('admin.bookings') }}" class="{{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
                         <i class="fas fa-calendar-alt"></i>
-                        Studio rental & Solo Rehearsal
+                        Band Rehearsal & Solo Rehearsal
                     </a>
                     <a href="{{ route('admin.instrument-bookings') }}" class="{{ request()->routeIs('admin.instrument-bookings') ? 'active' : '' }}">
                         <i class="fas fa-guitar"></i>
                         Instrumental
                     </a>
                 </div>
+            </li>
+            <li>
+                <a href="{{ route('admin.walk-in.create') }}" class="{{ request()->routeIs('admin.walk-in.create') ? 'active' : '' }}">
+                    <i class="fas fa-user-plus"></i>
+                    Walk-In Booking
+                </a>
             </li>
             <li>
                 <a href="{{ route('admin.calendar') }}" class="{{ request()->routeIs('admin.calendar') ? 'active' : '' }}">
@@ -1998,7 +2004,7 @@
                             <div class="notification-content">
                                 <i class="fas fa-calendar-plus notification-icon-item"></i>
                                 <div class="notification-text">
-                                    <div class="notification-title">New Studio Booking</div>
+                                    <div class="notification-title">New Band Rehearsal Booking</div>
                                     <div class="notification-message">
                                         ${booking.customer_name} booked ${booking.studio_name} for ${booking.date}
                                     </div>
@@ -2210,7 +2216,7 @@
                         </div>
                         <div class="modal-info-item">
                             <div class="modal-info-label">Service Type</div>
-                            <div class="modal-info-value">${booking.service_type || 'Studio Booking'}</div>
+                            <div class="modal-info-value">${booking.service_type || 'Band Rehearsal Booking'}</div>
                         </div>
                     </div>
                 </div>
@@ -2305,7 +2311,7 @@
             toast.innerHTML = `
                 <div class="toast-header">
                     <div class="toast-icon">📅</div>
-                    <h6 class="toast-title">BOOKING NOTIFICATION FOR STUDIO RENTAL & SOLO REHEARSAL</h6>
+                    <h6 class="toast-title">BOOKING NOTIFICATION FOR BAND REHEARSAL & SOLO REHEARSAL</h6>
                     <button class="toast-close" onclick="dismissToast('${toastId}')">&times;</button>
                 </div>
                 <div class="toast-body">

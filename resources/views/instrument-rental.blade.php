@@ -383,6 +383,26 @@
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
+    /* Consent checkbox alignment and spacing */
+    .form-note {
+      margin-top: 8px;
+      margin-bottom: 16px;
+      color: #4a5568;
+      font-size: 0.9em;
+    }
+    .consent-group .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .consent-group input[type="checkbox"] {
+      width: auto;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+    }
+
     .form-group select:focus,
     .form-group input:focus,
     .form-group textarea:focus {
@@ -863,6 +883,7 @@
          padding: 12px 0;
          border-bottom: 1px solid #e9ecef;
          transition: background-color 0.2s ease;
+         overflow: hidden;
        }
        
        .summary-list-item:last-child {
@@ -892,22 +913,33 @@
        }
        
        .item-content {
-         flex: 1;
+         flex: 1 1 auto;
          display: flex;
          justify-content: space-between;
          align-items: center;
+         min-width: 0;
+         gap: 8px;
        }
        
        .item-label {
          font-size: 0.9rem;
          color: #6c757d;
          font-weight: 500;
+         flex: 0 0 auto;
+         white-space: nowrap;
        }
        
        .item-value {
          font-weight: 600;
          color: #2c3e50;
          font-size: 0.9rem;
+         /* Prevent long values from overflowing the summary row */
+         flex: 1 1 auto;
+         min-width: 0;
+         white-space: nowrap;
+         overflow: hidden;
+         text-overflow: ellipsis;
+         text-align: right;
        }
        
        .price-breakdown-list {
@@ -1486,6 +1518,8 @@
          width: 95%;
          margin: 5% auto;
          border-radius: 15px;
+         flex-direction: column;
+         max-height: 92vh;
        }
        
        .modal-header {
@@ -1496,6 +1530,56 @@
        .modal-body {
          padding: 20px 15px;
        }
+
+       /* Stack modal panels for mobile */
+       .modal-left,
+       .modal-center,
+       .modal-right {
+         width: 100%;
+         flex: 1 1 auto;
+         max-height: none;
+         overflow: visible;
+         padding: 16px 14px;
+         border: none;
+         border-radius: 0;
+       }
+
+       .modal-left { border-radius: 12px 12px 0 0; }
+       .modal-right { border-radius: 0 0 12px 12px; }
+      
+       /* Compact form controls in modal for mobile */
+       .modal-center h3 {
+         font-size: 1em;
+         margin-bottom: 8px;
+         letter-spacing: 0.2px;
+       }
+       .modal-center .form-group {
+         margin-bottom: 10px;
+       }
+       .modal-center .form-group label,
+       .modal-center .form-label {
+         font-size: 0.85em;
+         margin-bottom: 6px;
+         line-height: 1.2;
+       }
+       .modal-center .form-input,
+       .modal-center .form-group input,
+       .modal-center .form-group select,
+       .modal-center .form-group textarea {
+         padding: 10px 12px;
+         font-size: 14px;
+         border-radius: 8px;
+       }
+       .modal-center .form-group input[type="file"] {
+         padding: 6px;
+       }
+       .modal-center small,
+       .modal-center .form-note { font-size: 0.8em; }
+       
+       /* Slightly smaller summary text */
+       .modal-left .item-label,
+       .modal-left .item-value { font-size: 0.85rem; }
+       .modal-left .booking-summary-list { padding: 16px; }
        
        .summary-section {
          padding: 15px;
@@ -1510,8 +1594,14 @@
        
        .btn-cancel, .btn-confirm {
          width: 100%;
-         padding: 15px;
+         padding: 12px;
        }
+       /* Scale payment panel elements for small screens */
+       .gcash-container { padding: 16px; }
+       .qr-code img { width: 120px; height: 120px; }
+       .amount-display { font-size: 24px; }
+       .modal-actions { flex-direction: column; }
+       .btn-cancel-modal, .btn-confirm-booking { width: 100%; padding: 10px 16px; font-size: 14px; }
      }
      
      @media (min-width: 481px) and (max-width: 768px) {
@@ -1582,14 +1672,36 @@
          grid-template-columns: 1fr;
          gap: 20px;
        }
-       
+
        .rental-container {
          padding: 15px;
        }
-       
+
        .rental-header h1 {
          font-size: 2em;
        }
+
+       /* Mobile layout for payment modal */
+       .modal-container { padding: 12px; }
+       .modal-content {
+         flex-direction: column;
+         width: 95%;
+         max-height: 92vh;
+       }
+       .modal-left,
+       .modal-center,
+       .modal-right {
+         width: 100%;
+         flex: 1 1 auto;
+         max-height: none;
+         overflow: visible;
+         padding: 18px 16px;
+         border: none;
+         border-radius: 0;
+       }
+       .modal-left { border-radius: 14px 14px 0 0; }
+       .modal-right { border-radius: 0 0 14px 14px; }
+       .modal-footer { flex-direction: column; }
      }
      
 
@@ -1723,9 +1835,16 @@
        bottom: auto !important;
      }
      
-     /* Override the fixed footer and hidden overflow */
-     body.booking-page, html {
-       overflow: auto !important;
+     /* Viewport and scrolling fixes scoped to booking page */
+     html, body.booking-page {
+       height: auto !important;
+       min-height: 100vh !important;
+     }
+     html {
+       overflow-y: auto !important;
+     }
+     body.booking-page {
+       overflow-y: visible !important;
      }
      
      .booking-footer {
@@ -1915,43 +2034,33 @@
               <label for="daily_rate">Daily Rate:</label>
               <input type="text" id="daily_rate" value="₱0.00" readonly>
             </div>
+            <p class="form-note">Indoor venue (Required for safety)</p>
 
-            <div class="form-group">
-              <label for="venue_type">Venue Type:</label>
-              <select name="venue_type" required>
-                <option value="indoor">Indoor Venue (Required for safety)</option>
-                <option value="outdoor" disabled>Outdoor Venue (Not allowed)</option>
-              </select>
-            </div>
-
-            <div class="form-group" id="eventDurationGroup" style="display: none;">
-              <label for="event_duration_hours">Event Duration (Hours):</label>
-              <input type="number" name="event_duration_hours" min="1" max="12" value="7">
-              <small>Maximum 7 hours included. ₱200 per exceeding hour.</small>
-            </div>
-
-            <div class="form-group">
-              <label>
+            <div class="form-group consent-group">
+              <label class="checkbox-label">
                 <input type="checkbox" name="documentation_consent" value="1" checked>
                 I consent to photos/videos being taken for studio documentation
               </label>
+            </div>
+            <div class="form-group">
+              <label for="special_requests">Special Requirements or Notes:</label>
+              <textarea name="special_requests" id="special_requests" rows="3" placeholder="Any special requirements, setup needs, or additional information..."></textarea>
             </div>
           </section>
 
           <section class="form-section">
             <h3><i class="fas fa-calendar-alt"></i> Rental Period</h3>
-            <div class="form-group" id="rentTypeGroup">
-              <label for="rent_type">Rent Type:</label>
-              <select id="rent_type" name="rent_type" required>
-                <option value="">Select Rent Type</option>
-                <option value="single">Single Day Rent</option>
-                <option value="multiple">Multiple Day Rent</option>
-              </select>
+
+            <div class="form-group" id="startDateGroup">
+              <label for="rental_start_date" id="startDateLabel">Rent Date:</label>
+              <input type="date" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}">
+              <small class="form-note">Single day rent only.</small>
             </div>
 
-            <div class="form-group" id="startDateGroup" style="display: none;">
-              <label for="rental_start_date" id="startDateLabel">Start Date:</label>
-              <input type="date" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d') }}">
+            <div class="form-group" id="eventDurationGroup">
+              <label for="event_duration_hours">Event Duration (Hours):</label>
+              <input type="number" name="event_duration_hours" min="1" max="12" value="7">
+              <small>Maximum 7 hours included. ₱200 per exceeding hour.</small>
             </div>
 
             <div class="form-group" id="endDateGroup" style="display: none;">
@@ -1990,7 +2099,7 @@
             <!-- Self Pickup: Pick-up Time (shown only when self pickup is selected) -->
             <div class="form-group" id="pickupTimeGroup" style="display: none;">
               <label for="pickup_time">Pick-up Time:</label>
-              <input type="time" id="pickup_time" name="pickup_time">
+              <select id="pickup_time" name="pickup_time"></select>
             </div>
 
             <div class="form-group" id="deliveryLocationGroup" style="display: none;">
@@ -1998,15 +2107,16 @@
               <input type="text" id="delivery_location" name="delivery_location" placeholder="Enter event delivery address">
             </div>
 
+            <!-- Delivery: Delivery Time (shown only when delivery is selected) -->
+            <div class="form-group" id="deliveryTimeGroup" style="display: none;">
+              <label for="delivery_time">Delivery Time:</label>
+              <select id="delivery_time" name="delivery_time"></select>
+            </div>
+
             <div class="form-group" id="pickupFromEventGroup" style="display: none;">
               <label>
                 <input type="checkbox" id="pickup_from_event" name="pickup_from_event" value="1"> Pick up from event location
               </label>
-            </div>
-
-            <div class="form-group">
-              <label for="special_requests">Special Requirements or Notes:</label>
-              <textarea name="special_requests" id="special_requests" rows="3" placeholder="Any special requirements, setup needs, or additional information..."></textarea>
             </div>
           </section>
 
@@ -2032,16 +2142,10 @@
               </div>
               <div class="price-item">
                 <span>Reservation Fee & Security Deposit:</span>
-                <span>₱300.00</span>
+                <span id="reservation_fee">₱300.00</span>
               </div>
             </div>
 
-            <div class="package-option">
-              <label>
-                <input type="checkbox" id="full_package" name="full_package">
-                <strong>Full Package Rental (₱4,500/day)</strong> - Includes all equipment
-              </label>
-            </div>
 
             <div class="total-price">
               Total: <span id="summary_total">₱0.00</span>
@@ -2172,6 +2276,7 @@
               <h3>Enter Details</h3>
               <form id="instrumentRentalForm" method="POST" action="{{ route('instrument-rental.store') }}" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" id="modalRentTypeInput" name="rent_type" value="single">
                 
                 <!-- Hidden fields for booking data -->
                 <input type="hidden" id="modalInstrumentTypeInput" name="instrument_type">
@@ -2191,16 +2296,22 @@
                 <input type="hidden" id="modalDocumentationConsentInput" name="documentation_consent">
                 <input type="hidden" id="modalDeliveryLocationInput" name="delivery_location">
                 <input type="hidden" id="modalPickupFromEventInput" name="pickup_from_event">
+                <input type="hidden" id="modalDeliveryTimeInput" name="delivery_time">
                 
                 <div class="form-group">
                   <label class="form-label" for="modalFullName">FULL NAME *</label>
                   <input type="text" id="modalFullName" name="name" class="form-input" required>
                 </div>
                 
-                <div class="form-group">
-                  <label class="form-label" for="modalEmail">EMAIL ADDRESS *</label>
-                  <input type="email" id="modalEmail" name="email" class="form-input" required>
-                </div>
+                @auth
+                  <!-- Email is sourced from the authenticated account; no visible field -->
+                  <input type="hidden" id="modalEmail" name="email" value="{{ auth()->user()->email }}">
+                @else
+                  <div class="form-group">
+                    <label class="form-label" for="modalEmail">EMAIL ADDRESS *</label>
+                    <input type="email" id="modalEmail" name="email" class="form-input" required>
+                  </div>
+                @endauth
                 
                 <div class="form-group">
                   <label class="form-label" for="modalContactNumber">CONTACT NUMBER *</label>
@@ -2281,7 +2392,6 @@
       const startDateInput = document.getElementById('rental_start_date');
       const endDateInput = document.getElementById('rental_end_date');
       const durationInput = document.getElementById('rental_duration');
-      const rentTypeSelect = document.getElementById('rent_type');
       const eventDurationGroup = document.getElementById('eventDurationGroup');
       const startDateGroup = document.getElementById('startDateGroup');
       const endDateGroup = document.getElementById('endDateGroup');
@@ -2291,30 +2401,323 @@
       const pickupLocationSelect = document.getElementById('pickup_location');
       const returnLocationSelect = document.getElementById('return_location');
       const pickupTimeGroup = document.getElementById('pickupTimeGroup');
+      const deliveryTimeGroup = document.getElementById('deliveryTimeGroup');
+      const pickupLocationGroup = document.getElementById('pickupLocationGroup');
+      const returnLocationGroup = document.getElementById('returnLocationGroup');
       const pickupTimeInput = document.getElementById('pickup_time');
+      const deliveryTimeInput = document.getElementById('delivery_time');
       const eventDurationInput = document.querySelector('input[name="event_duration_hours"]');
       const form = document.getElementById('rentalForm');
+
+      // Studio closing time logic (8:00 PM) for single-day self pickup
+      const STUDIO_CLOSING_TIME = '20:00';
+      const eventDurationHelp = document.querySelector('#eventDurationGroup small');
+
+      function timeToMinutes(t) {
+        if (!t || typeof t !== 'string' || !t.includes(':')) return null;
+        const [h, m] = t.split(':').map(Number);
+        if (Number.isNaN(h) || Number.isNaN(m)) return null;
+        return h * 60 + m;
+      }
+
+      function updateDurationMaxForSingleDay() {
+        const method = transportationSelect ? transportationSelect.value : 'none';
+        const activeTimeInput = method === 'delivery' ? deliveryTimeInput : pickupTimeInput;
+
+        // Apply for single-day rentals using the active time input (pickup or delivery)
+        if (activeTimeInput && activeTimeInput.value) {
+          const closing = timeToMinutes(STUDIO_CLOSING_TIME);
+          const startMinutes = timeToMinutes(activeTimeInput.value);
+          if (closing == null || startMinutes == null) return;
+          const remainingMinutes = closing - startMinutes;
+          const allowedHours = Math.max(0, Math.floor(remainingMinutes / 60));
+
+          if (eventDurationInput) {
+            const defaultMax = parseInt(eventDurationInput.getAttribute('max') || '12', 10);
+            eventDurationInput.max = Math.max(0, Math.min(defaultMax, allowedHours));
+            const current = parseInt(eventDurationInput.value || '0', 10);
+            if (allowedHours >= 1) {
+              if (current > allowedHours) eventDurationInput.value = allowedHours;
+            } else {
+              eventDurationInput.value = 0;
+            }
+          }
+
+          if (eventDurationHelp) {
+            if (allowedHours >= 1) {
+              eventDurationHelp.textContent = `Up to ${allowedHours} hour(s) available today before closing at 8:00 PM.`;
+            } else {
+              eventDurationHelp.textContent = `Not enough time after ${activeTimeInput.value}. Choose earlier time or another day.`;
+            }
+          }
+        } else {
+          // Reset to defaults when not applicable
+          if (eventDurationInput) {
+            eventDurationInput.max = 12;
+          }
+          if (eventDurationHelp) {
+            eventDurationHelp.textContent = 'Maximum 7 hours included. ₱200 per exceeding hour.';
+          }
+        }
+      }
+
+      // Keep duration constraints updated
+      if (pickupTimeInput) {
+        pickupTimeInput.addEventListener('change', updateDurationMaxForSingleDay);
+        pickupTimeInput.addEventListener('input', updateDurationMaxForSingleDay);
+      }
+      if (deliveryTimeInput) {
+        deliveryTimeInput.addEventListener('change', updateDurationMaxForSingleDay);
+        deliveryTimeInput.addEventListener('input', updateDurationMaxForSingleDay);
+      }
+      if (transportationSelect) transportationSelect.addEventListener('change', updateDurationMaxForSingleDay);
+      // Initialize once on load
+      updateDurationMaxForSingleDay();
+
+      // ===== Real-time logic: prevent past-time selection for same-day rentals =====
+      function getLocalDateString(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+
+      function minutesToHHMM(min) {
+        const h = Math.floor(min / 60);
+        const m = min % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      }
+
+      function roundUpMinutesToStep(min, stepMinutes) {
+        return Math.ceil(min / stepMinutes) * stepMinutes;
+      }
+
+      // ===== Slot-based time selection helpers =====
+      const EARLIEST_TIME = '08:00';
+      const TIME_SLOT_INTERVAL_MIN = 30;
+
+      function formatTime12(hhmm) {
+        const [hh, mm] = hhmm.split(':').map(Number);
+        const period = hh >= 12 ? 'PM' : 'AM';
+        const h12 = ((hh % 12) || 12);
+        return `${String(h12)}:${String(mm).padStart(2,'0')} ${period}`;
+      }
+
+      function createTimeSlots(start = EARLIEST_TIME, end = STUDIO_CLOSING_TIME, intervalMinutes = TIME_SLOT_INTERVAL_MIN) {
+        const slots = [];
+        let curMin = timeToMinutes(start);
+        const endMin = timeToMinutes(end);
+        while (curMin <= endMin) {
+          const hh = String(Math.floor(curMin / 60)).padStart(2, '0');
+          const mm = String(curMin % 60).padStart(2, '0');
+          slots.push(`${hh}:${mm}`);
+          curMin += intervalMinutes;
+        }
+        return slots;
+      }
+
+      function populateTimeSelect(selectEl) {
+        if (!selectEl) return;
+        const baseSlots = createTimeSlots();
+        selectEl.innerHTML = '';
+        baseSlots.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = formatTime12(t);
+          selectEl.appendChild(opt);
+        });
+      }
+
+      function roundUpToNextSlot(hhmm) {
+        const cur = timeToMinutes(hhmm);
+        const step = TIME_SLOT_INTERVAL_MIN;
+        const rounded = Math.ceil(cur / step) * step;
+        const hh = String(Math.floor(rounded / 60)).padStart(2, '0');
+        const mm = String(rounded % 60).padStart(2, '0');
+        return `${hh}:${mm}`;
+      }
+
+      function refreshTimeSlotConstraints() {
+        const method = transportationSelect ? transportationSelect.value : 'none';
+        const activeSelect = method === 'delivery' ? deliveryTimeInput : pickupTimeInput;
+        const otherSelect = method === 'delivery' ? pickupTimeInput : deliveryTimeInput;
+
+        // Base allowed range
+        let minAllowed = EARLIEST_TIME;
+        let maxAllowed = STUDIO_CLOSING_TIME;
+
+        // For single-day, cap latest start by duration
+        if (eventDurationInput && eventDurationInput.value) {
+          const durationMin = parseInt(eventDurationInput.value, 10) * 60;
+          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
+          const maxStartMin = Math.max(0, closingMin - durationMin);
+          const hh = String(Math.floor(maxStartMin / 60)).padStart(2, '0');
+          const mm = String(maxStartMin % 60).padStart(2, '0');
+          maxAllowed = `${hh}:${mm}`;
+        }
+
+        // If start date is today, disallow past slots
+        if (startDateInput && startDateInput.value === getLocalDateString(new Date())) {
+          const now = new Date();
+          const nowHH = String(now.getHours()).padStart(2, '0');
+          const nowMM = String(now.getMinutes()).padStart(2, '0');
+          const nowHHMM = `${nowHH}:${nowMM}`;
+          const roundedNow = roundUpToNextSlot(nowHHMM);
+          if (roundedNow > minAllowed) {
+            minAllowed = roundedNow;
+          }
+        }
+
+        // Disable invalid options and select the first valid one if needed
+        function applyConstraints(selectEl) {
+          if (!selectEl) return;
+          let selectedValid = false;
+          [...selectEl.options].forEach(opt => {
+            const val = opt.value;
+            const isValid = (val >= minAllowed && val <= maxAllowed);
+            opt.disabled = !isValid;
+            if (val === selectEl.value && isValid) {
+              selectedValid = true;
+            }
+          });
+          if (!selectedValid) {
+            const firstValid = [...selectEl.options].find(o => !o.disabled);
+            if (firstValid) selectEl.value = firstValid.value;
+          }
+        }
+
+        applyConstraints(activeSelect);
+        applyConstraints(otherSelect);
+        updateDurationMaxForSingleDay();
+      }
+
+      function updatePickupMinForToday() {
+        // With slot-based selects, simply refresh constraints
+        refreshTimeSlotConstraints();
+      }
+
+      // Populate pickup/delivery selects on load before applying constraints
+      populateTimeSelect(pickupTimeInput);
+      populateTimeSelect(deliveryTimeInput);
+
+      if (startDateInput) startDateInput.addEventListener('change', refreshTimeSlotConstraints);
+      if (transportationSelect) transportationSelect.addEventListener('change', refreshTimeSlotConstraints);
+      refreshTimeSlotConstraints();
+
+      // ===== Disable current day after studio closing (8:00 PM) =====
+      function isPastClosingNow() {
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
+        return closingMin != null && nowMin >= closingMin;
+      }
+
+      function updateStartDateMinBasedOnClosing() {
+        if (!startDateInput) return;
+        const todayStr = getLocalDateString(new Date());
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = getLocalDateString(tomorrow);
+
+        // If time is past closing, force min to tomorrow
+        if (isPastClosingNow()) {
+          startDateInput.min = tomorrowStr;
+          if (startDateInput.value && startDateInput.value < startDateInput.min) {
+            startDateInput.value = startDateInput.min;
+          }
+        } else {
+          // Otherwise allow from today
+          startDateInput.min = todayStr;
+        }
+      }
+
+      // Initialize and keep in sync when page becomes visible again
+      updateStartDateMinBasedOnClosing();
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) updateStartDateMinBasedOnClosing();
+      });
+
+      // Dynamically cap latest allowable pick-up time based on event duration
+      function updatePickupMaxByDuration() {
+        const method = transportationSelect ? transportationSelect.value : 'none';
+        const activeTimeInput = method === 'delivery' ? deliveryTimeInput : pickupTimeInput;
+        if (!activeTimeInput) return;
+        // Default hard cap to closing time
+        activeTimeInput.max = STUDIO_CLOSING_TIME;
+
+        if (eventDurationInput) {
+          const durationHours = parseInt(eventDurationInput.value || '0', 10);
+          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
+          const maxPickupMin = Math.max(0, closingMin - (durationHours * 60));
+          const maxHHMM = minutesToHHMM(maxPickupMin);
+          // Set dynamic max so that pickup + duration does not pass closing
+          activeTimeInput.max = maxHHMM;
+          // If current value exceeds max, clamp it
+          if (activeTimeInput.value && activeTimeInput.value > activeTimeInput.max) {
+            activeTimeInput.value = activeTimeInput.max;
+          }
+
+          // If min > max (e.g., too late today), reflect not enough time
+          if (activeTimeInput.min && activeTimeInput.max && activeTimeInput.min > activeTimeInput.max) {
+            if (eventDurationHelp) {
+              eventDurationHelp.textContent = `Not enough time today for ${durationHours} hour(s). Choose earlier pickup or reduce duration.`;
+            }
+          }
+        }
+      }
+
+      if (eventDurationInput) {
+        eventDurationInput.addEventListener('input', function() {
+          updatePickupMaxByDuration();
+          updateDurationMaxForSingleDay();
+        });
+        eventDurationInput.addEventListener('change', function() {
+          updatePickupMaxByDuration();
+          updateDurationMaxForSingleDay();
+        });
+      }
+      if (transportationSelect) transportationSelect.addEventListener('change', updatePickupMaxByDuration);
+      updatePickupMaxByDuration();
 
       // Available instruments data
       const availableInstruments = @json($availableInstruments ?? []);
       const dailyRates = @json($dailyRates ?? []);
+      const instrumentRates = @json($instrumentRates ?? []);
       
       // Store booked dates for conflict checking
       let bookedDates = [];
+
+      // Gate form: disable dependent fields until instrument type is selected
+      (function gateFieldsOnLoad() {
+        const idsToDisable = [
+          'rental_end_date',
+          'transportation_select',
+          'pickup_time',
+          'delivery_time',
+          'return_location',
+          'delivery_location',
+          'pickup_from_event'
+        ];
+        idsToDisable.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.disabled = true;
+        });
+      })();
       
       // Fetch booked dates from APIs (instrument rentals + ANY studio booking days)
       async function fetchBookedDates() {
         try {
-          const [instrumentResp, studioResp] = await Promise.all([
+          const [instrumentResp, studioUnavailableResp] = await Promise.all([
             fetch('/api/instrument-rental/booked-dates'),
-            fetch('/api/has-booking-dates')
+            // Studio-level unavailable dates (fully booked or drums/full package rentals)
+            fetch('/api/booked-dates')
           ]);
           const instrumentData = await instrumentResp.json();
-          const studioData = await studioResp.json();
+          const studioUnavailableData = await studioUnavailableResp.json();
           const instrumentDates = instrumentData.booked_dates || [];
-          const studioDates = studioData.booked_dates || [];
-          // Merge and de-duplicate
-          bookedDates = Array.from(new Set([...instrumentDates, ...studioDates]));
+          const studioUnavailableDates = studioUnavailableData.booked_dates || [];
+          // Merge and de-duplicate only truly unavailable dates
+          bookedDates = Array.from(new Set([...instrumentDates, ...studioUnavailableDates]));
           updateDatePickerConstraints();
         } catch (error) {
           console.error('Error fetching booked dates:', error);
@@ -2323,10 +2726,21 @@
       
       // Update date picker constraints to disable booked dates
       function updateDatePickerConstraints() {
-        // Set minimum date to today
+        // Respect any dynamic minimum already set (e.g., tomorrow after 8 PM)
         const today = new Date().toISOString().split('T')[0];
-        startDateInput.setAttribute('min', today);
-        endDateInput.setAttribute('min', today);
+        const currentStartMin = startDateInput.getAttribute('min') || today;
+        const effectiveMin = currentStartMin > today ? currentStartMin : today;
+        
+        startDateInput.setAttribute('min', effectiveMin);
+        endDateInput.setAttribute('min', effectiveMin);
+
+        // Clamp values if user previously selected a date below the effective minimum
+        if (startDateInput.value && startDateInput.value < effectiveMin) {
+          startDateInput.value = effectiveMin;
+        }
+        if (endDateInput.value && endDateInput.value < effectiveMin) {
+          endDateInput.value = effectiveMin;
+        }
         
         // Add event listeners to validate selected dates
         startDateInput.addEventListener('input', validateDateSelection);
@@ -2442,7 +2856,7 @@
           alertDiv.className = 'date-conflict-alert';
           alertDiv.style.display = 'block';
           alertDiv.innerHTML = `
-            <strong>Date Unavailable:</strong> ${formattedDate} has an existing studio booking or instrument rental. Please choose a different date.
+            <strong>Date Unavailable:</strong> ${formattedDate} has an existing band rehearsal or instrument rental. Please choose a different date.
           `;
           
           input.parentNode.insertBefore(alertDiv, input.nextSibling);
@@ -2526,14 +2940,19 @@
       // Update instruments when type changes
       instrumentTypeSelect.addEventListener('change', function() {
         const selectedType = this.value;
-        const dailyRate = dailyRates[selectedType] || 10;
+        const dailyRate = dailyRates[selectedType] || 0;
         
-        // Update daily rate display
+        // Update daily rate display (type-level fallback; specific instrument may override)
         dailyRateInput.value = `₱${dailyRate.toFixed(2)}`;
         
         // Update instrument options
         instrumentNameSelect.innerHTML = '<option value="">Select Specific Instrument</option>';
-        instrumentNameSelect.disabled = !selectedType;
+        if (selectedType === 'full_package') {
+          instrumentNameSelect.disabled = true;
+          instrumentNameSelect.innerHTML = '<option value="">Full Package selected</option>';
+        } else {
+          instrumentNameSelect.disabled = !selectedType;
+        }
         
         if (selectedType && availableInstruments[selectedType]) {
           Object.entries(availableInstruments[selectedType]).forEach(([key, name]) => {
@@ -2545,122 +2964,105 @@
         }
         
         updatePriceSummary();
+
+        // Enable dependent fields only after choosing instrument type
+        const enableIds = [
+          'rental_end_date',
+          'transportation_select',
+          'pickup_time',
+          'delivery_time',
+          'return_location',
+          'delivery_location',
+          'pickup_from_event'
+        ];
+        enableIds.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.disabled = !selectedType;
+        });
       });
 
-      // Calculate duration when dates change
+      // Update rate when specific instrument changes
+      instrumentNameSelect.addEventListener('change', function() {
+        const selectedInstrument = this.value;
+        const instrumentRate = instrumentRates[selectedInstrument];
+        const fallbackRate = dailyRates[instrumentTypeSelect.value] || 0;
+        const finalRate = instrumentRate != null ? instrumentRate : fallbackRate;
+        dailyRateInput.value = `₱${finalRate.toFixed(2)}`;
+        updatePriceSummary();
+      });
+
+      // Calculate duration for single-day rentals
       function calculateDuration() {
-        const startDate = new Date(startDateInput.value);
-        const endDate = new Date(endDateInput.value);
-        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
-
-        if (rentType === 'single') {
-          if (startDateInput.value) {
-            endDateInput.value = startDateInput.value;
-            durationInput.value = '1 day';
-          } else {
-            durationInput.value = '0 days';
-          }
+        if (startDateInput.value) {
+          endDateInput.value = startDateInput.value;
+          durationInput.value = '1 day';
         } else {
-          if (startDate && endDate && endDate >= startDate) {
-            const diffTime = Math.abs(endDate - startDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end dates
-            durationInput.value = `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
-          } else {
-            durationInput.value = '0 days';
-          }
-        }
-
-        updatePriceSummary();
-      }
-
-      // Toggle UI based on rent type selection
-      function toggleRentTypeUI() {
-        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
-
-        if (!rentType) {
-          // Hide dependent fields until user chooses
-          if (startDateGroup) startDateGroup.style.display = 'none';
-          if (endDateGroup) endDateGroup.style.display = 'none';
-          if (eventDurationGroup) eventDurationGroup.style.display = 'none';
           durationInput.value = '0 days';
-          startDateInput.value = '';
-          endDateInput.value = '';
-          return;
         }
-
-        // Always show start date after choosing rent type
-        if (startDateGroup) startDateGroup.style.display = 'block';
-
-        if (rentType === 'single') {
-          // Single day: hide end date, show event duration
-          if (endDateGroup) endDateGroup.style.display = 'none';
-          if (eventDurationGroup) eventDurationGroup.style.display = 'block';
-
-          // When selecting single-day, keep end date equal to start date
-          if (startDateInput.value) {
-            endDateInput.value = startDateInput.value;
-            durationInput.value = '1 day';
-          } else {
-            durationInput.value = '0 days';
-          }
-        } else {
-          // Multiple day: show both dates, hide event duration
-          if (endDateGroup) endDateGroup.style.display = 'block';
-          if (eventDurationGroup) eventDurationGroup.style.display = 'none';
-
-          // Clear duration until both dates are selected
-          if (!(startDateInput.value && endDateInput.value)) {
-            durationInput.value = '0 days';
-          }
-        }
-
         updatePriceSummary();
       }
 
-      // Attach listener for rent type changes
-      if (rentTypeSelect) {
-        rentTypeSelect.addEventListener('change', toggleRentTypeUI);
-        // Initialize on load (fields hidden until chosen)
-        toggleRentTypeUI();
+      // Initialize UI for single-day rentals
+      function initializeSingleDayUI() {
+        if (startDateGroup) startDateGroup.style.display = 'block';
+        if (endDateGroup) endDateGroup.style.display = 'none';
+        if (eventDurationGroup) eventDurationGroup.style.display = 'block';
+        calculateDuration();
+        updatePriceSummary();
       }
+      initializeSingleDayUI();
              startDateInput.addEventListener('change', calculateDuration);
        endDateInput.addEventListener('change', calculateDuration);
 
-       // Add event listeners for full package and transportation
-       document.getElementById('full_package').addEventListener('change', function() {
-         const fullPackage = this.checked;
-         
-         // Disable/enable instrument selection fields
-         instrumentTypeSelect.disabled = fullPackage;
-         instrumentNameSelect.disabled = fullPackage;
-         
-         // Clear selections when full package is enabled
-         if (fullPackage) {
-           instrumentTypeSelect.value = '';
-           instrumentNameSelect.value = '';
-           instrumentNameSelect.innerHTML = '<option value="">Select instrument type first</option>';
-         }
-         
-         updatePriceSummary();
-       });
+       // Add event listeners for transportation only (Full Package now handled via instrument type)
        // Transportation method UI toggling
        function toggleTransportationUI() {
          const method = transportationSelect ? transportationSelect.value : 'none';
          if (method === 'delivery') {
+           // Show only delivery location; hide pickup/return and related fields
            if (deliveryLocationGroup) deliveryLocationGroup.style.display = 'block';
-           if (pickupFromEventGroup) pickupFromEventGroup.style.display = 'block';
-            if (pickupTimeGroup) pickupTimeGroup.style.display = 'none';
-           if (pickupLocationSelect) pickupLocationSelect.disabled = true; // fixed Studio
-            if (returnLocationSelect) returnLocationSelect.disabled = false; // allow change when delivery
-         } else {
-           if (deliveryLocationGroup) deliveryLocationGroup.style.display = 'none';
+           if (pickupLocationGroup) pickupLocationGroup.style.display = 'none';
+           if (returnLocationGroup) returnLocationGroup.style.display = 'none';
            if (pickupFromEventGroup) pickupFromEventGroup.style.display = 'none';
-            if (pickupTimeGroup) pickupTimeGroup.style.display = 'block';
+           if (pickupTimeGroup) pickupTimeGroup.style.display = 'none';
+           if (deliveryTimeGroup) deliveryTimeGroup.style.display = 'block';
            if (pickupLocationSelect) pickupLocationSelect.disabled = true; // fixed Studio
-            if (returnLocationSelect) {
-              returnLocationSelect.value = 'Studio';
-              returnLocationSelect.disabled = true; // lock to Studio for self pickup
-            }
+           if (returnLocationSelect) returnLocationSelect.disabled = true; // hidden for delivery
+
+            // Reset label when not using self pickup
+            const pickupLabel = pickupLocationGroup ? pickupLocationGroup.querySelector('label') : null;
+            if (pickupLabel) pickupLabel.textContent = 'Pickup Location:';
+           // Populate delivery time slots and apply constraints
+           if (deliveryTimeInput) {
+             populateTimeSelect(deliveryTimeInput);
+           }
+           refreshTimeSlotConstraints();
+         } else {
+           // Self pickup: show pickup/return and pick-up time; hide delivery-specific fields
+           if (deliveryLocationGroup) deliveryLocationGroup.style.display = 'none';
+           if (pickupLocationGroup) pickupLocationGroup.style.display = 'block';
+           if (returnLocationGroup) returnLocationGroup.style.display = 'none';
+           if (pickupFromEventGroup) pickupFromEventGroup.style.display = 'none';
+           if (pickupTimeGroup) pickupTimeGroup.style.display = 'block';
+           if (deliveryTimeGroup) deliveryTimeGroup.style.display = 'none';
+           // Populate pickup time slots and apply constraints
+           if (pickupTimeInput) {
+             populateTimeSelect(pickupTimeInput);
+           }
+           refreshTimeSlotConstraints();
+           // Lock both pickup and return to Studio and make unchangeable
+           if (pickupLocationSelect) {
+             pickupLocationSelect.value = 'Studio';
+             pickupLocationSelect.disabled = true;
+           }
+           if (returnLocationSelect) {
+             returnLocationSelect.value = 'Studio';
+             returnLocationSelect.disabled = true; // lock to Studio for self pickup
+           }
+
+           // Update label to reflect unified location
+           const pickupLabel = pickupLocationGroup ? pickupLocationGroup.querySelector('label') : null;
+           if (pickupLabel) pickupLabel.textContent = 'Pickup & Return Location:';
          }
          updatePriceSummary();
        }
@@ -2669,32 +3071,54 @@
          transportationSelect.addEventListener('change', toggleTransportationUI);
          toggleTransportationUI();
        }
+
+       // Enforce 8:00 AM minimum for self pickup via input listeners
+       if (pickupTimeInput) {
+         ['input', 'change', 'blur'].forEach(evt => {
+           pickupTimeInput.addEventListener(evt, function() {
+             // Only enforce when self pickup is selected
+             if (transportationSelect && transportationSelect.value !== 'delivery') {
+               if (pickupTimeInput.value && pickupTimeInput.value < '08:00') {
+                 pickupTimeInput.value = '08:00';
+               }
+             }
+           });
+         });
+       }
+
+       // Enforce 8:00 AM minimum for delivery via input listeners
+       if (deliveryTimeInput) {
+         ['input', 'change', 'blur'].forEach(evt => {
+           deliveryTimeInput.addEventListener(evt, function() {
+             if (transportationSelect && transportationSelect.value === 'delivery') {
+               if (deliveryTimeInput.value && deliveryTimeInput.value < '08:00') {
+                 deliveryTimeInput.value = '08:00';
+               }
+             }
+           });
+         });
+       }
        
-       // Event duration affects price only for single-day rentals
+       // Event duration affects price (single-day only now)
        if (eventDurationInput) {
          eventDurationInput.addEventListener('input', function() {
-           if (rentTypeSelect && rentTypeSelect.value === 'single') {
-             updatePriceSummary();
-           }
+           updatePriceSummary();
          });
        }
 
              // Update price summary
        function updatePriceSummary() {
          const selectedType = instrumentTypeSelect.value;
-         const fullPackage = document.getElementById('full_package').checked;
+         const fullPackage = selectedType === 'full_package';
          const transportation = transportationSelect.value;
-         const rentType = rentTypeSelect ? rentTypeSelect.value : '';
-         const eventDurationHours = rentType === 'single' ? (parseInt(eventDurationInput.value) || 7) : 0;
+         const rentType = 'single';
+         const eventDurationHours = parseInt(eventDurationInput.value) || 7;
          
          let dailyRate = 0;
          let duration = parseInt(durationInput.value) || 0;
-         
-         if (fullPackage) {
-           dailyRate = 4500; // Full package rate
-         } else {
-           dailyRate = dailyRates[selectedType] || 0;
-         }
+         const selectedInstrument = instrumentNameSelect ? instrumentNameSelect.value : '';
+         const instrumentRate = selectedInstrument ? instrumentRates[selectedInstrument] : null;
+         dailyRate = fullPackage ? 4500 : (instrumentRate != null ? instrumentRate : (dailyRates[selectedType] || 0));
          
          const subtotal = dailyRate * duration;
          const transportationFee = transportation === 'delivery' ? 550 : 0; // Average of ₱500-₱600
@@ -2711,29 +3135,21 @@
          document.getElementById('summary_duration').textContent = `${duration} day${duration !== 1 ? 's' : ''}`;
          document.getElementById('summary_subtotal').textContent = `₱${subtotal.toFixed(2)}`;
          document.getElementById('transportation_fee').textContent = `₱${transportationFee.toFixed(2)}`;
+         const reservationFeeEl = document.getElementById('reservation_fee');
+         if (reservationFeeEl) reservationFeeEl.textContent = `₱${reservationFee.toFixed(2)}`;
          
-         // Update reservation fee display
-         const reservationFeeElement = document.querySelector('.price-item:nth-child(4) span:last-child');
-         if (reservationFeeElement) {
-           reservationFeeElement.textContent = `₱${reservationFee.toFixed(2)}`;
-         }
+         // Reservation fee is already updated via #reservation_fee; avoid overwriting other rows
          
          document.getElementById('summary_total').textContent = `₱${total.toFixed(2)}`;
          
          // Update the event duration note to show extra charges if applicable
          const noteElement = eventDurationInput.parentNode.querySelector('small');
-         if (rentType === 'single') {
-           if (extraHours > 0) {
-             noteElement.textContent = `Maximum 7 hours included. ₱200 per exceeding hour. (Extra ${extraHours} hour(s): ₱${extraHourCharges.toFixed(2)})`;
-             noteElement.style.color = '#e67e22';
-             noteElement.style.fontWeight = 'bold';
-           } else {
-             noteElement.textContent = 'Maximum 7 hours included. ₱200 per exceeding hour.';
-             noteElement.style.color = '';
-             noteElement.style.fontWeight = '';
-           }
+         if (extraHours > 0) {
+           noteElement.textContent = `Maximum 7 hours included. ₱200 per exceeding hour. (Extra ${extraHours} hour(s): ₱${extraHourCharges.toFixed(2)})`;
+           noteElement.style.color = '#e67e22';
+           noteElement.style.fontWeight = 'bold';
          } else {
-           noteElement.textContent = 'Event duration is not applicable for multiple-day rentals.';
+           noteElement.textContent = 'Maximum 7 hours included. ₱200 per exceeding hour.';
            noteElement.style.color = '';
            noteElement.style.fontWeight = '';
          }
@@ -2787,27 +3203,19 @@
       
       // Form validation function
       function validateForm() {
-        // Ensure rent type chosen first
-        if (!rentTypeSelect.value) {
-          alert('Please choose a rent type first.');
+        // Require instrument type first
+        if (!instrumentTypeSelect.value) {
+          alert('Please select instrument type first.');
           return false;
         }
-
-        const rentType = rentTypeSelect.value;
+        const rentType = 'single';
         // Check required dates based on rent type
-        if (rentType === 'single') {
-          if (!startDateInput.value) {
-            alert('Please select a date for single-day rental.');
-            return false;
-          }
-          endDateInput.value = startDateInput.value;
-          durationInput.value = '1 day';
-        } else {
-          if (!startDateInput.value || !endDateInput.value) {
-            alert('Please select both start and end dates.');
-            return false;
-          }
+        if (!startDateInput.value) {
+          alert('Please select a date for single-day rental.');
+          return false;
         }
+        endDateInput.value = startDateInput.value;
+        durationInput.value = '1 day';
 
         const startDate = new Date(startDateInput.value);
         const endDate = new Date(endDateInput.value);
@@ -2824,7 +3232,7 @@
           return false;
         }
         
-        const fullPackage = document.getElementById('full_package').checked;
+        const fullPackage = instrumentTypeSelect.value === 'full_package';
         
         if (!fullPackage && (!instrumentTypeSelect.value || !instrumentNameSelect.value)) {
           alert('Please select both instrument type and specific instrument.');
@@ -2838,9 +3246,131 @@
             alert('Please enter a delivery location.');
             return false;
           }
+          const deliveryTimeInputLocal = document.getElementById('delivery_time');
+          if (!deliveryTimeInputLocal || !deliveryTimeInputLocal.value) {
+            alert('Please select a delivery time.');
+            return false;
+          }
+          // Guard against early times before 8:00 AM
+          if (deliveryTimeInputLocal.value && deliveryTimeInputLocal.value < '08:00') {
+            alert('Delivery time must be at or after 8:00 AM.');
+            return false;
+          }
         } else {
           if (pickupTimeInput && !pickupTimeInput.value) {
             alert('Please select a pick-up time for self pickup.');
+            return false;
+          }
+          // Guard against early times before 8:00 AM
+          if (pickupTimeInput && pickupTimeInput.value && pickupTimeInput.value < '08:00') {
+            alert('Pick-up time must be at or after 8:00 AM.');
+            return false;
+          }
+        }
+
+        // For single-day rentals, ensure event duration fits before closing time (8:00 PM)
+        if (rentType === 'single' && transportationSelect.value !== 'delivery') {
+          if (!eventDurationInput || !eventDurationInput.value) {
+            alert('Please enter event duration in hours.');
+            return false;
+          }
+          // Block past-time selection when renting today
+          const todayStr = getLocalDateString(new Date());
+          if (startDateInput.value === todayStr) {
+            const now = new Date();
+            const nowHH = String(now.getHours()).padStart(2, '0');
+            const nowMM = String(now.getMinutes()).padStart(2, '0');
+            const nowHHMM = `${nowHH}:${nowMM}`;
+            const effectiveMin = pickupTimeInput.min || '08:00';
+            if (pickupTimeInput.value < effectiveMin || pickupTimeInput.value < nowHHMM) {
+              alert('Pick-up time cannot be in the past for a same-day rental.');
+              return false;
+            }
+          }
+          const pickupMin = timeToMinutes(pickupTimeInput.value);
+          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
+          if (pickupMin == null || closingMin == null) {
+            alert('Invalid time values. Please check your pick-up time.');
+            return false;
+          }
+          // Ensure start date respects dynamic minimum (e.g., today disabled after closing)
+          if (startDateInput && startDateInput.min && startDateInput.value < startDateInput.min) {
+            alert('Start date is no longer available today. Please choose a later date.');
+            return false;
+          }
+          const remainingMin = closingMin - pickupMin;
+          const requiredMin = parseInt(eventDurationInput.value, 10) * 60;
+          if (requiredMin > remainingMin) {
+            const allowedHours = Math.max(0, Math.floor(remainingMin / 60));
+            alert(`With a ${eventDurationInput.value} hour event starting at ${pickupTimeInput.value}, return exceeds 8:00 PM. Reduce duration to ${allowedHours} hour(s) or choose an earlier pickup.`);
+            return false;
+          }
+
+          // Also block pickup times that start after the latest allowable start based on duration
+          const maxPickupMin = Math.max(0, closingMin - requiredMin);
+          if (pickupMin > maxPickupMin) {
+            alert('Pick-up time is too late for the chosen duration. Choose an earlier time.');
+            return false;
+          }
+          // And never allow pickup beyond closing time
+          if (pickupTimeInput.value > STUDIO_CLOSING_TIME) {
+            alert('Pick-up time cannot be past 8:00 PM.');
+            return false;
+          }
+        }
+
+        // For single-day delivery, ensure event duration fits before closing (8:00 PM)
+        if (rentType === 'single' && transportationSelect.value === 'delivery') {
+          if (!eventDurationInput || !eventDurationInput.value) {
+            alert('Please enter event duration in hours.');
+            return false;
+          }
+          const deliveryTimeInputLocal = document.getElementById('delivery_time');
+          if (!deliveryTimeInputLocal || !deliveryTimeInputLocal.value) {
+            alert('Please select a delivery time.');
+            return false;
+          }
+          // Block past-time selection when renting today
+          const todayStr = getLocalDateString(new Date());
+          if (startDateInput.value === todayStr) {
+            const now = new Date();
+            const nowHH = String(now.getHours()).padStart(2, '0');
+            const nowMM = String(now.getMinutes()).padStart(2, '0');
+            const nowHHMM = `${nowHH}:${nowMM}`;
+            const effectiveMin = deliveryTimeInputLocal.min || '08:00';
+            if (deliveryTimeInputLocal.value < effectiveMin || deliveryTimeInputLocal.value < nowHHMM) {
+              alert('Delivery time cannot be in the past for a same-day rental.');
+              return false;
+            }
+          }
+          const startMin = timeToMinutes(deliveryTimeInputLocal.value);
+          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
+          if (startMin == null || closingMin == null) {
+            alert('Invalid time values. Please check your delivery time.');
+            return false;
+          }
+          // Ensure start date respects dynamic minimum (e.g., today disabled after closing)
+          if (startDateInput && startDateInput.min && startDateInput.value < startDateInput.min) {
+            alert('Start date is no longer available today. Please choose a later date.');
+            return false;
+          }
+          const remainingMin = closingMin - startMin;
+          const requiredMin = parseInt(eventDurationInput.value, 10) * 60;
+          if (requiredMin > remainingMin) {
+            const allowedHours = Math.max(0, Math.floor(remainingMin / 60));
+            alert(`With a ${eventDurationInput.value} hour event starting at ${deliveryTimeInputLocal.value}, return exceeds 8:00 PM. Reduce duration to ${allowedHours} hour(s) or choose an earlier delivery time.`);
+            return false;
+          }
+
+          // Also block delivery times that start after the latest allowable start based on duration
+          const maxStartMin = Math.max(0, closingMin - requiredMin);
+          if (startMin > maxStartMin) {
+            alert('Delivery time is too late for the chosen duration. Choose an earlier time.');
+            return false;
+          }
+          // And never allow delivery beyond closing time
+          if (deliveryTimeInputLocal.value > STUDIO_CLOSING_TIME) {
+            alert('Delivery time cannot be past 8:00 PM.');
             return false;
           }
         }
@@ -2852,26 +3382,24 @@
       function populateModal() {
         const selectedType = instrumentTypeSelect.value;
         const selectedInstrument = instrumentNameSelect.value;
-        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
-        const eventDurationHours = rentType === 'single' ? (parseInt(document.querySelector('input[name="event_duration_hours"]').value) || 7) : 0;
+        const rentType = 'single';
+        const eventDurationHours = (parseInt(document.querySelector('input[name="event_duration_hours"]').value) || 7);
         const transportation = document.getElementById('transportation_select').value;
         const pickupLocation = document.querySelector('select[name="pickup_location"]').value;
         const returnLocation = document.querySelector('select[name="return_location"]').value;
+        const deliveryTimeVal = (document.getElementById('delivery_time') && document.getElementById('delivery_time').value) || '';
         
         // Get instrument names
         const instrumentTypes = @json($instrumentTypes ?? []);
         const availableInstruments = @json($availableInstruments ?? []);
         
         // Calculate prices
-        const fullPackage = document.getElementById('full_package').checked;
+        const fullPackage = instrumentTypeSelect.value === 'full_package';
         let dailyRate = 0;
         let duration = parseInt(durationInput.value) || 0;
-        
-        if (fullPackage) {
-          dailyRate = 4500;
-        } else {
-          dailyRate = dailyRates[selectedType] || 0;
-        }
+        const selectedInstrumentName = selectedInstrument;
+        const instrumentRateModal = selectedInstrumentName ? instrumentRates[selectedInstrumentName] : null;
+        dailyRate = fullPackage ? 4500 : (instrumentRateModal != null ? instrumentRateModal : (dailyRates[selectedType] || 0));
         
         const subtotal = dailyRate * duration;
         const transportationFee = transportation === 'delivery' ? 550 : 0;
@@ -2893,7 +3421,10 @@
         };
         
         // Populate modern summary fields
-        const instrumentDisplay = fullPackage ? 'Full Package' : (selectedInstrument || selectedType || 'Selected Instrument');
+        // Show only the instrument type label (no brand name)
+        const instrumentDisplay = fullPackage
+          ? 'Full Package'
+          : (instrumentTypes[selectedType] || 'Instrument');
         document.getElementById('modalInstrumentSummary').textContent = instrumentDisplay;
         
         const rentalPeriod = `${formatDate(startDate)} - ${formatDate(endDate)} (${duration} days)`;
@@ -2904,9 +3435,15 @@
         const deliveryLocationVal = document.getElementById('delivery_location').value || '';
         const pickupFromEvent = document.getElementById('pickup_from_event').checked;
         const pickupTimeVal = (document.getElementById('pickup_time') && document.getElementById('pickup_time').value) || '';
+        // Cleaner wording and shorter location text for delivery/self pickup
+        const cleanLocation = (s) => (s || '').split('(')[0].trim();
+        const pickupShort = cleanLocation(pickupLocation);
+        const deliveryShort = cleanLocation(deliveryLocationVal);
+        const pickupTimePart = (pickupTimeVal && pickupTimeVal !== '0') ? ' (pickup time: ' + pickupTimeVal + ')' : '';
+        const deliveryTimePart = deliveryTimeVal ? ' (delivery time: ' + deliveryTimeVal + ')' : '';
         const deliveryInfo = transportation === 'delivery'
-          ? `Deliver to ${deliveryLocationVal || 'specified location'}; Pickup from event: ${pickupFromEvent ? 'Yes' : 'No'}`
-          : `Self Pickup at ${pickupLocation}${pickupTimeVal ? ' (Pick-up time: ' + pickupTimeVal + ')' : ''}`;
+          ? `Delivery to ${deliveryShort || 'specified location'}${deliveryTimePart}; Pickup from event: ${pickupFromEvent ? 'Yes' : 'No'}`
+          : `Self pickup at ${pickupShort || 'Studio'}${pickupTimePart}`;
         document.getElementById('modalDeliveryInfo').textContent = deliveryInfo;
         
         // Populate price breakdown
@@ -2936,7 +3473,7 @@
         document.getElementById('modalTotalPrice').textContent = '₱' + total.toFixed(2);
         
         // Get additional form values
-        const venueType = document.querySelector('select[name="venue_type"]').value;
+        const venueType = 'indoor';
         const notes = document.querySelector('textarea[name="special_requests"]').value;
         const documentationConsent = document.querySelector('input[name="documentation_consent"]').checked;
         
@@ -2955,6 +3492,8 @@
         document.getElementById('modalEventDurationInput').value = rentType === 'single' ? eventDurationHours : 0;
         document.getElementById('modalPickupLocationInput').value = pickupLocation;
         document.getElementById('modalPickupTimeInput').value = pickupTimeVal;
+        const modalDeliveryTimeInput = document.getElementById('modalDeliveryTimeInput');
+        if (modalDeliveryTimeInput) modalDeliveryTimeInput.value = deliveryTimeVal;
         document.getElementById('modalReturnLocationInput').value = returnLocation;
         document.getElementById('modalTransportationInput').value = transportation;
         document.getElementById('modalFullPackageInput').value = fullPackage ? '1' : '0';
@@ -2967,19 +3506,11 @@
         document.getElementById('modalGcashAmount').textContent = reservationFee.toFixed(2);
       }
 
-      // Set minimum end date based on start date
+      // Set minimum end date based on start date (single-day default)
       startDateInput.addEventListener('change', function() {
-        const startDate = new Date(this.value);
-        const minEndDate = new Date(startDate);
-        const rentType = rentTypeSelect ? rentTypeSelect.value : '';
-        if (rentType === 'single') {
-          // End date mirrors start date for single-day rent
-          endDateInput.value = this.value;
-          endDateInput.min = this.value;
-        } else {
-          minEndDate.setDate(minEndDate.getDate() + 1);
-          endDateInput.min = minEndDate.toISOString().split('T')[0];
-        }
+        if (!this.value) return;
+        endDateInput.value = this.value;
+        endDateInput.min = this.value;
       });
       
       // Reference code validation functionality
@@ -3312,8 +3843,3 @@
   </script>
 </body>
 </html>
-        // New hidden values for delivery
-        const deliveryHidden = document.getElementById('modalDeliveryLocationInput');
-        const pickupFromEventHidden = document.getElementById('modalPickupFromEventInput');
-        if (deliveryHidden) deliveryHidden.value = deliveryLocationVal;
-        if (pickupFromEventHidden) pickupFromEventHidden.value = pickupFromEvent ? '1' : '0';

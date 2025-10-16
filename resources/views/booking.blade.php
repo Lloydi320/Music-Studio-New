@@ -1364,5 +1364,45 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 
+<!-- Loading Overlay (shown during form submission) -->
+<style>
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+  }
+  .loading-overlay .loader-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    text-align: center;
+  }
+  .loading-overlay .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255,255,255,0.5);
+    border-top-color: #00c2ff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-overlay .loading-text { font-weight: 600; letter-spacing: 0.3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 768px) { .loading-overlay .loading-text { font-size: 14px; } }
+</style>
+
+<div id="loadingOverlay" class="loading-overlay" aria-hidden="true" role="alert" aria-live="polite">
+  <div class="loader-wrap">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="loading-text">Processing your booking…</div>
+  </div>
+</div>
+
 </body>
 </html>

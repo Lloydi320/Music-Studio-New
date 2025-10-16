@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 use App\Services\GoogleCalendarService;
 use App\Models\User;
@@ -1009,7 +1010,8 @@ class AdminController extends Controller
         // Get filter parameters
         $status = $request->get('status', 'all');
         $search = $request->get('search', '');
-        $dateFilter = $request->get('date_filter', 'all');
+        // Default the date filter to current month
+        $dateFilter = $request->get('date_filter', 'month');
         $serviceType = $request->get('service_type', 'all');
 
         // Build query
@@ -1092,6 +1094,280 @@ class AdminController extends Controller
     }
 
     /**
+     * Walk-In Booking: show create form
+     */
+    public function walkInCreate(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        // Use service types but exclude instrument rentals for walk-in page
+        $serviceTypes = Booking::getServiceTypes();
+        unset($serviceTypes['instrument_rental']);
+        $walkInColumn = \Schema::hasColumn('bookings', 'is_walk_in_booking')
+            ? 'is_walk_in_booking'
+            : (\Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
+
+        // Manual booking history filters (for recent walk-ins list)
+        $historyFilters = [
+            'from_date' => $request->query('from_date'),
+            'to_date' => $request->query('to_date'),
+            // Use a distinct name to avoid clashing with the create form POST field
+            'service_type' => $request->query('filter_service_type', 'all'),
+        ];
+
+        // Build recent walk-ins query and apply filters without changing the list structure
+        if ($walkInColumn) {
+            $query = Booking::where($walkInColumn, true);
+
+            // Service type filter: studio_rental (Band), solo_rehearsal (Solo), music_lesson
+            if ($historyFilters['service_type'] !== 'all') {
+                $query->where('service_type', $historyFilters['service_type']);
+            }
+
+            // Date range filters
+            if (!empty($historyFilters['from_date'])) {
+                $query->whereDate('date', '>=', $historyFilters['from_date']);
+            }
+            if (!empty($historyFilters['to_date'])) {
+                $query->whereDate('date', '<=', $historyFilters['to_date']);
+            }
+
+            $recentWalkIns = $query
+                ->orderBy('date', 'desc')
+                ->orderBy('time_slot', 'desc')
+                ->limit(10)
+                ->get();
+        } else {
+            $recentWalkIns = collect();
+        }
+
+        ActivityLog::logAdmin('Admin opened Walk-In Booking page', ActivityLog::ACTION_ADMIN_ACCESS);
+
+        return view('admin.walk-in-create', compact('user', 'serviceTypes', 'recentWalkIns', 'historyFilters'));
+    }
+
+    /**
+     * Walk-In Booking: store booking
+     */
+    public function walkInStore(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $request->validate([
+            // Accept band_rehearsal alias and normalize to studio_rental
+            'service_type' => 'required|in:studio_rental,band_rehearsal,solo_rehearsal,music_lesson',
+            'date' => 'required|date|after_or_equal:today',
+            'start_time' => 'required|string',
+            'duration' => 'required|integer|min:1|max:8',
+            'band_name' => 'nullable|string|max:255',
+            'lesson_type' => 'required_if:service_type,music_lesson|in:Voice Lesson,Drum Lesson,Guitar Lesson,Ukulele Lesson,Bass Guitar Lesson,Keyboard Lesson'
+        ]);
+
+        try {
+            $duration = (int) $request->duration;
+            $start = Carbon::createFromFormat('h:i A', $request->start_time, config('app.timezone', 'Asia/Manila'));
+            $end = $start->copy()->addHours($duration);
+            $timeSlot = $start->format('h:i A') . ' - ' . $end->format('h:i A');
+
+            // Check studio unavailability due to instrument rentals (drums/full package)
+            $drumOrFullPackageRentals = InstrumentRental::whereIn('status', ['pending', 'confirmed'])
+                ->where(function($query) {
+                    $query->where('instrument_type', 'drums')
+                          ->orWhere('instrument_type', 'Full Package');
+                })
+                ->where(function($query) use ($request) {
+                    $query->where('rental_start_date', '<=', $request->date)
+                          ->where('rental_end_date', '>=', $request->date);
+                })
+                ->exists();
+
+            if ($drumOrFullPackageRentals) {
+                return back()->withInput()->with('error', 'Studio is unavailable on this date due to a Full Package or drum rental.');
+            }
+
+            // Check for overlapping bookings (pending or confirmed)
+            $existingBookings = Booking::where('date', $request->date)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->get();
+
+            foreach ($existingBookings as $existingBooking) {
+                $existingStartStr = trim(explode('-', $existingBooking->time_slot)[0]);
+                $existingStart = Carbon::createFromFormat('h:i A', $existingStartStr, config('app.timezone', 'Asia/Manila'));
+                $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
+
+                if (($start < $existingEnd && $end > $existingStart) || ($existingStart < $end && $existingEnd > $start)) {
+                    return back()->withInput()->with('error', 'Selected time overlaps with an existing booking.');
+                }
+            }
+
+            // No attachments are processed for admin walk-in to avoid conflicts
+
+            // Normalize alias for pricing and storage
+            $serviceType = $request->service_type === 'band_rehearsal' ? 'studio_rental' : $request->service_type;
+
+            // Pricing: apply band/solo matrix; no pricing for music lessons
+            if (in_array($serviceType, ['studio_rental', 'solo_rehearsal'])) {
+                if ($serviceType === 'studio_rental') {
+                    // Band rehearsal: ₱230 (1hr), then ₱200/hr for 2hrs+
+                    $hourlyRate = $duration === 1 ? 230.0 : 200.0;
+                    $totalAmount = $duration === 1 ? 230.0 : 200.0 * $duration;
+                } else { // solo_rehearsal
+                    // Solo rehearsal: ₱200 (1hr), then ₱180/hr for 2hrs+
+                    $hourlyRate = $duration === 1 ? 200.0 : 180.0;
+                    $totalAmount = $duration === 1 ? 200.0 : 180.0 * $duration;
+                }
+            } else {
+                // Music lesson: pricing not required here
+                $hourlyRate = 0.0;
+                $totalAmount = null;
+            }
+
+            $bookingData = [
+                'user_id' => $user->id,
+                'date' => $request->date,
+                'time_slot' => $timeSlot,
+                'duration' => $duration,
+                'price' => $hourlyRate,
+                'total_amount' => $totalAmount,
+                'status' => 'confirmed',
+                'created_by_admin_id' => $user->id,
+                'service_type' => $serviceType,
+                'band_name' => $request->band_name,
+            ];
+            if ($walkInColumn) {
+                $bookingData[$walkInColumn] = true;
+            } else if (\Schema::hasColumn('bookings', 'is_walk_in_booking')) {
+                $bookingData['is_walk_in_booking'] = true;
+            }
+            if (Schema::hasColumn('bookings', 'lesson_type')) {
+                $bookingData['lesson_type'] = $request->lesson_type;
+            }
+            $booking = Booking::create($bookingData);
+
+            ActivityLog::logBooking(ActivityLog::ACTION_BOOKING_CREATED, $booking, null, $booking->toArray());
+
+            // Create Google Calendar event if available
+            $calendarMessage = '';
+            if ($this->calendarService) {
+                try {
+                    $result = $this->calendarService->createBookingEvent($booking);
+                    if ($result) {
+                        $calendarMessage = ' Google Calendar event created.';
+                        ActivityLog::logAdmin('Created calendar event for walk-in booking ' . $booking->reference, ActivityLog::ACTION_CALENDAR_SYNC);
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to create calendar event for walk-in: ' . $e->getMessage());
+                }
+            }
+
+            return redirect()->route('admin.walk-in.create')
+                ->with('success', 'Walk-in booking created successfully.' . $calendarMessage);
+        } catch (\Exception $e) {
+            Log::error('Error creating walk-in booking: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Failed to create walk-in booking: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Walk-In Booking: availability for time slots
+     */
+    public function walkInAvailability(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $request->validate([
+            // Accept band_rehearsal alias for availability check
+            'service_type' => 'required|in:studio_rental,band_rehearsal,solo_rehearsal,music_lesson',
+            'date' => 'required|date',
+            'duration' => 'required|integer|min:1|max:8',
+        ]);
+
+        $tz = config('app.timezone', 'Asia/Manila');
+        $cursor = Carbon::createFromTime(8, 0, 0, $tz);
+        $endOfDay = Carbon::createFromTime(22, 0, 0, $tz);
+        $times = [];
+        while ($cursor <= $endOfDay) {
+            $times[] = $cursor->copy()->format('h:i A');
+            $cursor->addHour();
+        }
+
+        // Block studio if drum/full package rentals cover the date
+        $drumOrFullPackageRentals = InstrumentRental::whereIn('status', ['pending', 'confirmed'])
+            ->where(function ($query) {
+                $query->where('instrument_type', 'drums')
+                    ->orWhere('instrument_type', 'Full Package');
+            })
+            ->where(function ($query) use ($request) {
+                $query->where('rental_start_date', '<=', $request->date)
+                    ->where('rental_end_date', '>=', $request->date);
+            })
+            ->exists();
+
+        $disabled = [];
+        $message = '';
+
+        if ($drumOrFullPackageRentals) {
+            $disabled = $times; // All times disabled
+            $message = 'Studio is unavailable on this date due to a Full Package or drum rental.';
+        } else {
+            $existingBookings = Booking::where('date', $request->date)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->get();
+
+            $now = Carbon::now($tz);
+            $selectedDate = Carbon::parse($request->date, $tz)->startOfDay();
+            $today = $now->copy()->startOfDay();
+
+            foreach ($times as $t) {
+                $startTime = Carbon::createFromFormat('h:i A', $t, $tz);
+                $endTime = $startTime->copy()->addHours((int) $request->duration);
+
+                $disable = false;
+
+                // Disable past times if selected date is today
+                if ($selectedDate->equalTo($today) && $startTime < $now) {
+                    $disable = true;
+                }
+
+                // Disable overlaps with existing bookings (pending/confirmed)
+                if (!$disable) {
+                    foreach ($existingBookings as $existingBooking) {
+                        $existingStartStr = trim(explode('-', $existingBooking->time_slot)[0]);
+                        $existingStart = Carbon::createFromFormat('h:i A', $existingStartStr, $tz);
+                        $existingEnd = $existingStart->copy()->addHours($existingBooking->duration);
+                        if (($startTime < $existingEnd && $endTime > $existingStart) || ($existingStart < $endTime && $existingEnd > $startTime)) {
+                            $disable = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($disable) {
+                    $disabled[] = $t;
+                }
+            }
+        }
+
+        return response()->json([
+            'disabled_times' => $disabled,
+            'all_times' => $times,
+            'message' => $message,
+        ]);
+    }
+
+    /**
      * Show individual booking details
      */
     public function showBooking($id)
@@ -1109,6 +1385,104 @@ class AdminController extends Controller
         ActivityLog::logAdmin("Admin viewed booking details: {$booking->reference}", ActivityLog::ACTION_ADMIN_ACCESS);
         
         return view('admin.booking-details', compact('user', 'booking'));
+    }
+
+    /**
+     * Manual Booking History (walk-in bookings)
+     */
+    public function manualBookingHistory(Request $request)
+    {
+        // Ensure admin access
+        /** @var User $user */
+        $user = Auth::user();
+        if (!Auth::check() || !$user->isAdmin()) {
+            abort(403, 'Access denied. Admin access required.');
+        }
+
+        $status = $request->query('status', 'all');
+        $dateFilter = $request->query('date', 'all'); // today|week|month|all
+        $serviceType = $request->query('service_type', 'all');
+        $search = trim($request->query('search', ''));
+
+        $walkInColumnHistory = \Schema::hasColumn('bookings', 'is_walk_in_booking')
+            ? 'is_walk_in_booking'
+            : (\Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
+
+        $query = Booking::with('user');
+        if ($walkInColumnHistory) {
+            $query->where($walkInColumnHistory, true);
+        }
+        $query->orderBy('date', 'desc')
+              ->orderBy('time_slot', 'asc');
+
+        // Apply status filter
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        // Apply service type filter
+        if ($serviceType !== 'all') {
+            $query->where('service_type', $serviceType);
+        }
+
+        // Apply date filter
+        if ($dateFilter !== 'all') {
+            switch ($dateFilter) {
+                case 'today':
+                    $query->whereDate('date', today());
+                    break;
+                case 'week':
+                    $query->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'month':
+                    $query->whereMonth('date', now()->month)
+                          ->whereYear('date', now()->year);
+                    break;
+            }
+        }
+
+        // Apply search on reference or band name/customer name
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('reference', 'like', "%$search%")
+                  ->orWhere('reference_code', 'like', "%$search%")
+                  ->orWhere('band_name', 'like', "%$search%")
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('name', 'like', "%$search%");
+                  });
+            });
+        }
+
+        $bookings = $query->paginate(15);
+
+        // Quick counts for badges
+        if ($walkInColumnHistory) {
+            $statusCounts = [
+                'all' => Booking::where($walkInColumnHistory, true)->count(),
+                'pending' => Booking::where($walkInColumnHistory, true)->where('status', 'pending')->count(),
+                'confirmed' => Booking::where($walkInColumnHistory, true)->where('status', 'confirmed')->count(),
+                'rejected' => Booking::where($walkInColumnHistory, true)->where('status', 'rejected')->count(),
+            ];
+        } else {
+            $statusCounts = [
+                'all' => Booking::count(),
+                'pending' => Booking::where('status', 'pending')->count(),
+                'confirmed' => Booking::where('status', 'confirmed')->count(),
+                'rejected' => Booking::where('status', 'rejected')->count(),
+            ];
+        }
+
+        ActivityLog::logAdmin('Admin viewed manual booking history', ActivityLog::ACTION_ADMIN_ACCESS);
+
+        return view('admin.manual-booking-history', compact(
+            'user',
+            'bookings',
+            'statusCounts',
+            'status',
+            'search',
+            'dateFilter',
+            'serviceType'
+        ));
     }
 
 

@@ -1060,9 +1060,8 @@
                     <label class="form-label">Service Type</label>
                     <select name="service_type" class="form-control">
                         <option value="all" {{ ($serviceType ?? 'all') === 'all' ? 'selected' : '' }}>All Services</option>
-                        <option value="studio_rental" {{ ($serviceType ?? '') === 'studio_rental' ? 'selected' : '' }}>Studio rental & Solo Rehearsal</option>
+                        <option value="studio_rental" {{ ($serviceType ?? '') === 'studio_rental' ? 'selected' : '' }}>Band Rehearsal</option>
                         <option value="solo_rehearsal" {{ ($serviceType ?? '') === 'solo_rehearsal' ? 'selected' : '' }}>Solo Rehearsal</option>
-                        <option value="instrument_rental" {{ ($serviceType ?? '') === 'instrument_rental' ? 'selected' : '' }}>Instrument Rental</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1133,7 +1132,7 @@
                             <div class="booking-details">
                                 <div class="detail-row">
                                     <span class="detail-label">Service:</span>
-                                    <span class="detail-value">{{ $booking->service_type ?? 'Studio rental & Solo Rehearsal' }}</span>
+                                    <span class="detail-value">{{ $booking->service_type ?? 'Band Rehearsal & Solo Rehearsal' }}</span>
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Duration:</span>

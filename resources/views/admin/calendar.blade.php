@@ -17,7 +17,7 @@
             </div>
             <div class="header-text">
                 <h1>Google Calendar Integration</h1>
-                <p>Sync your studio bookings automatically for easier schedule management.</p>
+                <p>Sync your band rehearsals automatically for easier schedule management.</p>
             </div>
         </div>
         <div class="header-actions">
@@ -60,7 +60,7 @@
                 <div class="connection-status">
                     <div class="status-indicator disconnected"></div>
                     <h2>Google Calendar Not Connected</h2>
-                    <p>Connect your Google Calendar to automatically sync studio bookings.</p>
+                    <p>Connect your Google Calendar to automatically sync band rehearsals.</p>
                 </div>
                 <div class="benefits-list">
                     <div class="benefit-item">
@@ -307,7 +307,7 @@
                 <div class="step-number">3</div>
                 <div class="step-content">
                     <h3>Stay Updated</h3>
-                    <p>Get notifications on your phone and computer for upcoming studio sessions.</p>
+                    <p>Get notifications on your phone and computer for upcoming band rehearsals.</p>
                 </div>
             </div>
         </div>

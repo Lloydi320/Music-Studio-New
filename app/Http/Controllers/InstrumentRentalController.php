@@ -15,79 +15,70 @@ class InstrumentRentalController extends Controller
 {
     public function index()
     {
-        // Define instrument types and their available instruments
+        // Define instrument types and their available instruments based on provided list
         $instrumentTypes = [
-            'guitar' => 'Guitar',
+            'full_package' => 'Full Package',
+            'drums' => 'Drum Set',
+            'amplifier' => 'Amplifiers',
+            'keyboard' => 'Keyboard',
+            'guitar' => 'Electric Guitar',
             'bass' => 'Bass Guitar',
-            'drums' => 'Drums',
-            'keyboard' => 'Keyboard/Piano',
-            'microphone' => 'Microphone',
-            'amplifier' => 'Amplifier',
-            'mixer' => 'Audio Mixer',
-            'speakers' => 'Speakers',
-            'recording' => 'Recording Equipment'
+            'accessories' => 'Accessories'
         ];
 
-        // Define available instruments for each type
+        // Define available instruments for each type (exact items from the list)
         $availableInstruments = [
-            'guitar' => [
-                'acoustic_guitar' => 'Acoustic Guitar',
-                'electric_guitar' => 'Electric Guitar',
-                'classical_guitar' => 'Classical Guitar'
-            ],
-            'bass' => [
-                'electric_bass' => 'Electric Bass',
-                'acoustic_bass' => 'Acoustic Bass'
+            'full_package' => [
+                // No specific instrument selection needed
             ],
             'drums' => [
-                'full_drum_kit' => 'Full Drum Kit',
-                'electronic_drums' => 'Electronic Drums',
-                'cajon' => 'Cajon'
-            ],
-            'keyboard' => [
-                'digital_piano' => 'Digital Piano',
-                'synthesizer' => 'Synthesizer',
-                'midi_keyboard' => 'MIDI Keyboard'
-            ],
-            'microphone' => [
-                'vocal_mic' => 'Vocal Microphone',
-                'instrument_mic' => 'Instrument Microphone',
-                'condenser_mic' => 'Condenser Microphone'
+                'yamaha_manu_katche_jungle_kit' => 'Drum Set - Yamaha Manu Katche (Jungle Kit)'
             ],
             'amplifier' => [
-                'guitar_amp' => 'Guitar Amplifier',
-                'bass_amp' => 'Bass Amplifier',
-                'keyboard_amp' => 'Keyboard Amplifier'
+                'fender_champion_100' => 'Guitar Amp - Fender Champion 100',
+                'fender_rumble_100' => 'Bass Amp - Fender Rumble 100',
+                'peavey_bandit_80_100' => 'Guitar Amp - Peavey Bandit 80/100',
+                'avatar_dm50' => 'Keyboard/Acoustic Guitar Amp - Avatar DM50'
             ],
-            'mixer' => [
-                'analog_mixer' => 'Analog Mixer',
-                'digital_mixer' => 'Digital Mixer'
+            'keyboard' => [
+                'roland_go_keys_go61k' => 'Keyboard - Roland GO:KEYS (GO-61K)'
             ],
-            'speakers' => [
-                'monitor_speakers' => 'Monitor Speakers',
-                'pa_speakers' => 'PA Speakers'
+            'guitar' => [
+                'electric_guitar' => 'Electric Guitar'
             ],
-            'recording' => [
-                'audio_interface' => 'Audio Interface',
-                'headphones' => 'Studio Headphones',
-                'pop_filter' => 'Pop Filter'
+            'bass' => [
+                'bass_guitar' => 'Bass Guitar'
+            ],
+            'accessories' => [
+                'guitar_cable' => 'Guitar Cable'
             ]
         ];
 
-        // Define daily rates for each instrument type
-        $dailyRates = [
-            'guitar' => 15,
-            'bass' => 15,
-            'drums' => 25,
-            'keyboard' => 20,
-            'microphone' => 10,
-            'amplifier' => 18,
-            'mixer' => 22,
-            'speakers' => 20,
-            'recording' => 12
+        // Define instrument-specific daily rates (used when a specific instrument is chosen)
+        $instrumentRates = [
+            'yamaha_manu_katche_jungle_kit' => 1500,
+            'fender_champion_100' => 900,
+            'fender_rumble_100' => 900,
+            'peavey_bandit_80_100' => 900,
+            'avatar_dm50' => 750,
+            'roland_go_keys_go61k' => 750,
+            'electric_guitar' => 500,
+            'bass_guitar' => 550,
+            'guitar_cable' => 50,
         ];
 
-        return view('instrument-rental', compact('instrumentTypes', 'availableInstruments', 'dailyRates'));
+        // Define fallback daily rates per type (used when type chosen but specific instrument not yet selected)
+        $dailyRates = [
+            'full_package' => 4500,
+            'drums' => 1500,
+            'amplifier' => 0, // require specific amplifier selection for accurate rate
+            'keyboard' => 750,
+            'guitar' => 500,
+            'bass' => 550,
+            'accessories' => 50,
+        ];
+
+        return view('instrument-rental', compact('instrumentTypes', 'availableInstruments', 'dailyRates', 'instrumentRates'));
     }
 
     public function store(Request $request)
@@ -101,9 +92,13 @@ class InstrumentRentalController extends Controller
                 'rental_end_date' => 'required|date|after:rental_start_date',
                 'full_package' => 'boolean',
                 'pickup_location' => 'required|string|max:255',
+                'transportation' => 'nullable|string|max:50',
+                'delivery_time' => 'nullable|date_format:H:i',
+                'event_duration_hours' => 'nullable|integer|min:1|max:24',
                 'notes' => 'nullable|string|max:1000', // Changed from 'special_requests' to 'notes' to match form field
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
+                // Email is taken from authenticated user; allow nullable in request
+                'email' => 'nullable|email|max:255',
                 'phone' => 'required|string|max:20',
                 'reference_number' => 'nullable|string|max:50'
             ]);
@@ -122,6 +117,9 @@ class InstrumentRentalController extends Controller
             $fourDigitCode = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
             // Prepare data for model (map field names to match model fillable fields)
+            // Prefer authenticated user's email over any provided value
+            $authenticatedEmail = Auth::user()->email ?? null;
+
             $rentalData = [
                 'user_id' => Auth::id() ?? 1, // Use authenticated user or default
                 'instrument_type' => $validatedData['instrument_type'],
@@ -136,10 +134,40 @@ class InstrumentRentalController extends Controller
                 'four_digit_code' => $fourDigitCode,
                 'notes' => $validatedData['notes'], // Form sends 'notes' and model expects 'notes'
                 'pickup_location' => $validatedData['pickup_location'],
+                'transportation' => $validatedData['transportation'] ?? null,
+                'delivery_time' => $validatedData['delivery_time'] ?? null,
+                'event_duration_hours' => $validatedData['event_duration_hours'] ?? null,
                 'name' => $validatedData['name'],
-                'email' => $validatedData['email'],
+                'email' => $authenticatedEmail ?? ($validatedData['email'] ?? null),
                 'phone' => $validatedData['phone'],
             ];
+
+            // Enforce closing-time rules for single-day rentals
+            // If transportation is delivery, ensure delivery_time + event_duration <= 20:00 of start date
+            if (($validatedData['transportation'] ?? null) === 'delivery' && $duration === 1) {
+                $deliveryTime = $validatedData['delivery_time'] ?? null;
+                $eventHours = isset($validatedData['event_duration_hours']) ? (int)$validatedData['event_duration_hours'] : null;
+
+                if ($deliveryTime) {
+                    // Basic bounds: not earlier than 08:00, not later than 20:00
+                    if ($deliveryTime < '08:00') {
+                        return back()->withErrors(['delivery_time' => 'Delivery time must be at or after 8:00 AM.'])->withInput();
+                    }
+                    if ($deliveryTime > '20:00') {
+                        return back()->withErrors(['delivery_time' => 'Delivery time cannot be past 8:00 PM.'])->withInput();
+                    }
+                }
+
+                if ($deliveryTime && $eventHours) {
+                    $startDateTime = Carbon::createFromFormat('Y-m-d H:i', $validatedData['rental_start_date'].' '.$deliveryTime);
+                    $closingDateTime = Carbon::createFromFormat('Y-m-d H:i', $validatedData['rental_start_date'].' 20:00');
+                    $endEvent = (clone $startDateTime)->addHours($eventHours);
+
+                    if ($endEvent->gt($closingDateTime)) {
+                        return back()->withErrors(['event_duration_hours' => 'Event end time exceeds studio closing (8:00 PM). Reduce duration or choose an earlier delivery time.'])->withInput();
+                    }
+                }
+            }
 
             // Create the rental record
             $rental = InstrumentRental::create($rentalData);

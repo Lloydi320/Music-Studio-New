@@ -600,7 +600,7 @@
             
             <div class="detail-row">
                 <span class="detail-label">Service Type</span>
-                <span class="detail-value">🎵 {{ $booking->service_type ?? 'Studio rental & Solo Rehearsal' }}</span>
+                <span class="detail-value">🎵 {{ $booking->service_type ?? 'Band Rehearsal & Solo Rehearsal' }}</span>
             </div>
             
             @if($booking->band_name)

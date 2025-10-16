@@ -20,6 +20,8 @@ class Booking extends Model
         'total_amount',
         'reference',
         'status',
+        'is_walk_in_booking',
+        'created_by_admin_id',
         'reschedule_source',
         'service_type',
         'google_event_id',
@@ -28,11 +30,13 @@ class Booking extends Model
         'contact_number',
         'reference_code',
         'image_path',
+        'lesson_type',
     ];
 
     protected $casts = [
         'duration' => 'integer',
         'date' => 'date',
+        'is_walk_in_booking' => 'boolean',
     ];
 
     protected static function boot()
@@ -119,9 +123,10 @@ class Booking extends Model
 
     // Service type constants
     const SERVICE_TYPES = [
-        'studio_rental' => 'Studio Rental',
+        'studio_rental' => 'Band Rehearsal',
         'instrument_rental' => 'Instrument Rental',
-        'solo_rehearsal' => 'Solo Rehearsal'
+        'solo_rehearsal' => 'Solo Rehearsal',
+        'music_lesson' => 'Music Lesson'
     ];
 
     // Get service type options
@@ -145,14 +150,18 @@ class Booking extends Model
     // Get analytics data for service types
     public static function getServiceTypeAnalytics()
     {
+        $flagColumn = \Schema::hasColumn('bookings', 'is_walk_in_booking')
+            ? 'is_walk_in_booking'
+            : (\Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
+
         $analytics = [];
         foreach (self::SERVICE_TYPES as $key => $label) {
             $analytics[$key] = [
                 'label' => $label,
-                'total' => self::where('service_type', $key)->count(),
-                'confirmed' => self::where('service_type', $key)->where('status', 'confirmed')->count(),
-                'pending' => self::where('service_type', $key)->where('status', 'pending')->count(),
-                'revenue' => self::where('service_type', $key)->where('status', 'confirmed')->sum('total_amount') ?? 0
+                'total' => $flagColumn ? self::where('service_type', $key)->where($flagColumn, false)->count() : self::where('service_type', $key)->count(),
+                'confirmed' => $flagColumn ? self::where('service_type', $key)->where($flagColumn, false)->where('status', 'confirmed')->count() : self::where('service_type', $key)->where('status', 'confirmed')->count(),
+                'pending' => $flagColumn ? self::where('service_type', $key)->where($flagColumn, false)->where('status', 'pending')->count() : self::where('service_type', $key)->where('status', 'pending')->count(),
+                'revenue' => $flagColumn ? (self::where('service_type', $key)->where($flagColumn, false)->where('status', 'confirmed')->sum('total_amount') ?? 0) : (self::where('service_type', $key)->where('status', 'confirmed')->sum('total_amount') ?? 0)
             ];
         }
         return $analytics;

@@ -136,6 +136,11 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::delete('/activity-logs/clear', [App\Http\Controllers\AdminController::class, 'clearActivityLogs'])->name('admin.activity-logs.clear');
     Route::get('/instrument-bookings', [App\Http\Controllers\AdminController::class, 'instrumentBookings'])->name('admin.instrument-bookings');
 
+    // Admin Walk-In creation routes
+    Route::get('/walk-in', [App\Http\Controllers\AdminController::class, 'walkInCreate'])->name('admin.walk-in.create');
+    Route::post('/walk-in', [App\Http\Controllers\AdminController::class, 'walkInStore'])->name('admin.walk-in.store');
+    Route::get('/walk-in/availability', [App\Http\Controllers\AdminController::class, 'walkInAvailability'])->name('admin.walk-in.availability');
+
     // Carousel management routes
     Route::get('/carousel', [App\Http\Controllers\AdminController::class, 'carouselManagement'])->name('admin.carousel');
     Route::post('/carousel', [App\Http\Controllers\AdminController::class, 'storeCarouselItem'])->name('admin.carousel.store');
