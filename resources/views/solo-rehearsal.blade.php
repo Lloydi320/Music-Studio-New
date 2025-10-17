@@ -780,7 +780,6 @@
           <div class="modal-header">
             <h3 class="modal-title">Solo Rehearsal Booking</h3>
             <p class="modal-subtitle">Booking Summary</p>
-            <p class="duration">🕒 <span id="modalDurationLabel">1 hr</span></p>
           </div>
           
           <div class="booking-details">
@@ -806,7 +805,7 @@
           </div>
           
           <div class="studio-image">
-            <img src="{{ asset('images/solo-rehearsal-studio.jpg') }}" alt="Solo Rehearsal Studio" class="studio-img">
+            <img src="{{ asset('images/SoloRehearsal.jpg') }}" alt="Solo Rehearsal Studio" class="studio-image-modal">
           </div>
           
           <div class="warning-message">
@@ -893,15 +892,7 @@
   <!-- Success/Error Messages -->
   <div id="messageContainer"></div>
 
-  <!-- Footer trigger for auto-hide -->
-  <div class="footer-trigger"></div>
-  
-<footer class="booking-footer">
-  <div class="footer-content">
-    <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
-    <p>Professional Music Studio Services</p>
-  </div>
-</footer>
+ 
 
 <!-- Success Confirmation Modal (exact copy from band rehearsal) -->
 <div id="successModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">

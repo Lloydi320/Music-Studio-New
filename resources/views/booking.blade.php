@@ -387,13 +387,13 @@
     /* Extra small devices (phones, 480px and down) */
     @media (max-width: 480px) {
       .modal-container {
-        padding: 3px;
+        padding: 2px;
       }
 
       .modal-content {
         width: 99%;
-        max-height: 95vh;
-        border-radius: 15px;
+        max-height: 96vh;
+        border-radius: 12px;
         overflow-y: auto;
       }
 
@@ -416,7 +416,7 @@
       }
 
       .modal-title {
-        font-size: 18px;
+        font-size: 16px;
       }
 
       .modal-subtitle {
@@ -424,76 +424,76 @@
       }
 
       .form-label {
-        font-size: 13px;
-        margin-bottom: 4px;
+        font-size: 12px;
+        margin-bottom: 3px;
       }
 
       .form-input {
-        padding: 8px 10px;
-        font-size: 13px;
+        padding: 6px 8px;
+        font-size: 12px;
       }
 
       .detail-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 2px;
-        margin-bottom: 8px;
-        padding: 6px 0;
+        margin-bottom: 6px;
+        padding: 4px 0;
       }
 
       .detail-label,
       .detail-value {
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .gcash-qr {
-        padding: 6px;
-        margin: 8px auto;
+        padding: 4px;
+        margin: 6px auto;
       }
 
       .gcash-qr img {
-        width: 140px;
-        height: 140px;
+        width: 120px;
+        height: 120px;
       }
 
       .gcash-merchant {
-        font-size: 16px;
-        margin: 8px 0;
+        font-size: 14px;
+        margin: 6px 0;
       }
 
       .gcash-amount {
-        font-size: 22px;
-        margin-top: 10px;
-      }
-
-      .gcash-details {
-        font-size: 11px;
+        font-size: 20px;
         margin-top: 8px;
       }
 
+      .gcash-details {
+        font-size: 10px;
+        margin-top: 6px;
+      }
+
       .gcash-container {
-        padding: 15px;
+        padding: 12px;
       }
 
       .btn-cancel,
       .btn-confirm {
-        padding: 12px 16px;
-        font-size: 13px;
+        padding: 10px 14px;
+        font-size: 12px;
       }
 
       .studio-image-modal {
-        height: 130px;
+        height: 120px;
       }
 
       .booking-details {
-        padding: 12px;
-        margin-bottom: 12px;
+        padding: 10px;
+        margin-bottom: 10px;
       }
 
       .warning-message {
         padding: 6px 8px;
-        font-size: 11px;
-        margin-bottom: 8px;
+        font-size: 10px;
+        margin-bottom: 6px;
       }
 
       .error-message {
@@ -506,12 +506,12 @@
     /* High zoom levels and very small screens */
     @media (max-width: 360px), (min-resolution: 2dppx) {
       .modal-container {
-        padding: 2px;
+        padding: 1px;
       }
 
       .modal-content {
         width: 99%;
-        max-height: 99vh;
+        max-height: 98vh;
         border-radius: 10px;
       }
 
@@ -522,21 +522,25 @@
       }
 
       .gcash-qr img {
-        width: 120px;
-        height: 120px;
+        width: 110px;
+        height: 110px;
       }
 
       .form-input {
         padding: 6px 8px;
-        font-size: 12px;
+        font-size: 11px;
       }
 
       .btn-cancel,
       .btn-confirm {
-        padding: 10px 12px;
-        font-size: 12px;
+        padding: 8px 12px;
+        font-size: 11px;
       }
     }
+
+    /* Hide footer and lock body scroll when modal is open */
+    body.modal-open { overflow: hidden; }
+    body.modal-open .booking-footer { display: none !important; }
 
     /* Fixed footer styles */
     .booking-footer {
@@ -780,30 +784,30 @@
       <div class="modal-left">
         <div class="modal-header">
           <h2 class="modal-title">BAND REHEARSAL</h2>
-          <p class="modal-subtitle">SELECT DATE</p>
-          <p class="duration">🕒 <span id="modalDurationLabel">3 hrs</span></p>
           <p class="location">📍 288H Sto.Domingo Street 2nd Filmont Homes Subdivision, Calamba, 4027 Laguna</p>
         </div>
         
-        <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image-modal">
-        
         <div class="booking-details">
           <div class="detail-item">
-            <span class="detail-label">Date:</span>
-            <span class="detail-value" id="modalSelectedDate">Thursday, August 21, 2025</span>
+            <span class="detail-label">📅 Date:</span>
+            <span class="detail-value" id="modalSelectedDate">-</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Time:</span>
-            <span class="detail-value" id="modalSelectedTime">09:00 AM - 10:00 AM</span>
+            <span class="detail-label">⏰ Time:</span>
+            <span class="detail-value" id="modalSelectedTime">-</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Duration:</span>
-            <span class="detail-value" id="modalSelectedDuration">1 hour</span>
+            <span class="detail-label">⏱️ Duration:</span>
+            <span class="detail-value" id="modalSelectedDuration">-</span>
           </div>
           <div class="detail-item">
-            <span class="detail-label">Total Price:</span>
+            <span class="detail-label">💰 Total Price:</span>
             <span class="detail-value" id="modalTotalPrice">₱100.00</span>
           </div>
+        </div>
+
+        <div class="studio-image">
+          <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image-modal">
         </div>
       </div>
       
@@ -897,16 +901,7 @@
 
 <!-- Removed the form from the bottom. It will only show in the modal after clicking Next. -->
 
-<!-- Footer trigger area -->
-<div class="footer-trigger"></div>
-
-<!-- Footer -->
-<footer class="booking-footer">
-  <div class="footer-content">
-    <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
-    <p>Professional Music Studio Services</p>
-  </div>
-</footer>
+ 
 
 <!-- Success Confirmation Modal -->
 <div id="successModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">

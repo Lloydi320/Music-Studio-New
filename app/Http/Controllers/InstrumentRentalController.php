@@ -88,7 +88,8 @@ class InstrumentRentalController extends Controller
             $validatedData = $request->validate([
                 'instrument_type' => 'required|string|max:255',
                 'instrument_name' => 'required|string|max:255',
-                'rental_start_date' => 'required|date|after_or_equal:today',
+                // Enforce 24-hour lead time: start date must be after today
+                'rental_start_date' => 'required|date|after:today',
                 'rental_end_date' => 'required|date|after:rental_start_date',
                 'full_package' => 'boolean',
                 'pickup_location' => 'required|string|max:255',
@@ -107,6 +108,25 @@ class InstrumentRentalController extends Controller
             $startDate = new \DateTime($validatedData['rental_start_date']);
             $endDate = new \DateTime($validatedData['rental_end_date']);
             $duration = $startDate->diff($endDate)->days;
+
+            // Enforce 24-hour lead time (server-side safety)
+            $nowManila = Carbon::now(config('app.timezone', 'Asia/Manila'));
+            $startDateCarbon = Carbon::parse($validatedData['rental_start_date'], config('app.timezone', 'Asia/Manila'));
+            if ($startDateCarbon->lte($nowManila->endOfDay())) {
+                return back()->withErrors(['rental_start_date' => 'Rentals must be booked at least 24 hours in advance (no same-day rentals).'])->withInput();
+            }
+
+            // Disallow single-day rentals on days with any studio booking to avoid conflicts
+            $endDateCarbon = Carbon::parse($validatedData['rental_end_date'], config('app.timezone', 'Asia/Manila'));
+            $isSingleDay = $startDateCarbon->isSameDay($endDateCarbon);
+            if ($isSingleDay) {
+                $hasStudioBooking = \App\Models\Booking::whereDate('date', $startDateCarbon->format('Y-m-d'))
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->exists();
+                if ($hasStudioBooking) {
+                    return back()->withErrors(['rental_start_date' => 'Instrument rental is unavailable on days with studio bookings. Please choose a different date.'])->withInput();
+                }
+            }
 
             // Set daily rate (you can adjust this based on instrument type)
             $dailyRate = 500.00; // Default rate
@@ -242,6 +262,31 @@ class InstrumentRentalController extends Controller
                 'rental_start_date' => 'required|date',
                 'rental_end_date' => 'required|date|after:rental_start_date'
             ]);
+
+            // Lead-time rule: start date must be after today
+            $nowManila = Carbon::now(config('app.timezone', 'Asia/Manila'));
+            $start = Carbon::parse($request->rental_start_date, config('app.timezone', 'Asia/Manila'));
+            $end = Carbon::parse($request->rental_end_date, config('app.timezone', 'Asia/Manila'));
+
+            if ($start->lte($nowManila->endOfDay())) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'Rentals must be booked at least 24 hours in advance.'
+                ], 422);
+            }
+
+            // If single-day, block days that have any studio booking
+            if ($start->isSameDay($end)) {
+                $hasStudioBooking = \App\Models\Booking::whereDate('date', $start->format('Y-m-d'))
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->exists();
+                if ($hasStudioBooking) {
+                    return response()->json([
+                        'available' => false,
+                        'message' => 'This date has studio bookings and is unavailable for instrument rental.'
+                    ], 422);
+                }
+            }
 
             // Check for conflicting rentals
             $conflicts = InstrumentRental::where('instrument_type', $request->instrument_type)

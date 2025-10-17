@@ -2053,7 +2053,7 @@
 
             <div class="form-group" id="startDateGroup">
               <label for="rental_start_date" id="startDateLabel">Rent Date:</label>
-              <input type="date" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d') }}" value="{{ date('Y-m-d') }}">
+              <input type="date" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ date('Y-m-d', strtotime('+1 day')) }}">
               <small class="form-note">Single day rent only.</small>
             </div>
 
@@ -2375,13 +2375,7 @@
     </div>
   </main>
   <!-- Instrument Rental Calendar section removed -->
-
-  <footer class="booking-footer">
-    <div class="footer-content">
-      <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
-      <p>Professional Music Studio Services</p>
-    </div>
-  </footer>
+ 
 
   <script>
     // Instrument rental form functionality
@@ -2614,20 +2608,13 @@
 
       function updateStartDateMinBasedOnClosing() {
         if (!startDateInput) return;
-        const todayStr = getLocalDateString(new Date());
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const tomorrowStr = getLocalDateString(tomorrow);
-
-        // If time is past closing, force min to tomorrow
-        if (isPastClosingNow()) {
-          startDateInput.min = tomorrowStr;
-          if (startDateInput.value && startDateInput.value < startDateInput.min) {
-            startDateInput.value = startDateInput.min;
-          }
-        } else {
-          // Otherwise allow from today
-          startDateInput.min = todayStr;
+        // Always enforce 24-hour lead time: minimum is tomorrow
+        startDateInput.min = tomorrowStr;
+        if (startDateInput.value && startDateInput.value < startDateInput.min) {
+          startDateInput.value = startDateInput.min;
         }
       }
 
@@ -2704,20 +2691,28 @@
         });
       })();
       
-      // Fetch booked dates from APIs (instrument rentals + ANY studio booking days)
+      // Fetch booked dates from APIs (instrument rentals + studio unavailable + ANY studio booking days)
       async function fetchBookedDates() {
         try {
-          const [instrumentResp, studioUnavailableResp] = await Promise.all([
+          const [instrumentResp, studioUnavailableResp, studioHasBookingResp] = await Promise.all([
             fetch('/api/instrument-rental/booked-dates'),
             // Studio-level unavailable dates (fully booked or drums/full package rentals)
-            fetch('/api/booked-dates')
+            fetch('/api/booked-dates'),
+            // Any date with at least one studio booking (band or solo rehearsal)
+            fetch('/api/has-booking-dates')
           ]);
           const instrumentData = await instrumentResp.json();
           const studioUnavailableData = await studioUnavailableResp.json();
+          const studioHasBookingData = await studioHasBookingResp.json();
           const instrumentDates = instrumentData.booked_dates || [];
           const studioUnavailableDates = studioUnavailableData.booked_dates || [];
-          // Merge and de-duplicate only truly unavailable dates
-          bookedDates = Array.from(new Set([...instrumentDates, ...studioUnavailableDates]));
+          const studioHasBookingDates = studioHasBookingData.booked_dates || [];
+          // Merge and de-duplicate: treat any studio booking day as unavailable for rentals
+          bookedDates = Array.from(new Set([
+            ...instrumentDates,
+            ...studioUnavailableDates,
+            ...studioHasBookingDates
+          ]));
           updateDatePickerConstraints();
         } catch (error) {
           console.error('Error fetching booked dates:', error);
@@ -3820,6 +3815,7 @@
   </script>
   @endif
 
+  <script src="{{ asset('js/script.js') }}"></script>
   <script src="{{ asset('js/page-transitions.js') }}"></script>
   
   <script>

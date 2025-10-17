@@ -491,6 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const modal = document.getElementById('studioRentalModal') || document.getElementById('bookingModal');
       if (modal) {
         modal.style.display = 'block';
+        try { document.body.classList.add('modal-open'); } catch (e) {}
         
         // Populate modal with booking details
         const modalSelectedDate = document.getElementById('modalSelectedDate');
@@ -530,6 +531,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (cancelBtn && modal) {
     cancelBtn.addEventListener('click', function() {
       modal.style.display = 'none';
+      try { document.body.classList.remove('modal-open'); } catch (e) {}
     });
   }
   
@@ -538,6 +540,7 @@ document.addEventListener("DOMContentLoaded", function () {
     modal.addEventListener('click', function(event) {
       if (event.target === modal) {
         modal.style.display = 'none';
+        try { document.body.classList.remove('modal-open'); } catch (e) {}
       }
     });
   }

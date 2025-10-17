@@ -950,15 +950,7 @@
     </div>
   </div>
 
-  <!-- Add spacing before footer -->
-  <div style="height: 50px; margin-top: 30px;"></div>
-
-  <footer class="booking-footer">
-    <div class="footer-content">
-      <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
-      <p>Professional Music Studio Services</p>
-    </div>
-  </footer>
+ 
 
   <script src="{{ asset('js/script.js') }}"></script>
   <script src="{{ asset('js/page-transitions.js') }}"></script>
