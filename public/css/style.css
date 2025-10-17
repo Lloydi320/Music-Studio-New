@@ -1203,26 +1203,61 @@ body::after {
   right: 80px;
   top: 45%; 
   transform: translateY(-50%); 
-  width: 450px;
+  /* Wider container to support side-by-side layout */
+  width: 820px;
+  max-width: calc(100vw - 120px);
   background-color: #ffffff;
   padding: 0;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 2;
-  overflow: hidden;
+  /* Keep within viewport and allow internal scroll when content grows */
+  max-height: 85vh;
+  height: auto; /* shrink to content to avoid extra whitespace */
+  overflow: hidden; /* container itself remains fixed height; children scroll */
+
+  /* Two-column grid: list on the left, calendar on the right */
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: auto auto; /* both rows size to content */
+  /* Header only above calendar; empty cell on the left top */
+  grid-template-areas:
+    "list-header header"
+    "list calendar";
+  column-gap: 16px;
 }
 
 
 
 #calendar-header {
-  display: flex;
-  justify-content: space-between;
+  /* Center month title, keep buttons at edges */
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
   align-items: center;
   font-weight: bold;
   margin-bottom: 0;
   background: linear-gradient(90deg, #ffd700 0%, #ffe066 100%);
   padding: 20px 25px 15px 25px;
   color: #222;
+  grid-area: header;
+}
+
+/* Fixed Booking Info header (left column, top row) */
+.booking-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 0;
+  background: linear-gradient(90deg, #ffd700 0%, #ffe066 100%);
+  padding: 20px 25px 15px 25px;
+  color: #222;
+  grid-area: list-header;
+  border-right: 1px solid #eee; /* visual separation from calendar header */
+}
+
+#monthYear {
+  text-align: center;
 }
 
 #calendar-header button {
@@ -1241,6 +1276,13 @@ body::after {
   background: white;
   border-radius: 0;
   padding: 15px 20px;
+  grid-area: calendar;
+  /* Prevent list growth from shifting calendar */
+  align-content: start;
+  /* Do not stretch to fill grid row height */
+  align-self: start;
+  height: auto;
+  border-left: 1px solid #eee;
 }
 
 .calendar-grid div {
@@ -1319,10 +1361,14 @@ body::after {
   border-radius: 0;
   padding: 20px;
   font-size: 14px;
-  max-height: 300px;
+  /* Fill left column and scroll internally; don't force row to grow */
+  height: auto;
+  max-height: 360px; /* show ~3 booking items before scrolling */
+  min-height: 0; /* critical for CSS grid to allow internal scrolling */
   overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: 1px solid #e0e0e0;
+  grid-area: list;
 }
 
 .time-slots h4 {
@@ -3501,19 +3547,34 @@ a {
     max-width: calc(100vw - 20px) !important;
     transform: none !important;
     z-index: 9999 !important;
+    /* Fit within the viewport; children scroll if needed */
+    max-height: calc(100vh - 160px);
+    overflow: hidden;
+    /* Stack vertically on mobile; header only above calendar */
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "header"
+      "calendar"
+      "list";
+    row-gap: 10px;
   }
 }
 
-/* Ensure no scrolling on home page only */
+/* Allow normal scrolling on home page */
 .home-page {
-  overflow: hidden !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
 }
 
 @media (max-width: 768px) {
   .home-page {
-    overflow: hidden !important;
-    height: 100vh !important;
-    position: fixed !important;
+    /* Restore scroll on mobile to ensure calendar is fully visible */
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    position: static !important;
     width: 100% !important;
   }
 }

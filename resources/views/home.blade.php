@@ -188,6 +188,8 @@
           <button id="nextMonth">&#9654;</button>
         </div>
         <div class="calendar-grid" id="calendarGrid"></div>
+        <!-- Fixed Booking Info header (left column, top row) -->
+        <div class="booking-header" id="bookingHeader">Booking Info</div>
         <div class="time-slots" id="timeSlots"></div>
       </div>
     </div>

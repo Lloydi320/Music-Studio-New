@@ -220,9 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clear loading message
         timeSlots.innerHTML = '';
         
-        const heading = document.createElement('h4');
-        heading.textContent = 'Booking Info';
-        timeSlots.appendChild(heading);
+        // The fixed Booking Info header is now a separate element.
+        // Do not insert a scrolling heading inside the list.
         
         if (data.bookings && data.bookings.length > 0) {
           data.bookings.forEach(booking => {
