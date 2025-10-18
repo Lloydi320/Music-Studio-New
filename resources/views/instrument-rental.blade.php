@@ -2691,27 +2691,22 @@
         });
       })();
       
-      // Fetch booked dates from APIs (instrument rentals + studio unavailable + ANY studio booking days)
+      // Fetch booked dates from APIs (instrument rentals + studio unavailable)
       async function fetchBookedDates() {
         try {
-          const [instrumentResp, studioUnavailableResp, studioHasBookingResp] = await Promise.all([
+          const [instrumentResp, studioUnavailableResp] = await Promise.all([
             fetch('/api/instrument-rental/booked-dates'),
             // Studio-level unavailable dates (fully booked or drums/full package rentals)
-            fetch('/api/booked-dates'),
-            // Any date with at least one studio booking (band or solo rehearsal)
-            fetch('/api/has-booking-dates')
+            fetch('/api/booked-dates')
           ]);
           const instrumentData = await instrumentResp.json();
           const studioUnavailableData = await studioUnavailableResp.json();
-          const studioHasBookingData = await studioHasBookingResp.json();
           const instrumentDates = instrumentData.booked_dates || [];
           const studioUnavailableDates = studioUnavailableData.booked_dates || [];
-          const studioHasBookingDates = studioHasBookingData.booked_dates || [];
-          // Merge and de-duplicate: treat any studio booking day as unavailable for rentals
+          // Merge and de-duplicate — do NOT include mere "has booking" dates to avoid false positives
           bookedDates = Array.from(new Set([
             ...instrumentDates,
-            ...studioUnavailableDates,
-            ...studioHasBookingDates
+            ...studioUnavailableDates
           ]));
           updateDatePickerConstraints();
         } catch (error) {
@@ -2722,7 +2717,7 @@
       // Update date picker constraints to disable booked dates
       function updateDatePickerConstraints() {
         // Respect any dynamic minimum already set (e.g., tomorrow after 8 PM)
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
         const currentStartMin = startDateInput.getAttribute('min') || today;
         const effectiveMin = currentStartMin > today ? currentStartMin : today;
         
@@ -2880,7 +2875,7 @@
           
           // Check if any date in the range is booked
           for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             if (bookedDates.includes(dateStr)) {
               conflictDates.push(dateStr);
             }

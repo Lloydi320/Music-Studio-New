@@ -6,6 +6,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 
 @section('content')
+<style>
+  .qr-table-scroll { max-height: 520px; overflow-y: auto; overflow-x: hidden; }
+  .qr-table-scroll table thead th { position: sticky; top: 0; background: #333; z-index: 2; }
+</style>
 <div class="admin-content">
     <div class="page-header">
         <h2 class="page-title">🧾 QR Configuration</h2>
@@ -67,7 +71,7 @@
                         <button type="submit" class="btn btn-success">Save Rehearsal QR</button>
                     </form>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive qr-table-scroll">
                         <table class="table table-dark table-striped table-bordered align-middle">
                             <thead>
                                 <tr>
@@ -140,7 +144,7 @@
                         <button type="submit" class="btn btn-success">Save Rental QR</button>
                     </form>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive qr-table-scroll">
                         <table class="table table-dark table-striped table-bordered align-middle">
                             <thead>
                                 <tr>
