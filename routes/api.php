@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\InstrumentRentalController;
+use App\Http\Controllers\PaymentQrController;
 
 // Test route to verify API is working
 Route::get('/test', function () {
@@ -44,3 +45,6 @@ Route::prefix('bookings')->group(function () {
     Route::post('/reschedule', [BookingController::class, 'rescheduleRequest']);
     Route::post('/update-status/{reference}', [BookingController::class, 'updateStatus']);
 });
+// Payment QR routes
+Route::get('/payment-qr/rehearsal', [PaymentQrController::class, 'rehearsal']);
+Route::get('/payment-qr/rental', [PaymentQrController::class, 'rental']);

@@ -83,8 +83,17 @@ class AdminController extends Controller
         // Get service type analytics from the unified booking system
         $serviceTypeAnalytics = Booking::getServiceTypeAnalytics();
         
-        // Calculate total revenue from all confirmed bookings
-        $totalBookingRevenue = Booking::where('status', 'confirmed')->sum('total_amount') ?? 0;
+        // Determine walk-in flag column for bookings
+        $walkInColumn = Schema::hasColumn('bookings', 'is_walk_in_booking')
+            ? 'is_walk_in_booking'
+            : (Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
+        
+        // Calculate total revenue from all confirmed bookings (exclude walk-ins)
+        $totalBookingRevenue = Booking::where('status', 'confirmed')
+            ->when($walkInColumn, function ($q) use ($walkInColumn) {
+                $q->where($walkInColumn, false);
+            })
+            ->sum('total_amount') ?? 0;
         $totalRentalRevenue = InstrumentRental::whereIn('status', ['confirmed', 'active'])->sum('total_amount') ?? 0;
         $estimatedRevenue = $totalBookingRevenue + $totalRentalRevenue;
         $operatingCosts = $totalBookings * 200; // Estimated operating costs per booking
@@ -120,9 +129,17 @@ class AdminController extends Controller
                 ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
+            // Revenue excludes walk-in bookings
+            $monthlyConfirmedNonWalkIn = Booking::where('status', 'confirmed')
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->when($walkInColumn, function ($q) use ($walkInColumn) {
+                    $q->where($walkInColumn, false);
+                })
+                ->count();
             $monthlyData[$date->format('M')] = [
                 'cost' => ($monthlyBookings + $monthlyRentals) * 500,
-                'revenue' => ($monthlyBookings * 1200) + ($monthlyRentals * 300)
+                'revenue' => ($monthlyConfirmedNonWalkIn * 1200) + ($monthlyRentals * 300)
             ];
         }
         
@@ -181,11 +198,16 @@ class AdminController extends Controller
                     ->distinct('users.id')
                     ->count();
             } else {
-                // For other services, get data from bookings table
+                // For other services, include confirmed and walk-in bookings
                 $usersPerService[$label] = DB::table('bookings')
                     ->join('users', 'bookings.user_id', '=', 'users.id')
-                    ->where('bookings.status', 'confirmed')
                     ->where('bookings.service_type', $key)
+                    ->where(function ($q) use ($walkInColumn) {
+                        $q->where('bookings.status', 'confirmed');
+                        if ($walkInColumn) {
+                            $q->orWhere('bookings.' . $walkInColumn, true);
+                        }
+                    })
                     ->distinct('users.id')
                     ->count();
             }
@@ -199,8 +221,15 @@ class AdminController extends Controller
                 // For instrument rentals, get data from instrument_rentals table
                 $servicesDistribution[$data['label']] = InstrumentRental::whereIn('status', ['confirmed', 'active'])->count();
             } else {
-                // For other services, get data from bookings table
-                $servicesDistribution[$data['label']] = $data['confirmed'];
+                // For other services, include confirmed and walk-in bookings
+                $servicesDistribution[$data['label']] = Booking::where('service_type', $key)
+                    ->where(function ($q) use ($walkInColumn) {
+                        $q->where('status', 'confirmed');
+                        if ($walkInColumn) {
+                            $q->orWhere($walkInColumn, true);
+                        }
+                    })
+                    ->count();
             }
         }
 

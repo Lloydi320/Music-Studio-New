@@ -21,6 +21,33 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
   const weekdayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  // Pricing helpers per client rules
+  function isSoloRehearsalPage() {
+    return window.location.pathname.includes('solo-rehearsal');
+  }
+  function computeServicePrice(hours) {
+    const h = parseInt(hours, 10) || 0;
+    const soloBase = {1:200, 2:360, 3:540, 4:720};
+    const bandBase = {1:230, 2:400, 3:600, 4:800};
+    const base = isSoloRehearsalPage() ? soloBase : bandBase;
+    if (h <= 0) return 0;
+    const upToFour = Math.min(h, 4);
+    let price = base[upToFour];
+    if (h > 4) price += 200 * (h - 4);
+    return price;
+  }
+  function computeReservationFee(hours) {
+    const h = parseInt(hours, 10) || 0;
+    const feeMap = {1:100, 2:100, 3:150, 4:200, 5:250, 6:300, 7:350, 8:400};
+    if (h <= 0) return 0;
+    if (feeMap[h] !== undefined) return feeMap[h];
+    // Graceful fallback for durations beyond 8 hours: continue +₱50 per hour
+    return feeMap[8] + 50 * (h - 8);
+  }
+  function formatCurrency(num) {
+    return `₱${Number(num).toFixed(2)}`;
+  }
+
   function convertTo24H(timeStr) {
     const [time, modifier] = timeStr.trim().split(' ');
     let [hours, minutes] = time.split(':').map(Number);
@@ -144,12 +171,17 @@ document.addEventListener("DOMContentLoaded", function () {
               this.classList.add("selected");
               selectedTimeSlot = this.textContent;
               const bookingSummary = document.getElementById('bookingSummary');
-              const confirmTimeSlot = document.getElementById('confirmTimeSlot');
-              const confirmDuration = document.getElementById('confirmDuration');
-              if (bookingSummary && confirmTimeSlot && selectedDateLabel.textContent) {
+              const bookingSummaryContent = document.getElementById('bookingSummaryContent');
+              if (bookingSummary && bookingSummaryContent && selectedDateLabel.textContent) {
                 bookingSummary.style.display = 'block';
-                confirmTimeSlot.textContent = selectedTimeSlot;
-                confirmDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
+                const hours = parseInt(durationSelect.value, 10);
+                const price = computeServicePrice(hours);
+                const reservationFee = computeReservationFee(hours);
+                bookingSummaryContent.innerHTML = `
+                  <strong>Total Price:</strong> <span id="confirmPrice">${formatCurrency(price)}</span><br>
+                  <strong>Reservation Fee:</strong> <span id="reservationFee">${formatCurrency(reservationFee)}</span><br>
+                  <small style="color:#6b7280;">Reservation fee will be paid first. Schedule: 1hr ₱100, 2hr ₱100, 3hr ₱150, 4hr ₱200, 5hr ₱250, 6hr ₱300, 7hr ₱350, 8hr ₱400.</small>
+                `;
               }
               const bookingForm = document.getElementById('bookingForm');
               const nextBtn = document.querySelector('.next-btn');
@@ -400,18 +432,18 @@ document.addEventListener("DOMContentLoaded", function () {
         
         // Update booking summary if it exists and user has made selections
         const bookingSummary = document.getElementById('bookingSummary');
-        const confirmDuration = document.getElementById('confirmDuration');
+        const bookingSummaryContent = document.getElementById('bookingSummaryContent');
         
-        if (bookingSummary && confirmDuration && selectedDateLabel.textContent && selectedTimeSlot) {
+        if (bookingSummary && bookingSummaryContent && selectedDateLabel.textContent && selectedTimeSlot) {
           bookingSummary.classList.remove('empty');
-          const bookingSummaryContent = document.getElementById('bookingSummaryContent');
-          if (bookingSummaryContent) {
-            bookingSummaryContent.innerHTML = `
-              <strong>Date:</strong> <span id="confirmDate">${selectedDateLabel.textContent}</span><br>
-              <strong>Time Slot:</strong> <span id="confirmTimeSlot">${selectedTimeSlot}</span><br>
-              <strong>Duration:</strong> <span id="confirmDuration">${durationSelect.options[durationSelect.selectedIndex].text}</span>
-            `;
-          }
+          const hours = parseInt(durationSelect.value, 10);
+          const price = computeServicePrice(hours);
+          const reservationFee = computeReservationFee(hours);
+          bookingSummaryContent.innerHTML = `
+            <strong>Total Price:</strong> <span id="confirmPrice">${formatCurrency(price)}</span><br>
+            <strong>Reservation Fee:</strong> <span id="reservationFee">${formatCurrency(reservationFee)}</span><br>
+            <small style="color:#6b7280;">Reservation fee will be paid first. Schedule: 1hr ₱100, 2hr ₱100, 3hr ₱150, 4hr ₱200, 5hr ₱250, 6hr ₱300, 7hr ₱350, 8hr ₱400.</small>
+          `;
         }
         
         // If booking form is visible (user clicked Next), revert back to Next button
@@ -487,10 +519,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const year = dateParts[3];
       const dateISO = `${year}-${month}-${day}`;
       
-      // Show the booking modal (works for both studio rental and solo rehearsal)
-      const modal = document.getElementById('studioRentalModal') || document.getElementById('bookingModal');
-      if (modal) {
-        modal.style.display = 'block';
+      // Show the booking details modal first (separates left from center)
+      const detailsModal = document.getElementById('bookingDetailsModal');
+      const fallbackModal = document.getElementById('studioRentalModal') || document.getElementById('bookingModal');
+      const targetModal = detailsModal || fallbackModal;
+      if (targetModal) {
+        targetModal.style.display = 'block';
         try { document.body.classList.add('modal-open'); } catch (e) {}
         
         // Populate modal with booking details
@@ -506,14 +540,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (modalSelectedDuration) modalSelectedDuration.textContent = durationSelect.options[durationSelect.selectedIndex].text;
         if (modalDurationLabel) modalDurationLabel.textContent = durationSelect.options[durationSelect.selectedIndex].text;
         
-        // Calculate and display price - check if it's solo rehearsal or studio rental
-        const duration = parseInt(durationSelect.value);
-        const isSoloRehearsal = window.location.pathname.includes('solo-rehearsal');
-        const hourlyRate = isSoloRehearsal ? 300 : 100; // ₱300 for solo rehearsal, ₱100 for studio rental
-        const totalPrice = duration * hourlyRate;
+        // Calculate and display price per client rules
+        const duration = parseInt(durationSelect.value, 10);
+        const totalPrice = computeServicePrice(duration);
+        const reservationFee = computeReservationFee(duration);
         
-        if (modalTotalPrice) modalTotalPrice.textContent = `₱${totalPrice}.00`;
-        if (gcashAmount) gcashAmount.textContent = `₱${totalPrice}.00`;
+        if (modalTotalPrice) modalTotalPrice.textContent = formatCurrency(totalPrice);
+        const modalReservationFeeEl = document.getElementById('modalReservationFee');
+        if (modalReservationFeeEl) modalReservationFeeEl.textContent = formatCurrency(reservationFee);
+        // Leave GCash amount unchanged here; reservation amounts are handled separately.
         
         // Set hidden form values
         document.getElementById('modalBookingDate').value = dateISO;
@@ -525,12 +560,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Modal close functionality
-  const modal = document.getElementById('studioRentalModal') || document.getElementById('bookingModal');
+  const modal = document.getElementById('bookingDetailsModal') || document.getElementById('studioRentalModal') || document.getElementById('bookingModal');
   const cancelBtn = document.getElementById('cancelModal');
   
-  if (cancelBtn && modal) {
+  if (cancelBtn && document.getElementById('studioRentalModal')) {
     cancelBtn.addEventListener('click', function() {
-      modal.style.display = 'none';
+      const centerModal = document.getElementById('studioRentalModal');
+      centerModal.style.display = 'none';
       try { document.body.classList.remove('modal-open'); } catch (e) {}
     });
   }

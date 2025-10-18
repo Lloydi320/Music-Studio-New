@@ -50,7 +50,7 @@
         }
         
         .logo {
-            background-color: #e2e8f0;
+            background-color: transparent; /* match dark header */
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -63,7 +63,8 @@
         .logo img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* avoid cropping bright areas */
+            filter: brightness(0.95); /* slightly tone down brightness */
         }
         
         .brand-text {
@@ -1671,13 +1672,12 @@
     <!-- Top Header -->
     <div class="top-header">
         <div class="logo-section">
-            <div class="logo">
-                <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo">
-            </div>
-            <div>
-                <div class="brand-text">LEMON</div>
-                <small style="color: #6c757d;">HUB STUDIO</small>
-            </div>
+            <a href="{{ route('admin.dashboard') }}" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit;">
+                <div class="logo">
+                    <img src="{{ asset('images/studio-logo.png') }}" alt="Lemon Hub Studio Logo">
+                </div>
+                <span class="brand-text">LEMON HUB STUDIO</span>
+            </a>
         </div>
         
         <div class="user-section">
@@ -1808,6 +1808,12 @@
                 <a href="{{ route('admin.database') }}" class="{{ request()->routeIs('admin.database') ? 'active' : '' }}">
                     <i class="fas fa-database"></i>
                     Database Management
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.qr.index') }}" class="{{ request()->routeIs('admin.qr.index') ? 'active' : '' }}">
+                    <i class="fas fa-qrcode"></i>
+                    QR Configs
                 </a>
             </li>
             <li>
@@ -2733,6 +2739,23 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Accessibility & contrast improvements for dark theme */
+        :root {
+            --text-muted: #cbd5e1; /* lighter muted text for dark bg */
+        }
+        .text-muted, .form-text, .help-text { color: var(--text-muted) !important; }
+        label, .form-label { color: #e2e8f0 !important; }
+        .form-control, .form-select { background-color: #212529; color: #e9ecef; border-color: #495057; }
+        .form-control::placeholder { color: #b0bec5; opacity: 1; }
+        .card { background: #2a2a2a !important; border: 1px solid #444 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+        .card-header { background: #333 !important; color: #e0e0e0 !important; border-bottom: 1px solid #444 !important; }
+        .table-dark { background-color: #222; }
+        .table-dark thead th { color: #e9ecef; background-color: #2b2b2b; border-color: #3b3b3b; }
+        .table-dark tbody td, .table-dark tbody th { color: #e0e0e0; }
+        .page-header .page-title, .page-header .welcome-text { color: #e0e0e0; }
+        .btn-success { background-color: #2e7d32; border-color: #2e7d32; }
+        .btn-success:hover { background-color: #1b5e20; border-color: #1b5e20; }
     </style>
     
     <script>

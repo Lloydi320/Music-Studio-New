@@ -136,6 +136,11 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::delete('/activity-logs/clear', [App\Http\Controllers\AdminController::class, 'clearActivityLogs'])->name('admin.activity-logs.clear');
     Route::get('/instrument-bookings', [App\Http\Controllers\AdminController::class, 'instrumentBookings'])->name('admin.instrument-bookings');
 
+    // QR management routes
+    Route::get('/qr-configs', [App\Http\Controllers\QrConfigAdminController::class, 'index'])->name('admin.qr.index');
+    Route::post('/qr-configs/rehearsal', [App\Http\Controllers\QrConfigAdminController::class, 'storeRehearsal'])->name('admin.qr.rehearsal.store');
+    Route::post('/qr-configs/rental', [App\Http\Controllers\QrConfigAdminController::class, 'storeRental'])->name('admin.qr.rental.store');
+
     // Admin Walk-In creation routes
     Route::get('/walk-in', [App\Http\Controllers\AdminController::class, 'walkInCreate'])->name('admin.walk-in.create');
     Route::post('/walk-in', [App\Http\Controllers\AdminController::class, 'walkInStore'])->name('admin.walk-in.store');
@@ -172,6 +177,11 @@ Route::patch('/instrument-rentals/{id}/approve', [App\Http\Controllers\AdminCont
 Route::patch('/instrument-rentals/{id}/reject', [App\Http\Controllers\AdminController::class, 'rejectRental'])->name('admin.rental.reject');
 Route::get('/api/bookings/dates-with-status', [BookingController::class, 'getBookedDatesWithStatus']);
 });
+
+// Duplicate debug and webhook routes removed; single definitions kept above.
+
+
+// QR management routes moved into admin group
 
 Route::get('/debug-google', function () {
     return [

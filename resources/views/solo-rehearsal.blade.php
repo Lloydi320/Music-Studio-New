@@ -57,6 +57,14 @@
       touch-action: pan-y;
     }
 
+    /* Center-only alignment for solo rehearsal modal (matches booking modal) */
+    #studioRentalModal .modal-content { justify-content: center; margin: 0 auto; }
+    #studioRentalModal .modal-center { flex: 0 1 auto; max-width: 640px; margin: 0 auto; border-left: none; border-right: none; }
+    #studioRentalModal .modal-buttons { max-width: 640px; margin: 0 auto; }
+    #studioRentalModal.show-center .modal-content { width: fit-content !important; max-width: 640px !important; justify-content: center !important; margin: 0 auto !important; }
+    #studioRentalModal.show-center .modal-left,
+    #studioRentalModal.show-center .modal-right { display: none !important; }
+
     .modal-left {
       flex: 1;
       padding: 25px;
@@ -771,6 +779,268 @@
       </div>
     </div>
   </div>
+
+  <!-- Booking Details Modal (summary-first like band rehearsal) -->
+  <div id="bookingDetailsModal" class="modal">
+    <div class="modal-container">
+      <div class="modal-content">
+        <div class="modal-left">
+          <div class="modal-header">
+            <h2 class="modal-title">SOLO REHEARSAL</h2>
+            <p class="location">📍 288H Sto.Domingo Street 2nd Filmont Homes Subdivision, Calamba, 4027 Laguna</p>
+          </div>
+          <div class="booking-details">
+            <div class="detail-item">
+              <span class="detail-label">📅 Date:</span>
+              <span class="detail-value" id="modalSelectedDate">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">⏰ Time:</span>
+              <span class="detail-value" id="modalSelectedTime">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">⏱️ Duration:</span>
+              <span class="detail-value" id="modalSelectedDuration">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">💰 Total Price:</span>
+              <span class="detail-value" id="modalTotalPrice">₱300.00</span>
+            </div>
+            <p class="reservation-note" style="color:#b45309; font-size:14px; margin: 8px 0 0 0;">Reservation fee will be paid first. Reservation Fee: <span id="modalReservationFee">₱0.00</span></p>
+          </div>
+          <div class="studio-image">
+            <img src="{{ asset('images/SoloRehearsal.jpg') }}" alt="Solo Rehearsal" class="studio-image-modal">
+          </div>
+          <div class="gcash-action">
+            <button type="button" class="btn-cancel" id="cancelSummary">Cancel</button>
+            <button type="button" class="btn-gcash" id="openGcashModalBtn">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Summary-only modal sizing */
+    #bookingDetailsModal .modal-left { flex: 0 0 380px !important; max-width: 380px !important; padding-bottom: 30px !important; }
+    #bookingDetailsModal .modal-content { width: fit-content !important; max-width: none !important; }
+    /* Trigger button in booking modal (copied from band rehearsal) */
+    .btn-gcash {
+      margin-top: 14px;
+      background: #dbb411;
+      border: 1px solid #dbb411;
+      color: #000;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 10px 24px;
+      border-radius: 6px;
+    }
+    /* Container alignment */
+    .gcash-action { display: flex; justify-content: center; gap: 12px; }
+    .gcash-action .btn-cancel, .gcash-action .btn-gcash { flex: 0 0 140px; font-size: 15px; width: 140px; box-sizing: border-box; }
+     .gcash-action .btn-cancel { padding: 10px 24px; }
+     .gcash-action .btn-gcash { padding: 10px 24px; }
+
+    /* GCash Modal Styles (copied from band rehearsal) */
+    #gcashModal { display: none; justify-content: center !important; align-items: center !important; }
+    #gcashModal .modal-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    #gcashModal .gcash-modal-content {
+      background: #ffffff;
+      border-radius: 12px;
+      width: 95%;
+      max-width: 1100px;
+      overflow: hidden;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+    }
+    #gcashModal .gcash-header {
+      background: #0052cc;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+    }
+    #gcashModal .gcash-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    #gcashModal .gcash-close {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    #gcashModal .gcash-close:hover { background: rgba(255,255,255,0.3); }
+    #gcashModal .gcash-body { padding: 32px; text-align: center; }
+    #gcashModal .gcash-subtitle { color: #4b5563; font-size: 16px; margin: 0 0 8px 0; }
+    #gcashModal .gcash-instruction { color: #6b7280; font-size: 15px; }
+    #gcashModal .gcash-note { color: #6b7280; font-size: 15px; margin-top: 12px; }
+    #gcashModal .gcash-qr-placeholder { width: 340px; height: 340px; margin: 0 auto 16px; border: 2px dashed #d1d5db; border-radius: 12px; background: #f9fafb; }
+    #gcashModal .gcash-next-btn {
+      background: #dbb411;
+      border: 1px solid #c9a90f;
+      color: #000;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-block;
+      margin: 0;
+    }
+    #gcashModal .gcash-footer-actions { display: flex; justify-content: center; gap: 12px; margin-top: 8px; }
+    #gcashModal .gcash-back-btn {
+      background: #6b7280;
+      border: 1px solid #6b7280;
+      color: #fff;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      #gcashModal .gcash-modal-content { width: 99%; max-width: 720px; }
+      #gcashModal .gcash-qr-placeholder { width: 260px; height: 260px; }
+      #gcashModal .gcash-next-btn { width: 100%; }
+    }
+  </style>
+
+  <!-- GCash Payment Modal -->
+  <div id="gcashModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+    <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+      <div class="gcash-modal-content" role="dialog" aria-modal="true" aria-labelledby="gcashTitle">
+        <div class="gcash-header">
+          <div class="gcash-title" id="gcashTitle">GCash</div>
+          <button class="gcash-close" id="closeGcashModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="gcash-body">
+          <p class="gcash-subtitle">Securely complete the payment with your GCash app</p>
+          <p class="gcash-instruction">Log in to GCash and scan this QR with the QR Scanner.</p>
+          <div class="gcash-qr-placeholder" aria-label="GCash QR placeholder">
+            <img id="gcashQrImage" alt="GCash QR" style="display:none; width:100%; height:100%; object-fit:contain; border-radius:10px;" />
+          </div>
+          <p class="gcash-note">After completing your payment, click Next to continue.</p>
+          <div class="gcash-footer-actions">
+            <button type="button" class="gcash-back-btn" id="gcashBackBtn">Back</button>
+            <button type="button" class="gcash-next-btn" id="gcashNextBtn">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const detailsModal = document.getElementById('bookingDetailsModal');
+      const gcashModal = document.getElementById('gcashModal');
+      const bookingModal = document.getElementById('studioRentalModal');
+      const openBtn = document.getElementById('openGcashModalBtn');
+      const closeBtn = document.getElementById('closeGcashModalBtn');
+      const gcashNextBtn = document.getElementById('gcashNextBtn');
+      const gcashBackBtn = document.getElementById('gcashBackBtn');
+      const cancelSummaryBtn = document.getElementById('cancelSummary');
+      const qrImgEl = document.getElementById('gcashQrImage');
+      const durationSelect = document.getElementById('durationSelect');
+      const centerPanel = document.querySelector('#studioRentalModal .modal-center');
+
+      async function loadRehearsalQr() {
+        try {
+          const hours = parseInt(durationSelect?.value || '1', 10);
+          const minutes = hours * 60;
+          const res = await fetch(`/api/payment-qr/rehearsal?duration=${minutes}`);
+          const data = await res.json();
+          if (data && data.qr_url) {
+            if (qrImgEl) {
+              qrImgEl.src = data.qr_url;
+              qrImgEl.style.display = 'block';
+            }
+            const feeEl = document.getElementById('modalReservationFee');
+            if (feeEl && typeof data.reservation_fee_php === 'number') {
+              feeEl.textContent = `₱${data.reservation_fee_php.toFixed(2)}`;
+            }
+          } else {
+            if (qrImgEl) {
+              qrImgEl.src = `{{ asset('images/LemonQr.png') }}`;
+              qrImgEl.style.display = 'block';
+            }
+          }
+        } catch (e) {
+          if (qrImgEl) {
+            qrImgEl.src = `{{ asset('images/LemonQr.png') }}`;
+            qrImgEl.style.display = 'block';
+          }
+        }
+      }
+ 
+       if (openBtn && gcashModal) {
+         openBtn.addEventListener('click', async function() {
+           await loadRehearsalQr();
+           // Open GCash and hide the summary so only one modal is visible
+           gcashModal.style.display = 'block';
+           if (detailsModal) detailsModal.style.display = 'none';
+           try { document.body.style.overflow = 'hidden'; } catch(e) {}
+         });
+       }
+      if (cancelSummaryBtn && detailsModal) {
+        cancelSummaryBtn.addEventListener('click', function() {
+          // Close the summary modal
+          detailsModal.style.display = 'none';
+        });
+      }
+
+      if (closeBtn && gcashModal) {
+        closeBtn.addEventListener('click', function() {
+          // Close GCash and return to summary
+          gcashModal.style.display = 'none';
+          if (detailsModal) detailsModal.style.display = 'block';
+          try { document.body.style.overflow = 'auto'; } catch(e) {}
+        });
+      }
+
+      if (gcashBackBtn && gcashModal) {
+        gcashBackBtn.addEventListener('click', function() {
+          // Back to summary (modal-left)
+          gcashModal.style.display = 'none';
+          if (detailsModal) {
+            detailsModal.style.display = 'block';
+            const leftPanel = document.querySelector('#bookingDetailsModal .modal-left');
+            leftPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          try { document.body.style.overflow = 'auto'; } catch(e) {}
+        });
+      }
+
+      if (gcashNextBtn && gcashModal) {
+        gcashNextBtn.addEventListener('click', function() {
+          // Close GCash and open the center-only booking form
+          gcashModal.style.display = 'none';
+          if (bookingModal) {
+            bookingModal.style.display = 'block';
+            bookingModal.classList.add('show-center');
+          }
+          try { document.body.style.overflow = 'auto'; } catch(e) {}
+
+          // Scroll center panel into view
+          centerPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+
+      // Click outside to close GCash modal
+      gcashModal?.addEventListener('click', function(e) {
+        if (e.target === gcashModal) {
+          gcashModal.style.display = 'none';
+          try { document.body.style.overflow = 'auto'; } catch(e) {}
+          // Return to summary if available
+          if (detailsModal) detailsModal.style.display = 'block';
+        }
+      });
+    });
+  </script>
 
   <!-- Booking Modal -->
   <div id="studioRentalModal" class="modal">

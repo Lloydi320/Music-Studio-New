@@ -728,18 +728,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: 'Users',
                 data: @json(array_values($usersPerService ?? [])),
                 backgroundColor: [
-                    'rgba(255, 215, 0, 0.8)',
-                    'rgba(255, 165, 0, 0.8)',
-                    'rgba(218, 165, 32, 0.8)',
-                    'rgba(184, 134, 11, 0.8)',
-                    'rgba(146, 104, 8, 0.8)'
+                    'rgba(66, 165, 245, 0.85)',
+                    'rgba(186, 104, 200, 0.85)',
+                    'rgba(129, 199, 132, 0.85)',
+                    'rgba(255, 183, 77, 0.85)',
+                    'rgba(239, 83, 80, 0.85)',
+                    'rgba(38, 166, 154, 0.85)'
                 ],
                 borderColor: [
-                    'rgba(255, 215, 0, 1)',
-                    'rgba(255, 165, 0, 1)',
-                    'rgba(218, 165, 32, 1)',
-                    'rgba(184, 134, 11, 1)',
-                    'rgba(146, 104, 8, 1)'
+                    'rgba(66, 165, 245, 1)',
+                    'rgba(186, 104, 200, 1)',
+                    'rgba(129, 199, 132, 1)',
+                    'rgba(255, 183, 77, 1)',
+                    'rgba(239, 83, 80, 1)',
+                    'rgba(38, 166, 154, 1)'
                 ],
                 borderWidth: 2,
                 borderRadius: 8
@@ -777,20 +779,20 @@ document.addEventListener('DOMContentLoaded', function() {
                  label: 'Services',
                  data: @json(array_values($servicesDistribution ?? [])),
                  backgroundColor: [
-                     'rgba(255, 215, 0, 0.8)',
-                     'rgba(255, 165, 0, 0.8)',
-                     'rgba(218, 165, 32, 0.8)',
-                     'rgba(184, 134, 11, 0.8)',
-                     'rgba(146, 104, 8, 0.8)',
-                     'rgba(255, 193, 7, 0.8)'
+                     'rgba(66, 165, 245, 0.85)',
+                     'rgba(186, 104, 200, 0.85)',
+                     'rgba(129, 199, 132, 0.85)',
+                     'rgba(255, 183, 77, 0.85)',
+                     'rgba(239, 83, 80, 0.85)',
+                     'rgba(38, 166, 154, 0.85)'
                  ],
                  borderColor: [
+                     'rgba(66, 165, 245, 1)',
+                     'rgba(186, 104, 200, 1)',
                      'rgba(129, 199, 132, 1)',
-                     'rgba(102, 187, 106, 1)',
-                     'rgba(76, 175, 80, 1)',
-                     'rgba(67, 160, 71, 1)',
-                     'rgba(56, 142, 60, 1)',
-                     'rgba(46, 125, 50, 1)'
+                     'rgba(255, 183, 77, 1)',
+                     'rgba(239, 83, 80, 1)',
+                     'rgba(38, 166, 154, 1)'
                  ],
                  borderWidth: 2
              }]
