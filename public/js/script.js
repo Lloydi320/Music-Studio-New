@@ -208,6 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         // Clear previous time slots
         timeSlots.innerHTML = '';
+        // Reset scroll state
+        timeSlots.classList.remove('scroll');
         
         // Show loading
         timeSlots.innerHTML = '<p>Loading booking info...</p>';
@@ -219,6 +221,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Clear loading message
         timeSlots.innerHTML = '';
+
+        // Reveal the Booking Info header now that a date is selected
+        const bookingHeader = document.querySelector('.booking-header');
+        if (bookingHeader) bookingHeader.classList.add('show');
         
         // The fixed Booking Info header is now a separate element.
         // Do not insert a scrolling heading inside the list.
@@ -251,15 +257,23 @@ document.addEventListener('DOMContentLoaded', function() {
             bookingDiv.appendChild(statusElement);
             timeSlots.appendChild(bookingDiv);
           });
+
+          // Toggle scroll when there are many bookings
+          if (data.bookings.length >= 2) {
+            timeSlots.classList.add('scroll');
+          }
         } else {
           const message = document.createElement('div');
           message.className = 'no-bookings';
           message.textContent = 'No bookings for this date.';
           timeSlots.appendChild(message);
+          // Ensure no scroll when there are no bookings
+          timeSlots.classList.remove('scroll');
         }
       } catch (err) {
         console.error('Error fetching booking info for', dateKey, ':', err);
         timeSlots.innerHTML = '<p>Failed to load booking info.</p>';
+        timeSlots.classList.remove('scroll');
       }
     }
 

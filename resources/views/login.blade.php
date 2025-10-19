@@ -61,6 +61,7 @@
             color: #1a1a1a;
             padding: 40px;
             text-align: center;
+            position: relative;
         }
 
         .login-header h1 {
@@ -72,6 +73,60 @@
         .login-header p {
             opacity: 0.9;
             font-size: 16px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-button:hover {
+            background: #fff;
+        }
+
+        /* Back button placed in body */
+        .page-back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #FFD700 0%, #F4C200 50%, #E6B800 100%);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+        }
+        .page-back-button:hover {
+            background: linear-gradient(135deg, #F4C200 0%, #E6B800 50%, #D4A700 100%);
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .forgot-password a {
+            color: #E6B800;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
         }
 
         .login-content {
@@ -219,9 +274,10 @@
     </style>
 </head>
 <body>
+    <a href="{{ route('home') }}" class="page-back-button">Back</a>
     <div class="login-container">
         <div class="login-header">
-            <h1>🍋 Lemon Hub Studio</h1>
+            <h1>Lemon Hub Studio</h1>
             <p>Welcome back! Please sign in to your account</p>
         </div>
         
@@ -269,6 +325,10 @@
                 <div class="remember-me">
                     <input type="checkbox" id="remember" name="remember">
                     <label for="remember">Remember me</label>
+                </div>
+
+                <div class="forgot-password">
+                    <a href="{{ route('password.request') }}">Forgot password?</a>
                 </div>
                 
                 <button type="submit" class="login-btn">Sign In</button>

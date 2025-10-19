@@ -61,6 +61,10 @@
             background-color: #fff3cd;
             color: #856404;
         }
+        .status.confirmed {
+            background-color: #d4edda;
+            color: #155724;
+        }
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -81,8 +85,14 @@
     </div>
 
     <p>Dear {{ $userName }},</p>
-    
-    <p>Thank you for booking with {{ $studioName }}! Your booking has been successfully created and is currently pending approval.</p>
+    @php($status = strtolower($bookingStatus))
+    @if ($status === 'pending')
+        <p>Thank you for booking with {{ $studioName }}! Your booking has been successfully created and is currently pending approval.</p>
+    @elseif ($status === 'confirmed')
+        <p>Great news! Your booking has been approved and confirmed by our admin.</p>
+    @else
+        <p>Thank you for booking with {{ $studioName }}! Current status: {{ $bookingStatus }}.</p>
+    @endif
 
     <div class="booking-details">
         <h3>📅 Booking Details</h3>
@@ -126,12 +136,26 @@
     </div>
 
     <p><strong>What's Next?</strong></p>
+    @if ($status === 'pending')
     <ul>
         <li>Your booking is currently <strong>pending approval</strong></li>
         <li>You will receive another email once your booking is approved</li>
         <li>If approved, a calendar event will be automatically created</li>
         <li>Please keep this reference number for your records: <strong>{{ $bookingReference }}</strong></li>
     </ul>
+    @elseif ($status === 'confirmed')
+    <ul>
+        <li>Your booking is <strong>approved and confirmed</strong></li>
+        <li>We’ve secured your time slot on {{ $bookingDate }} at {{ $bookingTime }}</li>
+        <li>Keep your reference number: <strong>{{ $bookingReference }}</strong></li>
+        <li>Contact us if you need to reschedule</li>
+    </ul>
+    @else
+    <ul>
+        <li>Current status: <strong>{{ $bookingStatus }}</strong></li>
+        <li>Keep your reference number: <strong>{{ $bookingReference }}</strong></li>
+    </ul>
+    @endif
 
     <div class="contact-info">
         <p><strong>Need to make changes or have questions?</strong></p>

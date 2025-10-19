@@ -48,6 +48,8 @@ body::after {
   text-decoration: none;
   font-size: 0.95rem;
   transition: color 0.3s ease;
+  white-space: nowrap; /* prevent multi-line labels on desktop */
+  position: relative; /* ensure ::after active indicator positions relative to link */
 }
 
 .nav-links a:hover {
@@ -650,6 +652,52 @@ body::after {
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
+/* Collapse nav earlier for medium screens */
+@media (max-width: 1350px) {
+  .navbar {
+    padding: 16px 20px;
+    justify-content: space-between;
+  }
+  .mobile-menu-toggle {
+    display: flex !important;
+  }
+  .nav-container {
+    position: fixed;
+    top: 84px;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 999;
+    padding: 20px 0;
+  }
+  .nav-container.active {
+    transform: translateX(0);
+  }
+  .nav-links {
+    flex-direction: column;
+    gap: 0;
+    margin-left: 0;
+  }
+  .nav-links li {
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .nav-links a {
+    display: block;
+    padding: 15px 20px;
+    font-size: 1.05rem;
+    border-radius: 0;
+    white-space: normal; /* allow wrapping vertically in mobile menu */
+  }
+  /* Hide profile dropdown on mid-size screens to prevent overflow */
+  .modern-user-profile {
+    display: none;
+  }
+}
+
 @media (max-width: 800px) {
   body, html {
     overflow-y: hidden;
@@ -699,6 +747,7 @@ body::after {
     padding: 15px 20px;
     font-size: 1.1rem;
     border-radius: 0;
+    white-space: normal; /* allow wrapping vertically in mobile menu */
   }
   
   .logo {

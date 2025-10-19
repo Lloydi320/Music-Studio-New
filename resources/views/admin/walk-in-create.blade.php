@@ -130,14 +130,14 @@
                             @php
                                 $times = [];
                                 $start = \Carbon\Carbon::createFromTime(8,0);
-                                $end = \Carbon\Carbon::createFromTime(22,0);
+                                $end = \Carbon\Carbon::createFromTime(20,0);
                                 while ($start <= $end) { $times[] = $start->format('h:i A'); $start->addHour(); }
                             @endphp
                             @foreach($times as $t)
                                 <option value="{{ $t }}" {{ old('start_time') === $t ? 'selected' : '' }}>{{ $t }}</option>
                             @endforeach
                         </select>
-                        <div class="form-help">Opening hours: 08:00 AM - 10:00 PM</div>
+                        <div class="form-help">Opening hours: 08:00 AM - 08:00 PM</div>
                         <div class="form-help" id="availability_message" style="color:#f0ad4e;"></div>
                     </div>
                     <div class="form-group">

@@ -1065,13 +1065,13 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Date Filter</label>
-                    <select name="date_filter" class="form-control">
-                        <option value="all" {{ $dateFilter === 'all' ? 'selected' : '' }}>All Dates</option>
-                        <option value="today" {{ $dateFilter === 'today' ? 'selected' : '' }}>Today</option>
-                        <option value="week" {{ $dateFilter === 'week' ? 'selected' : '' }}>This Week</option>
-                        <option value="month" {{ $dateFilter === 'month' ? 'selected' : '' }}>This Month</option>
-                    </select>
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ $dateFrom ?? request('date_from') }}">
+                    <span class="form-text">Defaults to today to hide past bookings.</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ $dateTo ?? request('date_to') }}">
                 </div>
             </div>
             <div class="filter-actions">
@@ -1245,7 +1245,7 @@
                         <option value="17:00-18:00">17:00 - 18:00</option>
                         <option value="18:00-19:00">18:00 - 19:00</option>
                         <option value="19:00-20:00">19:00 - 20:00</option>
-                        <option value="20:00-21:00">20:00 - 21:00</option>
+
                     </select>
                 </div>
                 <div class="form-group">

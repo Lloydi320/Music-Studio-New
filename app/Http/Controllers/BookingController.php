@@ -424,6 +424,19 @@ class BookingController extends Controller
                 // Use original booking duration instead of request duration
                 $originalDuration = $booking->duration;
 
+                // Enforce studio closing time: end must be <= 8:00 PM
+                $startPart = trim(explode('-', $request->new_time_slot)[0]);
+                try {
+                    $newStartTime = \Carbon\Carbon::createFromFormat('h:i A', $startPart, config('app.timezone', 'Asia/Manila'));
+                } catch (\Exception $e) {
+                    // Fallback parsing for 24h format like "20:00"
+                    $newStartTime = \Carbon\Carbon::createFromFormat('H:i', $startPart, config('app.timezone', 'Asia/Manila'));
+                }
+                $newEndTime = $newStartTime->copy()->addHours($originalDuration);
+                if ($newEndTime->hour > 20 || ($newEndTime->hour === 20 && $newEndTime->minute > 0)) {
+                    return response()->json(['error' => 'Selected time exceeds studio closing time (8:00 PM)'], 422);
+                }
+
                 // Check for time slot conflicts
                 $conflictingBooking = Booking::where('date', $request->new_date)
                     ->where('time_slot', $request->new_time_slot)
@@ -620,6 +633,18 @@ class BookingController extends Controller
                 
                 if (!$booking) {
                     return response()->json(['error' => 'Studio booking not found'], 404);
+                }
+
+                // Enforce studio closing time: end must be <= 8:00 PM
+                $startPart = trim(explode('-', $request->new_time_slot)[0]);
+                try {
+                    $newStartTime = \Carbon\Carbon::createFromFormat('h:i A', $startPart, config('app.timezone', 'Asia/Manila'));
+                } catch (\Exception $e) {
+                    $newStartTime = \Carbon\Carbon::createFromFormat('H:i', $startPart, config('app.timezone', 'Asia/Manila'));
+                }
+                $newEndTime = $newStartTime->copy()->addHours((int)$request->duration);
+                if ($newEndTime->hour > 20 || ($newEndTime->hour === 20 && $newEndTime->minute > 0)) {
+                    return response()->json(['error' => 'Selected time exceeds studio closing time (8:00 PM)'], 422);
                 }
 
                 // Check for time slot conflicts
@@ -939,8 +964,9 @@ class BookingController extends Controller
         // Parse the date with proper timezone handling to ensure consistent querying
         $queryDate = \Carbon\Carbon::parse($date)->setTimezone(config('app.timezone', 'Asia/Manila'))->format('Y-m-d');
         
-        // Get regular bookings
+        // Get regular bookings (only active: pending or confirmed)
         $bookings = \App\Models\Booking::whereDate('date', $queryDate)
+            ->whereIn('status', ['pending', 'confirmed'])
             ->get(['id', 'reference', 'user_id', 'date', 'time_slot', 'duration', 'status'])
             ->map(function($booking) {
                 // Convert the date to a simple Y-m-d format to avoid timezone issues

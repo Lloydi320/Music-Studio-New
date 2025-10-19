@@ -1057,6 +1057,10 @@
         const baseDate = baseDateISO ? new Date(baseDateISO + 'T00:00:00') : new Date();
         baseDate.setHours(0, 0, 0, 0);
         
+        // Define exact closing time for the selected date
+        const closingTime = new Date(baseDate);
+        closingTime.setHours(closingHour, 0, 0, 0);
+        
         let currentHour = openingHour;
         let currentMinute = 0;
         
@@ -1066,8 +1070,8 @@
             
             const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
             
-            // Check if end time doesn't exceed closing hour
-            if (endTime.getHours() <= closingHour) {
+            // Check if end time doesn't exceed closing time
+            if (endTime <= closingTime) {
                 // Only consider pending or confirmed bookings as blockers
                 const blockingBookings = (bookings || []).filter(b => {
                     const status = (b.status || '').toLowerCase();

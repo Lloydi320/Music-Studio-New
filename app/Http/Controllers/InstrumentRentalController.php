@@ -95,6 +95,7 @@ class InstrumentRentalController extends Controller
                 'pickup_location' => 'required|string|max:255',
                 'transportation' => 'nullable|string|max:50',
                 'delivery_time' => 'nullable|date_format:H:i',
+                'pickup_time' => 'nullable|date_format:H:i',
                 'event_duration_hours' => 'nullable|integer|min:1|max:24',
                 'notes' => 'nullable|string|max:1000', // Changed from 'special_requests' to 'notes' to match form field
                 'name' => 'required|string|max:255',
@@ -116,15 +117,31 @@ class InstrumentRentalController extends Controller
                 return back()->withErrors(['rental_start_date' => 'Rentals must be booked at least 24 hours in advance (no same-day rentals).'])->withInput();
             }
 
-            // Disallow single-day rentals on days with any studio booking to avoid conflicts
+            // Single-day rentals: allow beyond closing if no time conflicts with studio bookings
             $endDateCarbon = Carbon::parse($validatedData['rental_end_date'], config('app.timezone', 'Asia/Manila'));
             $isSingleDay = $startDateCarbon->isSameDay($endDateCarbon);
             if ($isSingleDay) {
-                $hasStudioBooking = \App\Models\Booking::whereDate('date', $startDateCarbon->format('Y-m-d'))
-                    ->whereIn('status', ['pending', 'confirmed'])
-                    ->exists();
-                if ($hasStudioBooking) {
-                    return back()->withErrors(['rental_start_date' => 'Instrument rental is unavailable on days with studio bookings. Please choose a different date.'])->withInput();
+                $eventHours = isset($validatedData['event_duration_hours']) ? (int)$validatedData['event_duration_hours'] : null;
+                $startTime = (($validatedData['transportation'] ?? 'none') === 'delivery') ? ($validatedData['delivery_time'] ?? null) : ($validatedData['pickup_time'] ?? null);
+
+                if ($startTime && $eventHours) {
+                    $startDateTime = Carbon::createFromFormat('Y-m-d H:i', $validatedData['rental_start_date'].' '.$startTime, config('app.timezone', 'Asia/Manila'));
+                    $endDateTime = (clone $startDateTime)->addHours($eventHours);
+
+                    $existingBookings = \App\Models\Booking::whereDate('date', $startDateCarbon->format('Y-m-d'))
+                        ->whereIn('status', ['pending', 'confirmed'])
+                        ->get();
+
+                    foreach ($existingBookings as $existingBooking) {
+                        $existingStartStr = trim(explode('-', $existingBooking->time_slot)[0]);
+                        $existingStart = Carbon::createFromFormat('h:i A', $existingStartStr, config('app.timezone', 'Asia/Manila'));
+                        $existingStart->setDate($startDateTime->year, $startDateTime->month, $startDateTime->day);
+                        $existingEnd = (clone $existingStart)->addHours($existingBooking->duration);
+
+                        if (($startDateTime < $existingEnd && $endDateTime > $existingStart) || ($existingStart < $endDateTime && $existingEnd > $startDateTime)) {
+                            return back()->withErrors(['event_duration_hours' => 'Selected time overlaps with an existing studio booking. Please choose a different time or date.'])->withInput();
+                        }
+                    }
                 }
             }
 
@@ -155,7 +172,7 @@ class InstrumentRentalController extends Controller
                 'notes' => $validatedData['notes'], // Form sends 'notes' and model expects 'notes'
                 'pickup_location' => $validatedData['pickup_location'],
                 'transportation' => $validatedData['transportation'] ?? null,
-                'delivery_time' => $validatedData['delivery_time'] ?? null,
+                'delivery_time' => (($validatedData['transportation'] ?? null) === 'delivery') ? ($validatedData['delivery_time'] ?? null) : ($validatedData['pickup_time'] ?? null),
                 'event_duration_hours' => $validatedData['event_duration_hours'] ?? null,
                 'name' => $validatedData['name'],
                 'email' => $authenticatedEmail ?? ($validatedData['email'] ?? null),
@@ -164,29 +181,13 @@ class InstrumentRentalController extends Controller
 
             // Enforce closing-time rules for single-day rentals
             // If transportation is delivery, ensure delivery_time + event_duration <= 20:00 of start date
-            if (($validatedData['transportation'] ?? null) === 'delivery' && $duration === 1) {
+            if (($validatedData['transportation'] ?? null) === 'delivery' && $isSingleDay) {
                 $deliveryTime = $validatedData['delivery_time'] ?? null;
-                $eventHours = isset($validatedData['event_duration_hours']) ? (int)$validatedData['event_duration_hours'] : null;
 
-                if ($deliveryTime) {
-                    // Basic bounds: not earlier than 08:00, not later than 20:00
-                    if ($deliveryTime < '08:00') {
-                        return back()->withErrors(['delivery_time' => 'Delivery time must be at or after 8:00 AM.'])->withInput();
-                    }
-                    if ($deliveryTime > '20:00') {
-                        return back()->withErrors(['delivery_time' => 'Delivery time cannot be past 8:00 PM.'])->withInput();
-                    }
+                if ($deliveryTime && $deliveryTime < '08:00') {
+                    return back()->withErrors(['delivery_time' => 'Delivery time must be at or after 8:00 AM.'])->withInput();
                 }
-
-                if ($deliveryTime && $eventHours) {
-                    $startDateTime = Carbon::createFromFormat('Y-m-d H:i', $validatedData['rental_start_date'].' '.$deliveryTime);
-                    $closingDateTime = Carbon::createFromFormat('Y-m-d H:i', $validatedData['rental_start_date'].' 20:00');
-                    $endEvent = (clone $startDateTime)->addHours($eventHours);
-
-                    if ($endEvent->gt($closingDateTime)) {
-                        return back()->withErrors(['event_duration_hours' => 'Event end time exceeds studio closing (8:00 PM). Reduce duration or choose an earlier delivery time.'])->withInput();
-                    }
-                }
+                // No strict 8:00 PM closing-time enforcement here; time-overlap conflicts are handled above.
             }
 
             // Create the rental record
@@ -276,17 +277,7 @@ class InstrumentRentalController extends Controller
             }
 
             // If single-day, block days that have any studio booking
-            if ($start->isSameDay($end)) {
-                $hasStudioBooking = \App\Models\Booking::whereDate('date', $start->format('Y-m-d'))
-                    ->whereIn('status', ['pending', 'confirmed'])
-                    ->exists();
-                if ($hasStudioBooking) {
-                    return response()->json([
-                        'available' => false,
-                        'message' => 'This date has studio bookings and is unavailable for instrument rental.'
-                    ], 422);
-                }
-            }
+            // Single-day rentals are allowed; rely on time-overlap checks during creation for conflicts.
 
             // Check for conflicting rentals
             $conflicts = InstrumentRental::where('instrument_type', $request->instrument_type)

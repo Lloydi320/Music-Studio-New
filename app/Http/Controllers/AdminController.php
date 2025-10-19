@@ -1039,9 +1039,16 @@ class AdminController extends Controller
         // Get filter parameters
         $status = $request->get('status', 'all');
         $search = $request->get('search', '');
-        // Default the date filter to current month
-        $dateFilter = $request->get('date_filter', 'month');
         $serviceType = $request->get('service_type', 'all');
+
+        // Date range filters (mirroring instrument bookings)
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+
+        // Default: hide past bookings, show today and future
+        if (empty($dateFrom) && empty($dateTo)) {
+            $dateFrom = now()->toDateString();
+        }
 
         // Build query
         $query = Booking::with(['user'])
@@ -1070,20 +1077,12 @@ class AdminController extends Controller
             $query->where('service_type', $serviceType);
         }
 
-        // Apply date filter
-        if ($dateFilter !== 'all') {
-            switch ($dateFilter) {
-                case 'today':
-                    $query->whereDate('date', today());
-                    break;
-                case 'week':
-                    $query->whereBetween('date', [now()->startOfWeek(), now()->endOfWeek()]);
-                    break;
-                case 'month':
-                    $query->whereMonth('date', now()->month)
-                          ->whereYear('date', now()->year);
-                    break;
-            }
+        // Apply date range filters
+        if (!empty($dateFrom)) {
+            $query->whereDate('date', '>=', $dateFrom);
+        }
+        if (!empty($dateTo)) {
+            $query->whereDate('date', '<=', $dateTo);
         }
 
         $bookings = $query->paginate(15);
@@ -1102,8 +1101,9 @@ class AdminController extends Controller
             'statusCounts',
             'status',
             'search',
-            'dateFilter',
-            'serviceType'
+            'serviceType',
+            'dateFrom',
+            'dateTo'
         ));
     }
 
@@ -1206,6 +1206,12 @@ class AdminController extends Controller
             $end = $start->copy()->addHours($duration);
             $timeSlot = $start->format('h:i A') . ' - ' . $end->format('h:i A');
 
+            // Enforce closing time: end must not exceed 8:00 PM
+            $closingTime = Carbon::createFromTime(20, 0, 0, config('app.timezone', 'Asia/Manila'));
+            if ($end->gt($closingTime)) {
+                return back()->withInput()->with('error', 'Selected time exceeds studio closing time (8:00 PM).');
+            }
+
             // Check studio unavailability due to instrument rentals (drums/full package)
             $drumOrFullPackageRentals = InstrumentRental::whereIn('status', ['pending', 'confirmed'])
                 ->where(function($query) {
@@ -1258,6 +1264,10 @@ class AdminController extends Controller
                 $hourlyRate = 0.0;
                 $totalAmount = null;
             }
+
+            $walkInColumn = \Schema::hasColumn('bookings', 'is_walk_in_booking')
+                ? 'is_walk_in_booking'
+                : (\Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
 
             $bookingData = [
                 'user_id' => $user->id,
@@ -1325,7 +1335,7 @@ class AdminController extends Controller
 
         $tz = config('app.timezone', 'Asia/Manila');
         $cursor = Carbon::createFromTime(8, 0, 0, $tz);
-        $endOfDay = Carbon::createFromTime(22, 0, 0, $tz);
+        $endOfDay = Carbon::createFromTime(20, 0, 0, $tz);
         $times = [];
         while ($cursor <= $endOfDay) {
             $times[] = $cursor->copy()->format('h:i A');
@@ -1358,6 +1368,7 @@ class AdminController extends Controller
             $now = Carbon::now($tz);
             $selectedDate = Carbon::parse($request->date, $tz)->startOfDay();
             $today = $now->copy()->startOfDay();
+            $closingTime = Carbon::createFromTime(20, 0, 0, $tz);
 
             foreach ($times as $t) {
                 $startTime = Carbon::createFromFormat('h:i A', $t, $tz);
@@ -1367,6 +1378,11 @@ class AdminController extends Controller
 
                 // Disable past times if selected date is today
                 if ($selectedDate->equalTo($today) && $startTime < $now) {
+                    $disable = true;
+                }
+
+                // Enforce closing time: start + duration must not exceed 8:00 PM
+                if (!$disable && $endTime->gt($closingTime)) {
                     $disable = true;
                 }
 
@@ -1920,6 +1936,30 @@ class AdminController extends Controller
                 $calendarSyncMessage = ' Note: Google Calendar service is not available.';
             }
             
+            // Send approval email to user
+            try {
+                $customer = $booking->user;
+                if ($customer && $customer->email) {
+                    \Illuminate\Support\Facades\Mail::to($customer->email)->send(
+                        new \App\Mail\BookingNotification($booking, $customer)
+                    );
+                    Log::info('Booking approval email sent', [
+                        'booking_id' => $booking->id,
+                        'user_email' => $customer->email,
+                        'reference' => $booking->reference
+                    ]);
+                } else {
+                    Log::warning('No user email found for approved booking', [
+                        'booking_id' => $booking->id
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send booking approval email', [
+                    'booking_id' => $booking->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+            
             return redirect()->back()->with('success', "Booking {$booking->reference} for {$booking->user->name} has been approved and confirmed.{$calendarSyncMessage}");
         } catch (\Exception $e) {
             Log::error('Failed to approve booking', [
@@ -2025,6 +2065,19 @@ class AdminController extends Controller
             
             // Use original booking duration instead of request duration
             $originalDuration = $booking->duration;
+            
+            // Enforce studio closing time: end must be <= 8:00 PM
+            $startPart = trim(explode('-', $request->time_slot)[0]);
+            try {
+                $newStartTime = \Carbon\Carbon::createFromFormat('h:i A', $startPart, config('app.timezone', 'Asia/Manila'));
+            } catch (\Exception $e) {
+                // Admin form uses 24h format like "19:00"
+                $newStartTime = \Carbon\Carbon::createFromFormat('H:i', $startPart, config('app.timezone', 'Asia/Manila'));
+            }
+            $newEndTime = $newStartTime->copy()->addHours($originalDuration);
+            if ($newEndTime->hour > 20 || ($newEndTime->hour === 20 && $newEndTime->minute > 0)) {
+                return redirect()->back()->with('error', 'Selected time exceeds studio closing time (8:00 PM)');
+            }
             
             // Check for time slot conflicts
             $conflictingBooking = Booking::where('date', $request->date)

@@ -355,6 +355,27 @@
       }
     }
 
+    /* Time Select Styling */
+    #pickup_time, #delivery_time {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 16px;
+      background-color: #ffffff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    #pickup_time:focus, #delivery_time:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    #pickup_time option:disabled, #delivery_time option:disabled {
+      color: #9ca3af !important; /* slate-400 */
+      background-color: #f3f4f6 !important; /* gray-100 */
+      text-decoration: line-through;
+    }
+
     /* Form group styling */
      .form-group {
        margin-bottom: 25px;
@@ -793,6 +814,46 @@
          overflow-y: auto;
          max-height: 85vh;
          padding-top: 15px;
+       }
+
+       /* Summary-only view: show left, hide center/right */
+       #instrumentRentalModal.show-left-only .modal-center,
+       #instrumentRentalModal.show-left-only .modal-right { display: none !important; }
+       #instrumentRentalModal.show-left-only .modal-content { width: fit-content !important; max-width: none !important; overflow-y: visible !important; max-height: none !important; }
+       #instrumentRentalModal.show-left-only .modal-left { flex: 0 0 380px !important; max-width: 380px !important; padding-bottom: 30px !important; overflow: visible !important; }
+
+       /* Center-only view: show center, hide left/right */
+       #instrumentRentalModal.show-center .modal-left,
+       #instrumentRentalModal.show-center .modal-right { display: none !important; }
+       #instrumentRentalModal.show-center .modal-content { justify-content: center; margin: 0 auto; }
+       #instrumentRentalModal.show-center .modal-center {
+         display: block !important;
+         max-width: 640px;
+         width: 100%;
+         border-left: none;
+         border-right: none;
+         padding: 24px;
+         flex: 0 1 auto;
+         margin: 0 auto;
+       }
+       #instrumentRentalModal.show-center .modal-buttons,
+       #instrumentRentalModal.show-center .form-group { max-width: 640px; margin-left: auto; margin-right: auto; }
+
+       /* Summary action buttons */
+       .gcash-action { display: flex; justify-content: flex-start; gap: 12px; padding-top: 8px; }
+       .gcash-action .btn-cancel, .gcash-action .btn-gcash { flex: 0 0 140px; font-size: 15px; width: 140px; box-sizing: border-box; }
+       .gcash-action .btn-cancel { padding: 10px 24px; }
+       .gcash-action .btn-gcash { padding: 10px 24px; }
+
+       .btn-gcash {
+         margin-top: 14px;
+         background: #dbb411;
+         border: 1px solid #dbb411;
+         color: #000;
+         font-size: 15px;
+         cursor: pointer;
+         padding: 10px 24px;
+         border-radius: 6px;
        }
        
        .modal-header {
@@ -2100,6 +2161,7 @@
             <div class="form-group" id="pickupTimeGroup" style="display: none;">
               <label for="pickup_time">Pick-up Time:</label>
               <select id="pickup_time" name="pickup_time"></select>
+              <small id="pickup_time_help" class="form-help"></small>
             </div>
 
             <div class="form-group" id="deliveryLocationGroup" style="display: none;">
@@ -2111,6 +2173,7 @@
             <div class="form-group" id="deliveryTimeGroup" style="display: none;">
               <label for="delivery_time">Delivery Time:</label>
               <select id="delivery_time" name="delivery_time"></select>
+              <small id="delivery_time_help" class="form-help"></small>
             </div>
 
             <div class="form-group" id="pickupFromEventGroup" style="display: none;">
@@ -2267,7 +2330,10 @@
                   </div>
                 </div>
                 
-
+              </div>
+              <div class="gcash-action">
+                <button type="button" class="btn-cancel" id="cancelRentalSummary">Cancel</button>
+                <button type="button" class="btn-gcash" id="openInstrumentCenterBtn">Next</button>
               </div>
             </div>
             
@@ -2376,6 +2442,95 @@
   </main>
   <!-- Instrument Rental Calendar section removed -->
  
+  <!-- GCash Payment Modal (replicated from rehearsal views) -->
+  <div id="gcashModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+    <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+      <div class="gcash-modal-content" role="dialog" aria-modal="true" aria-labelledby="gcashTitle">
+        <div class="gcash-header">
+          <div class="gcash-title" id="gcashTitle">GCash</div>
+          <button class="gcash-close" id="closeGcashModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="gcash-body">
+          <p class="gcash-subtitle">Securely complete the payment with your GCash app</p>
+          <p class="gcash-instruction">Log in to GCash and scan this QR with the QR Scanner.</p>
+          <div class="gcash-qr-placeholder" aria-label="GCash QR placeholder">
+            <img id="gcashQrImage" alt="GCash QR" style="display:none; width:100%; height:100%; object-fit:contain; border-radius:10px;" />
+          </div>
+          <p class="gcash-note" id="gcashStatus">After completing your payment, click Next to continue.</p>
+          <div class="gcash-footer-actions">
+            <button type="button" class="gcash-back-btn" id="gcashBackBtn">Back</button>
+            <button type="button" class="gcash-next-btn" id="gcashNextBtn">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* GCash Modal Styles */
+    #gcashModal { display: none; justify-content: center !important; align-items: center !important; }
+    #gcashModal .modal-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    #gcashModal .gcash-modal-content {
+      background: #ffffff;
+      border-radius: 12px;
+      width: 95%;
+      max-width: 1100px;
+      overflow: hidden;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+    }
+    #gcashModal .gcash-header {
+      background: #0052cc;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+    }
+    #gcashModal .gcash-title { font-size: 22px; font-weight: 700; letter-spacing: 0.3px; }
+    #gcashModal .gcash-close {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    #gcashModal .gcash-close:hover { background: rgba(255,255,255,0.3); }
+    #gcashModal .gcash-body { padding: 32px; text-align: center; }
+    #gcashModal .gcash-subtitle { color: #4b5563; font-size: 16px; margin: 0 0 8px 0; }
+    #gcashModal .gcash-instruction { color: #6b7280; margin: 0 0 24px 0; font-size: 15px; }
+    #gcashModal .gcash-qr-placeholder { width: 340px; height: 340px; margin: 0 auto 16px auto; border: 2px dashed #d1d5db; border-radius: 12px; background: #f9fafb; }
+    #gcashModal .gcash-note { color: #374151; font-size: 14px; margin: 6px 0 8px; }
+    #gcashModal .gcash-next-btn {
+      background: #dbb411;
+      border: 1px solid #c9a90f;
+      color: #000;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-block;
+      margin: 0;
+    }
+    #gcashModal .gcash-footer-actions { display: flex; justify-content: center; gap: 12px; margin-top: 8px; }
+    #gcashModal .gcash-back-btn {
+      background: #6b7280;
+      border: 1px solid #6b7280;
+      color: #fff;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      #gcashModal .gcash-modal-content { width: 99%; max-width: 720px; }
+      #gcashModal .gcash-qr-placeholder { width: 260px; height: 260px; }
+      #gcashModal .gcash-next-btn { width: 100%; }
+    }
+  </style>
 
   <script>
     // Instrument rental form functionality
@@ -2418,39 +2573,16 @@
         const method = transportationSelect ? transportationSelect.value : 'none';
         const activeTimeInput = method === 'delivery' ? deliveryTimeInput : pickupTimeInput;
 
-        // Apply for single-day rentals using the active time input (pickup or delivery)
-        if (activeTimeInput && activeTimeInput.value) {
-          const closing = timeToMinutes(STUDIO_CLOSING_TIME);
-          const startMinutes = timeToMinutes(activeTimeInput.value);
-          if (closing == null || startMinutes == null) return;
-          const remainingMinutes = closing - startMinutes;
-          const allowedHours = Math.max(0, Math.floor(remainingMinutes / 60));
-
-          if (eventDurationInput) {
-            const defaultMax = parseInt(eventDurationInput.getAttribute('max') || '12', 10);
-            eventDurationInput.max = Math.max(0, Math.min(defaultMax, allowedHours));
-            const current = parseInt(eventDurationInput.value || '0', 10);
-            if (allowedHours >= 1) {
-              if (current > allowedHours) eventDurationInput.value = allowedHours;
-            } else {
-              eventDurationInput.value = 0;
-            }
-          }
-
-          if (eventDurationHelp) {
-            if (allowedHours >= 1) {
-              eventDurationHelp.textContent = `Up to ${allowedHours} hour(s) available today before closing at 8:00 PM.`;
-            } else {
-              eventDurationHelp.textContent = `Not enough time after ${activeTimeInput.value}. Choose earlier time or another day.`;
-            }
-          }
+        // Allow durations if no conflicts (server validated); adjust only max
+        if (activeTimeInput && activeTimeInput.value && eventDurationInput) {
+          const defaultMax = parseInt(eventDurationInput.getAttribute('max') || '12', 10);
+          eventDurationInput.max = defaultMax;
+          const current = parseInt(eventDurationInput.value || '0', 10);
+          if (current < 1) eventDurationInput.value = 1;
         } else {
           // Reset to defaults when not applicable
           if (eventDurationInput) {
-            eventDurationInput.max = 12;
-          }
-          if (eventDurationHelp) {
-            eventDurationHelp.textContent = 'Maximum 7 hours included. ₱200 per exceeding hour.';
+            eventDurationInput.max = parseInt(eventDurationInput.getAttribute('max') || '12', 10);
           }
         }
       }
@@ -2540,48 +2672,86 @@
         let minAllowed = EARLIEST_TIME;
         let maxAllowed = STUDIO_CLOSING_TIME;
 
-        // For single-day, cap latest start by duration
-        if (eventDurationInput && eventDurationInput.value) {
-          const durationMin = parseInt(eventDurationInput.value, 10) * 60;
-          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
-          const maxStartMin = Math.max(0, closingMin - durationMin);
-          const hh = String(Math.floor(maxStartMin / 60)).padStart(2, '0');
-          const mm = String(maxStartMin % 60).padStart(2, '0');
-          maxAllowed = `${hh}:${mm}`;
-        }
+        // No closing-time cap for latest start; rely on server-side checks.
+        // Keep maxAllowed at STUDIO_CLOSING_TIME (generated slots end here),
+        // but do not reduce based on event duration.
 
-        // If start date is today, disallow past slots
-        if (startDateInput && startDateInput.value === getLocalDateString(new Date())) {
-          const now = new Date();
-          const nowHH = String(now.getHours()).padStart(2, '0');
-          const nowMM = String(now.getMinutes()).padStart(2, '0');
-          const nowHHMM = `${nowHH}:${nowMM}`;
-          const roundedNow = roundUpToNextSlot(nowHHMM);
-          if (roundedNow > minAllowed) {
-            minAllowed = roundedNow;
+
+        // Keep all options enabled and restore original labels
+        function applyConstraints(selectEl) {
+          if (!selectEl) return;
+          [...selectEl.options].forEach(opt => {
+            const original = opt.dataset.originalLabel || opt.textContent;
+            opt.dataset.originalLabel = original;
+            opt.disabled = false;
+            opt.textContent = original;
+          });
+          // If no selection, default to the first option
+          if (!selectEl.value && selectEl.options.length > 0) {
+            selectEl.value = selectEl.options[0].value;
           }
         }
 
-        // Disable invalid options and select the first valid one if needed
-        function applyConstraints(selectEl) {
+        function parse12ToMinutes(s) {
+          const m = s && s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (!m) return null;
+          let hh = parseInt(m[1], 10);
+          const mm = parseInt(m[2], 10);
+          const period = m[3].toUpperCase();
+          if (period === 'PM' && hh !== 12) hh += 12;
+          if (period === 'AM' && hh === 12) hh = 0;
+          return hh * 60 + mm;
+        }
+
+        function applyOverlapConstraints(selectEl) {
           if (!selectEl) return;
-          let selectedValid = false;
+          const rawHours = parseInt(eventDurationInput?.value || '0', 10) || 0;
+          const durationMin = Math.max(30, rawHours * 60);
           [...selectEl.options].forEach(opt => {
-            const val = opt.value;
-            const isValid = (val >= minAllowed && val <= maxAllowed);
-            opt.disabled = !isValid;
-            if (val === selectEl.value && isValid) {
-              selectedValid = true;
+            const startMin = timeToMinutes(opt.value);
+            if (startMin == null) return;
+            const endMin = startMin + durationMin;
+            let conflict = false;
+            let conflictLabel = '';
+            for (const b of studioBookingsForSelectedDate) {
+              const slot = (b.time_slot || '');
+              const parts = slot.split('-');
+              const startStr = parts[0] ? parts[0].trim() : null;
+              const endStr = parts[1] ? parts[1].trim() : null;
+              const existingStart = parse12ToMinutes(startStr);
+              const existingEnd = parse12ToMinutes(endStr);
+              if (existingStart == null || existingEnd == null) continue;
+              if (startMin < existingEnd && endMin > existingStart) {
+                conflict = true;
+                conflictLabel = startStr && endStr ? `${startStr} - ${endStr}` : slot;
+                break;
+              }
+            }
+            const original = opt.dataset.originalLabel || opt.textContent;
+            opt.dataset.originalLabel = original;
+            if (conflict) {
+              opt.disabled = true;
+              opt.textContent = `${original} (Booked: ${conflictLabel})`;
+              opt.title = `Conflicts with studio booking ${conflictLabel}`;
+            } else if (!opt.disabled) {
+              opt.textContent = original;
+              opt.removeAttribute('title');
             }
           });
-          if (!selectedValid) {
-            const firstValid = [...selectEl.options].find(o => !o.disabled);
-            if (firstValid) selectEl.value = firstValid.value;
+          const firstValid = [...selectEl.options].find(o => !o.disabled);
+          if (firstValid && (selectEl.options[selectEl.selectedIndex]?.disabled)) {
+            selectEl.value = firstValid.value;
           }
         }
 
         applyConstraints(activeSelect);
         applyConstraints(otherSelect);
+        applyOverlapConstraints(activeSelect);
+        applyOverlapConstraints(otherSelect);
+
+        // Update inline message explaining duration conflicts
+        updateTimeConflictHelp();
+
         updateDurationMaxForSingleDay();
       }
 
@@ -2590,13 +2760,96 @@
         refreshTimeSlotConstraints();
       }
 
+      // Show inline explanation when duration does not fit due to booking overlap
+      function updateTimeConflictHelp() {
+        const pickupHelp = document.getElementById('pickup_time_help');
+        const deliveryHelp = document.getElementById('delivery_time_help');
+        if (!pickupHelp || !deliveryHelp) return;
+
+        // Clear both first
+        pickupHelp.textContent = '';
+        deliveryHelp.textContent = '';
+
+        const rawHours = parseInt(eventDurationInput?.value || '0', 10) || 0;
+        const durationMin = Math.max(30, rawHours * 60);
+        const method = transportationSelect ? transportationSelect.value : 'none';
+        const activeSelect = method === 'delivery' ? deliveryTimeInput : pickupTimeInput;
+
+        if (!activeSelect || !activeSelect.value || studioBookingsForSelectedDate.length === 0) return;
+
+        const startMin = timeToMinutes(activeSelect.value);
+        if (startMin == null) return;
+        const endMin = startMin + durationMin;
+
+        let conflictLabel = '';
+        function parse12ToMinutesLocal(s) {
+          const m = s && s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (!m) return null;
+          let hh = parseInt(m[1], 10);
+          const mm = parseInt(m[2], 10);
+          const period = m[3].toUpperCase();
+          if (period === 'PM' && hh !== 12) hh += 12;
+          if (period === 'AM' && hh === 12) hh = 0;
+          return hh * 60 + mm;
+        }
+
+        for (const b of studioBookingsForSelectedDate) {
+          const slot = (b.time_slot || '');
+          const parts = slot.split('-');
+          const startStr = parts[0] ? parts[0].trim() : null;
+          const endStr = parts[1] ? parts[1].trim() : null;
+          const existingStart = parse12ToMinutesLocal(startStr);
+          const existingEnd = parse12ToMinutesLocal(endStr);
+          if (existingStart == null || existingEnd == null) continue;
+          if (startMin < existingEnd && endMin > existingStart) {
+            conflictLabel = startStr && endStr ? `${startStr} - ${endStr}` : slot;
+            break;
+          }
+        }
+
+        let msg = '';
+        if (conflictLabel) {
+          msg = `Selected duration of ${rawHours} hours does not fit: overlaps ${conflictLabel}. Choose an earlier start or reduce duration.`;
+        } else {
+          // Provide general guidance when some options are disabled due to overlaps
+          const first = studioBookingsForSelectedDate[0];
+          const slot = first && first.time_slot ? first.time_slot : '';
+          msg = `Some times are disabled because a ${rawHours}h duration must avoid existing booking(s) like ${slot}.`;
+        }
+
+        const targetHelp = method === 'delivery' ? deliveryHelp : pickupHelp;
+        targetHelp.textContent = msg;
+      }
+
       // Populate pickup/delivery selects on load before applying constraints
       populateTimeSelect(pickupTimeInput);
       populateTimeSelect(deliveryTimeInput);
 
-      if (startDateInput) startDateInput.addEventListener('change', refreshTimeSlotConstraints);
+      async function fetchStudioBookingsForDate(date) {
+        if (!date) { studioBookingsForSelectedDate = []; return; }
+        try {
+          const resp = await fetch(`/api/bookings-by-date?date=${encodeURIComponent(date)}`);
+          const data = await resp.json();
+          studioBookingsForSelectedDate = (data.bookings || []).filter(b => (b.type === 'booking') && (b.status !== 'cancelled'));
+        } catch (e) {
+          console.error('Failed to fetch bookings for date', date, e);
+          studioBookingsForSelectedDate = [];
+        }
+      }
+
+      async function handleDateOrDurationChange() {
+        await fetchStudioBookingsForDate(startDateInput?.value);
+        refreshTimeSlotConstraints();
+      }
+
+      if (startDateInput) startDateInput.addEventListener('change', handleDateOrDurationChange);
+      if (eventDurationInput) eventDurationInput.addEventListener('change', handleDateOrDurationChange);
       if (transportationSelect) transportationSelect.addEventListener('change', refreshTimeSlotConstraints);
-      refreshTimeSlotConstraints();
+
+      // Initial constraints after loading available slots and current date
+      fetchStudioBookingsForDate(startDateInput?.value).then(() => {
+        refreshTimeSlotConstraints();
+      });
 
       // ===== Disable current day after studio closing (8:00 PM) =====
       function isPastClosingNow() {
@@ -2624,33 +2877,12 @@
         if (!document.hidden) updateStartDateMinBasedOnClosing();
       });
 
-      // Dynamically cap latest allowable pick-up time based on event duration
+      // Do not cap latest allowable time based on closing; allow later if no conflicts
       function updatePickupMaxByDuration() {
         const method = transportationSelect ? transportationSelect.value : 'none';
         const activeTimeInput = method === 'delivery' ? deliveryTimeInput : pickupTimeInput;
         if (!activeTimeInput) return;
-        // Default hard cap to closing time
-        activeTimeInput.max = STUDIO_CLOSING_TIME;
-
-        if (eventDurationInput) {
-          const durationHours = parseInt(eventDurationInput.value || '0', 10);
-          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
-          const maxPickupMin = Math.max(0, closingMin - (durationHours * 60));
-          const maxHHMM = minutesToHHMM(maxPickupMin);
-          // Set dynamic max so that pickup + duration does not pass closing
-          activeTimeInput.max = maxHHMM;
-          // If current value exceeds max, clamp it
-          if (activeTimeInput.value && activeTimeInput.value > activeTimeInput.max) {
-            activeTimeInput.value = activeTimeInput.max;
-          }
-
-          // If min > max (e.g., too late today), reflect not enough time
-          if (activeTimeInput.min && activeTimeInput.max && activeTimeInput.min > activeTimeInput.max) {
-            if (eventDurationHelp) {
-              eventDurationHelp.textContent = `Not enough time today for ${durationHours} hour(s). Choose earlier pickup or reduce duration.`;
-            }
-          }
-        }
+        // Note rendering handled by pricing; avoid overwriting here
       }
 
       if (eventDurationInput) {
@@ -2673,6 +2905,8 @@
       
       // Store booked dates for conflict checking
       let bookedDates = [];
+      // Store studio bookings for selected date to disable overlapping time options
+      let studioBookingsForSelectedDate = [];
 
       // Gate form: disable dependent fields until instrument type is selected
       (function gateFieldsOnLoad() {
@@ -3071,6 +3305,7 @@
                if (pickupTimeInput.value && pickupTimeInput.value < '08:00') {
                  pickupTimeInput.value = '08:00';
                }
+               updateTimeConflictHelp();
              }
            });
          });
@@ -3084,6 +3319,7 @@
                if (deliveryTimeInput.value && deliveryTimeInput.value < '08:00') {
                  deliveryTimeInput.value = '08:00';
                }
+               updateTimeConflictHelp();
              }
            });
          });
@@ -3092,6 +3328,9 @@
        // Event duration affects price (single-day only now)
        if (eventDurationInput) {
          eventDurationInput.addEventListener('input', function() {
+           updatePriceSummary();
+         });
+         eventDurationInput.addEventListener('change', function() {
            updatePriceSummary();
          });
        }
@@ -3161,13 +3400,131 @@
         // Populate modal with current form data
         populateModal();
         
-        // Show modal
+        // Show summary-only view first
         modal.style.display = 'block';
+        modal.classList.add('show-left-only');
+        try { document.body.style.overflow = 'hidden'; } catch(e) {}
+      });
+
+      // Summary-left action buttons
+      const cancelRentalSummaryBtn = document.getElementById('cancelRentalSummary');
+      if (cancelRentalSummaryBtn) {
+        cancelRentalSummaryBtn.addEventListener('click', function() {
+          closeModalFunc();
+        });
+      }
+      const gcashModal = document.getElementById('gcashModal');
+      const gcashNextBtn = document.getElementById('gcashNextBtn');
+      const gcashBackBtn = document.getElementById('gcashBackBtn');
+      const closeGcashModalBtn = document.getElementById('closeGcashModalBtn');
+      const qrImgEl = document.getElementById('gcashQrImage');
+      const centerPanel = document.querySelector('#instrumentRentalModal .modal-center');
+
+      async function loadInstrumentRentalQr() {
+        try {
+          const isFullPackage = instrumentTypeSelect.value === 'full_package';
+          const typeParam = isFullPackage ? 'full_package' : 'instruments';
+          const res = await fetch(`/api/payment-qr/rental?type=${typeParam}`);
+          const data = await res.json();
+          if (data && data.qr_url) {
+            if (qrImgEl) {
+              qrImgEl.src = data.qr_url;
+              qrImgEl.style.display = 'block';
+            }
+            const amountEl = document.getElementById('modalGcashAmount');
+            if (amountEl && typeof data.reservation_fee_php === 'number') {
+              amountEl.textContent = data.reservation_fee_php.toFixed(2);
+            }
+            const statusEl = document.getElementById('gcashStatus');
+            if (statusEl) {
+              statusEl.textContent = 'After completing your payment, click Next to continue.';
+            }
+          } else {
+            if (qrImgEl) {
+              qrImgEl.src = '';
+              qrImgEl.style.display = 'none';
+            }
+            const statusEl = document.getElementById('gcashStatus');
+            if (statusEl) {
+              statusEl.textContent = 'No QR configured yet. Please wait for admin to upload a QR.';
+            }
+          }
+        } catch (e) {
+          if (qrImgEl) {
+            qrImgEl.src = '';
+            qrImgEl.style.display = 'none';
+          }
+          const statusEl = document.getElementById('gcashStatus');
+          if (statusEl) {
+            statusEl.textContent = 'No QR configured yet. Please wait for admin to upload a QR.';
+          }
+        }
+      }
+
+      const openInstrumentCenterBtn = document.getElementById('openInstrumentCenterBtn');
+      if (openInstrumentCenterBtn && gcashModal && modal) {
+        openInstrumentCenterBtn.addEventListener('click', async function() {
+          await loadInstrumentRentalQr();
+          gcashModal.style.display = 'block';
+          modal.style.display = 'none';
+          try { document.body.style.overflow = 'hidden'; } catch(e) {}
+        });
+      }
+
+      // Close and Back from GCash
+      if (closeGcashModalBtn && gcashModal) {
+        closeGcashModalBtn.addEventListener('click', function() {
+          gcashModal.style.display = 'none';
+          modal.style.display = 'block';
+          modal.classList.add('show-left-only');
+          modal.classList.remove('show-center');
+          try { document.body.style.overflow = 'hidden'; } catch(e) {}
+          const leftPanel = document.querySelector('#instrumentRentalModal .modal-left');
+          leftPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+      if (gcashBackBtn && gcashModal) {
+        gcashBackBtn.addEventListener('click', function() {
+          gcashModal.style.display = 'none';
+          modal.style.display = 'block';
+          modal.classList.add('show-left-only');
+          modal.classList.remove('show-center');
+          try { document.body.style.overflow = 'hidden'; } catch(e) {}
+          const leftPanel = document.querySelector('#instrumentRentalModal .modal-left');
+          leftPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+
+      // Next from GCash -> center form
+      if (gcashNextBtn && gcashModal) {
+        gcashNextBtn.addEventListener('click', function() {
+          gcashModal.style.display = 'none';
+          modal.style.display = 'block';
+          modal.classList.remove('show-left-only');
+          modal.classList.add('show-center');
+          try { document.body.style.overflow = 'hidden'; } catch(e) {}
+          centerPanel?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
+
+      // Click outside to close to summary
+      gcashModal?.addEventListener('click', function(e) {
+        if (e.target === gcashModal) {
+          gcashModal.style.display = 'none';
+          modal.style.display = 'block';
+          modal.classList.add('show-left-only');
+          modal.classList.remove('show-center');
+          try { document.body.style.overflow = 'hidden'; } catch(e) {}
+        }
       });
       
       // Close modal functions
       function closeModalFunc() {
         modal.style.display = 'none';
+        if (modal) {
+          modal.classList.remove('show-left-only', 'show-center');
+        }
+        try { document.body.style.overflow = 'auto'; } catch(e) {}
       }
       
       if (cancelRentalModal) {
@@ -3258,58 +3615,20 @@
           }
         }
 
-        // For single-day rentals, ensure event duration fits before closing time (8:00 PM)
+        // For single-day self pickup: allow durations beyond closing if no conflicts (server-side)
         if (rentType === 'single' && transportationSelect.value !== 'delivery') {
           if (!eventDurationInput || !eventDurationInput.value) {
             alert('Please enter event duration in hours.');
             return false;
           }
-          // Block past-time selection when renting today
-          const todayStr = getLocalDateString(new Date());
-          if (startDateInput.value === todayStr) {
-            const now = new Date();
-            const nowHH = String(now.getHours()).padStart(2, '0');
-            const nowMM = String(now.getMinutes()).padStart(2, '0');
-            const nowHHMM = `${nowHH}:${nowMM}`;
-            const effectiveMin = pickupTimeInput.min || '08:00';
-            if (pickupTimeInput.value < effectiveMin || pickupTimeInput.value < nowHHMM) {
-              alert('Pick-up time cannot be in the past for a same-day rental.');
-              return false;
-            }
-          }
-          const pickupMin = timeToMinutes(pickupTimeInput.value);
-          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
-          if (pickupMin == null || closingMin == null) {
-            alert('Invalid time values. Please check your pick-up time.');
-            return false;
-          }
-          // Ensure start date respects dynamic minimum (e.g., today disabled after closing)
+          // Ensure start date respects dynamic minimum (24-hour lead time)
           if (startDateInput && startDateInput.min && startDateInput.value < startDateInput.min) {
-            alert('Start date is no longer available today. Please choose a later date.');
             return false;
           }
-          const remainingMin = closingMin - pickupMin;
-          const requiredMin = parseInt(eventDurationInput.value, 10) * 60;
-          if (requiredMin > remainingMin) {
-            const allowedHours = Math.max(0, Math.floor(remainingMin / 60));
-            alert(`With a ${eventDurationInput.value} hour event starting at ${pickupTimeInput.value}, return exceeds 8:00 PM. Reduce duration to ${allowedHours} hour(s) or choose an earlier pickup.`);
-            return false;
-          }
-
-          // Also block pickup times that start after the latest allowable start based on duration
-          const maxPickupMin = Math.max(0, closingMin - requiredMin);
-          if (pickupMin > maxPickupMin) {
-            alert('Pick-up time is too late for the chosen duration. Choose an earlier time.');
-            return false;
-          }
-          // And never allow pickup beyond closing time
-          if (pickupTimeInput.value > STUDIO_CLOSING_TIME) {
-            alert('Pick-up time cannot be past 8:00 PM.');
-            return false;
-          }
+          // No closing-time cap; overlap conflicts are validated on the server.
         }
 
-        // For single-day delivery, ensure event duration fits before closing (8:00 PM)
+        // For single-day delivery: allow durations beyond closing if no conflicts (server-side)
         if (rentType === 'single' && transportationSelect.value === 'delivery') {
           if (!eventDurationInput || !eventDurationInput.value) {
             alert('Please enter event duration in hours.');
@@ -3320,49 +3639,11 @@
             alert('Please select a delivery time.');
             return false;
           }
-          // Block past-time selection when renting today
-          const todayStr = getLocalDateString(new Date());
-          if (startDateInput.value === todayStr) {
-            const now = new Date();
-            const nowHH = String(now.getHours()).padStart(2, '0');
-            const nowMM = String(now.getMinutes()).padStart(2, '0');
-            const nowHHMM = `${nowHH}:${nowMM}`;
-            const effectiveMin = deliveryTimeInputLocal.min || '08:00';
-            if (deliveryTimeInputLocal.value < effectiveMin || deliveryTimeInputLocal.value < nowHHMM) {
-              alert('Delivery time cannot be in the past for a same-day rental.');
-              return false;
-            }
-          }
-          const startMin = timeToMinutes(deliveryTimeInputLocal.value);
-          const closingMin = timeToMinutes(STUDIO_CLOSING_TIME);
-          if (startMin == null || closingMin == null) {
-            alert('Invalid time values. Please check your delivery time.');
-            return false;
-          }
-          // Ensure start date respects dynamic minimum (e.g., today disabled after closing)
+          // Ensure start date respects dynamic minimum (24-hour lead time)
           if (startDateInput && startDateInput.min && startDateInput.value < startDateInput.min) {
-            alert('Start date is no longer available today. Please choose a later date.');
             return false;
           }
-          const remainingMin = closingMin - startMin;
-          const requiredMin = parseInt(eventDurationInput.value, 10) * 60;
-          if (requiredMin > remainingMin) {
-            const allowedHours = Math.max(0, Math.floor(remainingMin / 60));
-            alert(`With a ${eventDurationInput.value} hour event starting at ${deliveryTimeInputLocal.value}, return exceeds 8:00 PM. Reduce duration to ${allowedHours} hour(s) or choose an earlier delivery time.`);
-            return false;
-          }
-
-          // Also block delivery times that start after the latest allowable start based on duration
-          const maxStartMin = Math.max(0, closingMin - requiredMin);
-          if (startMin > maxStartMin) {
-            alert('Delivery time is too late for the chosen duration. Choose an earlier time.');
-            return false;
-          }
-          // And never allow delivery beyond closing time
-          if (deliveryTimeInputLocal.value > STUDIO_CLOSING_TIME) {
-            alert('Delivery time cannot be past 8:00 PM.');
-            return false;
-          }
+          // No closing-time cap; overlap conflicts are validated on the server.
         }
         
         return true;

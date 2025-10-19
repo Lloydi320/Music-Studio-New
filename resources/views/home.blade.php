@@ -159,17 +159,104 @@
         @endif
       </div>
       
-      <!-- Image Display Component (shows when calendar is hidden) -->
+      <!-- Home Carousel: teachers-style visuals, no overlay details -->
+      <style>
+        /* Home teachers-style carousel */
+        .home-carousel-container { position: relative; width: 100%; max-width: 1100px; margin: 20px auto; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+        .home-carousel-wrapper { overflow: hidden; }
+        .home-carousel-track { display: flex; transition: transform 0.5s ease; }
+        .home-carousel-slide { flex: 0 0 100%; }
+        .home-carousel-card { position: relative; height: 60vh; min-height: 380px; background: #000; }
+        .home-carousel-image, .home-carousel-image img { width: 100%; height: 100%; }
+        .home-carousel-image img { object-fit: cover; display: block; }
+        .home-carousel-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.35) 100%); pointer-events: none; }
+        .home-carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,215,0,0.9); color: #000; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; }
+        .home-carousel-btn-prev { left: 14px; }
+        .home-carousel-btn-next { right: 14px; }
+        .home-carousel-btn:hover { background: #FFD700; }
+        .home-carousel-dots { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+        .home-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #FFD700; background: transparent; cursor: pointer; opacity: 0.7; }
+        .home-dot.active { background: #FFD700; opacity: 1; }
+        @media (max-width: 1350px) {
+          .home-carousel-card { height: 50vh; min-height: 320px; }
+        }
+        @media (max-width: 800px) {
+          .home-carousel-card { height: 42vh; min-height: 280px; }
+          .home-carousel-btn { width: 34px; height: 34px; }
+        }
+      </style>
       <div class="image-display" id="carouselContainer">
-        <img src="{{ asset('images/feedback-bg.png') }}" alt="Placeholder Image 1" class="display-image active" data-slide="0" />
-        <img src="{{ asset('images/Car3.jpg') }}" alt="Placeholder Image 2" class="display-image" data-slide="1" />
-        <img src="{{ asset('images/instruments.png') }}" alt="Placeholder Image 3" class="display-image" data-slide="2" />
-        <div class="carousel-indicators">
-          <span class="indicator active" data-slide="0"></span>
-          <span class="indicator" data-slide="1"></span>
-          <span class="indicator" data-slide="2"></span>
+        <div class="home-carousel-container">
+          <div class="home-carousel-wrapper">
+            <div class="home-carousel-track" id="homeCarouselTrack">
+              <div class="home-carousel-slide">
+                <div class="home-carousel-card">
+                  <div class="home-carousel-image">
+                    <img src="{{ asset('images/studio.jpg') }}" alt="Lemon Hub Studio" loading="lazy">
+                  </div>
+                </div>
+              </div>
+              <div class="home-carousel-slide">
+                <div class="home-carousel-card">
+                  <div class="home-carousel-image">
+                    <img src="{{ asset('images/Band.jpg') }}" alt="Band Rehearsal" loading="lazy">
+                  </div>
+                </div>
+              </div>
+              <div class="home-carousel-slide">
+                <div class="home-carousel-card">
+                  <div class="home-carousel-image">
+                    <img src="{{ asset('images/SoloRehearsal.jpg') }}" alt="Solo Rehearsal" loading="lazy">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="home-carousel-btn home-carousel-btn-prev" id="homePrevBtn" aria-label="Previous slide">&#9664;</button>
+          <button class="home-carousel-btn home-carousel-btn-next" id="homeNextBtn" aria-label="Next slide">&#9654;</button>
+          <div class="home-carousel-dots" id="homeCarouselDots">
+            <button class="home-dot active" data-slide="0" aria-label="Go to slide 1"></button>
+            <button class="home-dot" data-slide="1" aria-label="Go to slide 2"></button>
+            <button class="home-dot" data-slide="2" aria-label="Go to slide 3"></button>
+          </div>
         </div>
       </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const track = document.getElementById('homeCarouselTrack');
+          const prevBtn = document.getElementById('homePrevBtn');
+          const nextBtn = document.getElementById('homeNextBtn');
+          const dotsContainer = document.getElementById('homeCarouselDots');
+          const container = document.querySelector('#carouselContainer .home-carousel-container');
+          if (!track || !container) { return; }
+          const slides = Array.from(track.querySelectorAll('.home-carousel-slide'));
+          const dots = Array.from(dotsContainer ? dotsContainer.querySelectorAll('.home-dot') : []);
+          let current = 0;
+          const total = slides.length;
+          function update() {
+            track.style.transform = 'translateX(' + (-current * 100) + '%)';
+            dots.forEach((d, i) => d.classList.toggle('active', i === current));
+          }
+          function next() { current = (current + 1) % total; update(); }
+          function prev() { current = (current - 1 + total) % total; update(); }
+          if (prevBtn) prevBtn.addEventListener('click', prev);
+          if (nextBtn) nextBtn.addEventListener('click', next);
+          dots.forEach((d, i) => d.addEventListener('click', () => { current = i; update(); }));
+          let startX = null;
+          container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+          container.addEventListener('touchend', e => {
+            if (startX === null) return;
+            const endX = e.changedTouches[0].clientX;
+            const dx = startX - endX;
+            startX = null;
+            if (Math.abs(dx) > 50) { dx > 0 ? next() : prev(); }
+          });
+          let auto = setInterval(next, 6000);
+          container.addEventListener('mouseenter', () => clearInterval(auto));
+          container.addEventListener('mouseleave', () => { auto = setInterval(next, 6000); });
+          update();
+        });
+      </script>
       
       <!-- Floating Action Button for Calendar -->
       <button class="calendar-fab" id="calendarFab" title="Toggle Calendar">
@@ -1234,6 +1321,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const baseDate = baseDateISO ? new Date(baseDateISO + 'T00:00:00') : new Date();
         baseDate.setHours(0, 0, 0, 0);
         
+        // Define exact closing time for the selected date
+        const closingTime = new Date(baseDate);
+        closingTime.setHours(closingHour, 0, 0, 0);
+        
         let currentHour = openingHour;
         let currentMinute = 0;
         
@@ -1243,8 +1334,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
             
-            // Check if end time doesn't exceed closing hour
-            if (endTime.getHours() <= closingHour) {
+            // Check if end time doesn't exceed closing time
+            if (endTime <= closingTime) {
                 // Only consider pending or confirmed bookings as blockers
                 const blockingBookings = (bookings || []).filter(b => {
                     const status = (b.status || '').toLowerCase();
