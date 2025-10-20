@@ -822,7 +822,6 @@
                         <div class="booking-card-header">
                             <div class="booking-reference">
                                 <div class="reference-id">{{ $rental->reference }}</div>
-                                <div class="four-digit-code">Code: {{ $rental->four_digit_code ?? 'N/A' }}</div>
                                 <div class="created-date">{{ $rental->created_at->format('M d, Y') }}</div>
                             </div>
                             <span class="status-badge status-{{ $rental->status }}">

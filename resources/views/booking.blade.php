@@ -396,6 +396,7 @@
 
       .modal-buttons {
         flex-direction: column;
+        gap: 10px;
       }
 
       .gcash-qr img {
@@ -881,6 +882,9 @@
             <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 6px 8px; margin: 3px 0; border-radius: 4px; border: 1px solid #ffeaa7; font-size: 0.8rem;">
               ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
             </div>
+            <div id="pictureErrorMessage" class="error-message" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
+              ⚠️ Please upload a picture of your GCash payment receipt before confirming your booking.
+            </div>
             @error('upload_picture')
               <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 6px 8px; margin: 3px 0; border-radius: 4px; border: 1px solid #f5c6cb; font-size: 0.8rem;">
                 {{ $message }}
@@ -1332,18 +1336,18 @@
 <script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('js/page-transitions.js') }}"></script>
 <script>
-// Reference Code Validation
-document.addEventListener('DOMContentLoaded', function() {
+// Reference Code Validation - Standalone implementation
+(function() {
+  function initReferenceCodeValidation() {
     const referenceCodeInput = document.getElementById('referenceCode');
-    const studioRentalForm = document.getElementById('studioRentalForm');
     let validationTimeout;
     let isValidating = false;
-    
+
     if (referenceCodeInput) {
-        // Create validation message element
-        const validationMessage = document.createElement('div');
-        validationMessage.id = 'referenceValidationMessage';
-        validationMessage.style.cssText = `
+      // Create validation message element
+      const validationMessage = document.createElement('div');
+      validationMessage.id = 'referenceValidationMessage';
+      validationMessage.style.cssText = `
             margin-top: 5px;
             padding: 8px 12px;
             border-radius: 4px;
@@ -1351,100 +1355,105 @@ document.addEventListener('DOMContentLoaded', function() {
             font-weight: 500;
             display: none;
         `;
-        referenceCodeInput.parentNode.appendChild(validationMessage);
-        
-        // Real-time validation on input
-        referenceCodeInput.addEventListener('input', function() {
-            const value = this.value.trim();
-            
-            // Clear previous timeout
-            clearTimeout(validationTimeout);
-            
-            // Reset validation state
-            validationMessage.style.display = 'none';
-            this.style.borderColor = '';
-            
-            // Clear validation state when user is typing
-            if (value.length < 1) {
-                delete this.dataset.valid;
-            }
-            
-            // Only validate if we have exactly 13 digits
-            if (value.length === 13 && /^[0-9]{13}$/.test(value)) {
-                validationTimeout = setTimeout(() => {
-                    validateReferenceCode(value);
-                }, 500); // Debounce for 500ms
-            }
-        });
-        
-        function validateReferenceCode(code) {
-            if (isValidating) return;
-            
-            isValidating = true;
-            validationMessage.textContent = 'Checking reference code...';
-            validationMessage.style.cssText += `
+      referenceCodeInput.parentNode.appendChild(validationMessage);
+
+      // Real-time validation on input
+      referenceCodeInput.addEventListener('input', function() {
+        const value = this.value.trim();
+
+        // Clear previous timeout
+        clearTimeout(validationTimeout);
+
+        // Reset validation state
+        validationMessage.style.display = 'none';
+        this.style.borderColor = '';
+
+        // Clear validation state when user is typing
+        if (value.length < 1) {
+          delete this.dataset.valid;
+        }
+
+        // Only validate if we have exactly 13 digits
+        if (value.length === 13 && /^[0-9]{13}$/.test(value)) {
+          validationTimeout = setTimeout(() => {
+            validateReferenceCode(value);
+          }, 500); // Debounce for 500ms
+        }
+      });
+
+      function validateReferenceCode(code) {
+        if (isValidating) return;
+
+        isValidating = true;
+        validationMessage.textContent = 'Checking reference code...';
+        validationMessage.style.cssText += `
                 display: block;
                 background-color: #f3f4f6;
                 color: #6b7280;
                 border: 1px solid #d1d5db;
             `;
-            
-            // Check if reference code exists
-            fetch('/api/check-reference-code', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ reference_code: code })
-            })
-            .then(response => response.json())
-            .then(data => {
-                isValidating = false;
-                
-                if (data.exists) {
-                    // Reference code already exists
-                    validationMessage.textContent = 'This reference code is already existing. Please use a different reference number from GCash.';
-                    validationMessage.style.cssText += `
+
+        // Check if reference code exists
+        fetch('/api/check-reference-code', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ reference_code: code })
+        })
+          .then(response => response.json())
+          .then(data => {
+            isValidating = false;
+
+            if (data.exists) {
+              // Reference code already exists
+              validationMessage.textContent = 'This reference code is already existing. Please use a different reference number from GCash.';
+              validationMessage.style.cssText += `
                         display: block;
                         background-color: #fef2f2;
                         color: #dc2626;
                         border: 1px solid #fecaca;
                     `;
-                    referenceCodeInput.dataset.valid = 'false';
-                } else {
-                    // Reference code is available
-                    validationMessage.textContent = 'Reference code is available!';
-                    validationMessage.style.cssText += `
+              referenceCodeInput.dataset.valid = 'false';
+            } else {
+              // Reference code is available
+              validationMessage.textContent = 'Reference code is available!';
+              validationMessage.style.cssText += `
                         display: block;
                         background-color: #f0fdf4;
                         color: #16a34a;
                         border: 1px solid #bbf7d0;
                     `;
-                    referenceCodeInput.dataset.valid = 'true';
-                }
-                
-                validationMessage.style.display = 'block';
-            })
-            .catch(error => {
-                isValidating = false;
-                console.error('Reference code validation error:', error);
-                validationMessage.textContent = 'Error checking reference code. Please try again.';
-                validationMessage.style.cssText += `
+              referenceCodeInput.dataset.valid = 'true';
+            }
+
+            validationMessage.style.display = 'block';
+          })
+          .catch(error => {
+            isValidating = false;
+            console.error('Reference code validation error:', error);
+            validationMessage.textContent = 'Error checking reference code. Please try again.';
+            validationMessage.style.cssText += `
                     display: block;
                     background-color: #fef2f2;
                     color: #dc2626;
                     border: 1px solid #fecaca;
                 `;
-                referenceCodeInput.dataset.valid = 'unknown';
-            });
-        }
+            referenceCodeInput.dataset.valid = 'unknown';
+          });
+      }
     }
-    
-    // Note: Form submission handling is now managed by booking.js
-    // This prevents conflicts between inline handlers and external JS file
-});
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReferenceCodeValidation);
+  } else {
+    initReferenceCodeValidation();
+  }
+})();
+</script>
 
 // Original script content below
 function toggleUserDropdown() {
@@ -1485,6 +1494,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // Contact functionality handled by other contact methods
     });
+    }
 });
 
 // QR Code Modal Functions

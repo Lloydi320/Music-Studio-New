@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InstrumentRentalController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\CalendarFeedController;
 
 
 Route::get('/', function () {
@@ -16,7 +17,12 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
-Route::get('/music-lessons', [App\Http\Controllers\MusicLessonsController::class, 'index'])->name('music-lessons');
+Route::get('/music-lessons', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login')->with('error', 'Please log in to access Music Lessons.');
+    }
+    return app(App\Http\Controllers\MusicLessonsController::class)->index();
+})->name('music-lessons');
 
 
 
@@ -30,7 +36,7 @@ Route::get('/map', function () {
 
 Route::get('/booking', function () {
     if (!Auth::check()) {
-        return redirect('/')->with('error', 'Please log in to book a session.');
+        return redirect()->route('login')->with('error', 'Please log in to book a session.');
     }
     return view('booking');
 })->name('booking');
@@ -39,7 +45,7 @@ Route::post('/booking', [BookingController::class, 'store'])->middleware('auth')
 
 Route::get('/solo-rehearsal', function () {
     if (!Auth::check()) {
-        return redirect('/')->with('error', 'Please log in to book a session.');
+        return redirect()->route('login')->with('error', 'Please log in to book a session.');
     }
     return view('solo-rehearsal');
 })->name('solo-rehearsal');
@@ -52,7 +58,12 @@ Route::get('/api/bookings', [App\Http\Controllers\BookingController::class, 'get
 Route::get('/api/validate-reference/{reference}', [App\Http\Controllers\BookingController::class, 'validateReference']);
 
 // Instrument Rental Routes
-Route::get('/instrument-rental', [InstrumentRentalController::class, 'index'])->name('instrument-rental');
+Route::get('/instrument-rental', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login')->with('error', 'Please log in to access Instrument Rental.');
+    }
+    return app(App\Http\Controllers\InstrumentRentalController::class)->index();
+})->name('instrument-rental.index');
 Route::post('/instrument-rental', [InstrumentRentalController::class, 'store'])->middleware('auth')->name('instrument-rental.store');
 
 // Instrument Rental API Routes
@@ -200,4 +211,8 @@ Route::get('/debug-google', function () {
 // Google Calendar webhook (should be outside auth middleware)
 Route::post('/webhooks/google-calendar', [App\Http\Controllers\GoogleCalendarWebhookController::class, 'handleWebhook'])
     ->name('google.calendar.webhook');
+
+
+Route::get('/calendar/feed.ics', [CalendarFeedController::class, 'ics'])->name('calendar.feed');
+Route::get('/calendar/export.ics', [CalendarFeedController::class, 'export'])->name('calendar.export');
 

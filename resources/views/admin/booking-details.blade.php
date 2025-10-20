@@ -235,6 +235,10 @@
         margin-top: 0.25rem;
     }
 
+    .payment-details {
+        margin-top: 2rem;
+    }
+
     .actions-card {
         grid-column: 1 / -1;
         text-align: center;
@@ -594,8 +598,8 @@
             </h3>
             
             <div class="detail-row">
-                <span class="detail-label">Reference Code</span>
-                <span class="detail-value reference-id">#{{ $booking->reference_code ?? str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</span>
+                <span class="detail-label">Reference Number</span>
+                <span class="detail-value reference-id">{{ $booking->reference ?? '#' . str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</span>
             </div>
             
             <div class="detail-row">
@@ -668,16 +672,6 @@
             </div>
             @endif
             
-            @if($booking->image_path)
-            <div class="detail-row">
-                <span class="detail-label">Uploaded Image</span>
-                <div class="detail-value">
-                    <div class="image-preview">
-                        <img src="{{ asset('storage/' . $booking->image_path) }}" alt="Booking Image" class="booking-image" onclick="openImageModal(this.src)">
-                    </div>
-                </div>
-            </div>
-            @endif
 
             <!-- Booking Timeline -->
             <div class="booking-timeline">
@@ -754,6 +748,27 @@
                     <div class="user-stat-number">{{ $booking->user->bookings()->where('status', 'confirmed')->count() }}</div>
                     <div class="user-stat-label">Confirmed</div>
                 </div>
+            </div>
+
+            <div class="payment-details">
+                <h3 class="card-title">
+                    <i class="fas fa-credit-card"></i> Payment Details
+                </h3>
+                <div class="detail-row">
+                    <span class="detail-label">GCash Payment Reference Number</span>
+                    <span class="detail-value">{{ $booking->reference_code ?? 'N/A' }}</span>
+                </div>
+
+                @if($booking->image_path)
+                <div class="detail-row">
+                    <span class="detail-label">Payment Receipt</span>
+                    <div class="detail-value">
+                        <div class="image-preview">
+                            <img src="{{ asset('storage/' . $booking->image_path) }}" alt="Payment Receipt" class="booking-image" onclick="openImageModal(this.src)">
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
 

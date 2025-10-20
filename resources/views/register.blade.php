@@ -48,6 +48,7 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
 
         .register-header h1 {
@@ -318,14 +319,52 @@
         .btn-primary:hover {
             transform: translateY(-2px);
         }
+
+        /* Back button (consistent with login/forgot) */
+        .page-back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #FFD700 0%, #F4C200 50%, #E6B800 100%);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+        .page-back-button::before {
+            content: "\2190"; /* left arrow */
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .page-back-button:hover {
+            background: linear-gradient(135deg, #F4C200 0%, #E6B800 50%, #D4A700 100%);
+        }
+
+        /* Header layout to avoid overlap */
+        .register-header-inner {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-back { justify-self: start; }
+        .header-title { justify-self: center; }
     </style>
 </head>
 <body>
-    <div class="register-container">
+     <div class="register-container">
         <div class="register-header">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
-                <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo" style="height: 40px; width: auto; filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.3));">
-                <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Lemon Hub Studio</h1>
+            <div class="register-header-inner">
+                <a href="{{ route('login') }}" class="page-back-button header-back" aria-label="Back to Login" title="Back to Login"></a>
+                <div class="header-title" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                    <img src="{{ asset('images/studio-logo.png') }}" alt="Studio Logo" style="height: 40px; width: auto; filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.3));">
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Lemon Hub Studio</h1>
+                </div>
             </div>
             <p>Create your account to get started</p>
         </div>
@@ -362,7 +401,7 @@
                 @csrf
                 
                 <div class="form-group">
-                    <label for="name">Full Name</label>
+                    <label for="name">User Name</label>
                     <input type="text" id="name" name="name" value="{{ old('name') }}" required>
                 </div>
                 

@@ -122,24 +122,39 @@ class AdminController extends Controller
         $monthlyData = [];
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $monthlyBookings = Booking::whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->count();
-            $monthlyRentals = InstrumentRental::whereIn('status', ['confirmed', 'active'])
-                ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->count();
-            // Revenue excludes walk-in bookings
-            $monthlyConfirmedNonWalkIn = Booking::where('status', 'confirmed')
+
+            // Confirmed bookings excluding walk-ins for this month
+            $monthlyConfirmedNonWalkInCount = Booking::where('status', 'confirmed')
                 ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->when($walkInColumn, function ($q) use ($walkInColumn) {
                     $q->where($walkInColumn, false);
                 })
                 ->count();
+
+            $monthlyBookingRevenue = Booking::where('status', 'confirmed')
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->when($walkInColumn, function ($q) use ($walkInColumn) {
+                    $q->where($walkInColumn, false);
+                })
+                ->sum('total_amount');
+
+            // Instrument rentals revenue (confirmed or active) for this month
+            $monthlyRentalsCount = InstrumentRental::whereIn('status', ['confirmed', 'active'])
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->count();
+
+            $monthlyRentalsRevenue = InstrumentRental::whereIn('status', ['confirmed', 'active'])
+                ->whereYear('created_at', $date->year)
+                ->whereMonth('created_at', $date->month)
+                ->sum('total_amount');
+
+            // Costs remain a simple estimate
             $monthlyData[$date->format('M')] = [
-                'cost' => ($monthlyBookings + $monthlyRentals) * 500,
-                'revenue' => ($monthlyConfirmedNonWalkIn * 1200) + ($monthlyRentals * 300)
+                'cost' => ($monthlyConfirmedNonWalkInCount + $monthlyRentalsCount) * 500,
+                'revenue' => ($monthlyBookingRevenue + $monthlyRentalsRevenue)
             ];
         }
         
@@ -147,24 +162,33 @@ class AdminController extends Controller
         $totalRevenue = $estimatedRevenue;
         $thisMonthRevenue = $monthlyData[now()->format('M')]['revenue'] ?? 0;
         $lastMonthRevenue = $monthlyData[now()->subMonth()->format('M')]['revenue'] ?? 0;
-        $averageBookingValue = $totalBookings > 0 ? round($totalRevenue / $totalBookings, 2) : 0;
+        $confirmedNonWalkInCount = Booking::where('status', 'confirmed')
+            ->when($walkInColumn, function ($q) use ($walkInColumn) {
+                $q->where($walkInColumn, false);
+            })
+            ->count();
+        $averageBookingValue = $confirmedNonWalkInCount > 0 ? round($totalBookingRevenue / $confirmedNonWalkInCount, 2) : 0;
         
         // Monthly data for charts
         $months = array_keys($monthlyData);
         $salesData = array_values(array_column($monthlyData, 'revenue'));
         $bookingCounts = [];
         
-        // Get booking counts for each month (including instrument rentals)
+        // Get booking counts for each month (confirmed bookings only; include instrument rentals)
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $monthlyBookings = Booking::whereYear('created_at', $date->year)
+            $monthlyConfirmedNonWalkIn = Booking::where('status', 'confirmed')
+                ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
+                ->when($walkInColumn, function ($q) use ($walkInColumn) {
+                    $q->where($walkInColumn, false);
+                })
                 ->count();
-            $monthlyRentals = InstrumentRental::whereIn('status', ['confirmed', 'active'])
+            $monthlyRentalsCount = InstrumentRental::whereIn('status', ['confirmed', 'active'])
                 ->whereYear('created_at', $date->year)
                 ->whereMonth('created_at', $date->month)
                 ->count();
-            $bookingCounts[] = $monthlyBookings + $monthlyRentals;
+            $bookingCounts[] = $monthlyConfirmedNonWalkIn + $monthlyRentalsCount;
         }
         
         // Top customers data (including both bookings and instrument rentals)
@@ -2330,7 +2354,7 @@ class AdminController extends Controller
         }
 
         // Get paginated results
-        $activityLogs = $query->orderBy('created_at', 'desc')->paginate(50);
+        $activityLogs = $query->orderBy('created_at', 'desc')->paginate(6);
         $totalRecords = \App\Models\ActivityLog::count();
 
         return view('admin.activity-logs', compact('activityLogs', 'totalRecords'));

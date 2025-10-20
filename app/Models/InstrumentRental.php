@@ -24,6 +24,7 @@ class InstrumentRental extends Model
         'reschedule_source',
         'reference',
         'four_digit_code',
+        'payment_reference',
         'notes',
         'receipt_image',
         'pickup_location',

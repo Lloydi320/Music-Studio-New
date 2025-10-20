@@ -2173,6 +2173,15 @@
         
         function renderBookingModalContent(booking) {
             const modalBody = document.getElementById('bookingModalBody');
+
+            const bookingDate = new Date(booking.date);
+            const formattedDateText = new Intl.DateTimeFormat('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'Asia/Manila' // GMT+8
+            }).format(bookingDate);
             
             modalBody.innerHTML = `
                 <div class="modal-section">
@@ -2180,15 +2189,11 @@
                     <div class="modal-info-grid">
                         <div class="modal-info-item">
                             <div class="modal-info-label">Reference</div>
-                            <div class="modal-info-value">${booking.booking_reference}</div>
+                            <div class="modal-info-value">${booking.reference || 'N/A'}</div>
                         </div>
                         <div class="modal-info-item">
                             <div class="modal-info-label">Band Name</div>
-                            <div class="modal-info-value">${booking.band_name}</div>
-                        </div>
-                        <div class="modal-info-item">
-                            <div class="modal-info-label">Customer</div>
-                            <div class="modal-info-value">${booking.customer_name}</div>
+                            <div class="modal-info-value">${booking.band_name || 'N/A'}</div>
                         </div>
                         <div class="modal-info-item">
                             <div class="modal-info-label">Email</div>
@@ -2196,11 +2201,11 @@
                         </div>
                         <div class="modal-info-item">
                             <div class="modal-info-label">Phone</div>
-                            <div class="modal-info-value">${booking.phone || 'N/A'}</div>
+                            <div class="modal-info-value">${booking.contact_number || 'N/A'}</div>
                         </div>
                         <div class="modal-info-item">
                             <div class="modal-info-label">Status</div>
-                            <div class="modal-info-value">${booking.status}</div>
+                            <div class="modal-info-value">${booking.status || 'pending'}</div>
                         </div>
                     </div>
                 </div>
@@ -2210,7 +2215,7 @@
                     <div class="modal-info-grid">
                         <div class="modal-info-item">
                             <div class="modal-info-label">Date</div>
-                            <div class="modal-info-value">${booking.date}</div>
+                            <div class="modal-info-value">${formattedDateText} (GMT+8)</div>
                         </div>
                         <div class="modal-info-item">
                             <div class="modal-info-label">Time Slot</div>
@@ -2230,7 +2235,7 @@
                 <div class="modal-section">
                     <h4><i class="fas fa-cogs"></i> Actions</h4>
                     <div class="modal-actions">
-                        <a href="/admin/bookings?highlight=${booking.id}" class="modal-btn modal-btn-primary">
+                        <a href="/admin/bookings/${booking.id}" class="modal-btn modal-btn-primary">
                             <i class="fas fa-external-link-alt"></i> View Full Details
                         </a>
                         <button class="modal-btn modal-btn-secondary" onclick="closeModal('bookingModal')">

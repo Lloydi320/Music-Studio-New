@@ -181,7 +181,7 @@
           .home-carousel-card { height: 50vh; min-height: 320px; }
         }
         @media (max-width: 800px) {
-          .home-carousel-card { height: 42vh; min-height: 280px; }
+          .home-carousel-card { height: 35vh; min-height: 240px; }
           .home-carousel-btn { width: 34px; height: 34px; }
         }
       </style>

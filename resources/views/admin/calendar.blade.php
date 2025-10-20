@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Google Calendar Integration')
+@section('title', 'Calendar Integration')
 
 @section('content')
 <div class="admin-content">
@@ -16,8 +16,8 @@
                 </svg>
             </div>
             <div class="header-text">
-                <h1>Google Calendar Integration</h1>
-                <p>Sync your band rehearsals automatically for easier schedule management.</p>
+                <h1>Calendar Integration</h1>
+                <p>Subscribe to bookings in Google Calendar via ICS (no login).</p>
             </div>
         </div>
         <div class="header-actions">
@@ -27,66 +27,38 @@
 
     <!-- Connection Status -->
     <div class="calendar-main">
-        @if($user->hasGoogleCalendarAccess())
-            <div class="connection-card connected">
-                <div class="connection-status">
-                    <div class="status-indicator connected"></div>
-                    <h2>Google Calendar Connected</h2>
-                    <p>Your bookings are automatically synced to Google Calendar.</p>
+        <div class="connection-card connected">
+            <div class="connection-status">
+                <div class="status-indicator connected"></div>
+                <h2>Calendar Subscription Enabled</h2>
+                <p>Use this ICS link; booked sessions will reflect automatically.</p>
+            </div>
+            <div class="calendar-details">
+                <div class="detail-item">
+                    <span class="detail-label">ICS Feed URL:</span>
+                    <code class="calendar-id">{{ route('calendar.feed') }}@if(env('ICS_FEED_TOKEN'))?token={{ env('ICS_FEED_TOKEN') }}@endif</code>
                 </div>
-                <div class="calendar-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Calendar ID:</span>
-                        <code class="calendar-id">{{ Str::limit($user->google_calendar_id, 40, '...') }}</code>
-                    </div>
-                    @php
-                        $lastSync = \Carbon\Carbon::now()->subMinutes(2);
-                    @endphp
-                    <div class="detail-item">
-                        <span class="detail-label">Last sync:</span>
-                        <span class="sync-time">{{ $lastSync->diffForHumans() }}</span>
-                    </div>
-                </div>
-                <div class="connection-actions">
-                    <form method="POST" action="{{ route('admin.calendar.disconnect') }}" 
-                          onsubmit="return confirm('Are you sure you want to disconnect Google Calendar?')">
-                        @csrf
-                        <button type="submit" class="disconnect-btn">Disconnect</button>
-                    </form>
+                <div class="detail-item">
+                    <span class="detail-label">How to add:</span>
+                    <span>Google Calendar → Other calendars → Add by URL → paste the link.</span>
                 </div>
             </div>
-        @else
-            <div class="connection-card disconnected">
-                <div class="connection-status">
-                    <div class="status-indicator disconnected"></div>
-                    <h2>Google Calendar Not Connected</h2>
-                    <p>Connect your Google Calendar to automatically sync band rehearsals.</p>
+        </div>
+
+        {{-- ICS Subscription Card (actions added) --}}
+        <div class="card" style="margin-top: 16px;">
+            <div class="card-header">ICS Feed Actions</div>
+            <div class="card-body">
+                <p>Use these quick actions for the ICS feed:</p>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button type="button" class="btn btn-primary" onclick="copyIcsUrl()">Copy ICS Link</button>
+                    <a class="btn btn-secondary" href="{{ route('calendar.export') }}@if(env('ICS_FEED_TOKEN'))?token={{ env('ICS_FEED_TOKEN') }}@endif">Download ICS File</a>
                 </div>
-                <div class="benefits-list">
-                    <div class="benefit-item">
-                        <span class="benefit-icon">📅</span>
-                        <span>Automatic event creation for new bookings</span>
-                    </div>
-                    <div class="benefit-item">
-                        <span class="benefit-icon">🔔</span>
-                        <span>Email and push notifications</span>
-                    </div>
-                    <div class="benefit-item">
-                        <span class="benefit-icon">⚡</span>
-                        <span>Easy schedule management</span>
-                    </div>
-                    <div class="benefit-item">
-                        <span class="benefit-icon">👥</span>
-                        <span>Client information in calendar events</span>
-                    </div>
-                </div>
-                <div class="connection-actions">
-                    <a href="{{ route('admin.calendar.connect') }}" class="connect-btn">
-                        Connect Google Calendar
-                    </a>
-                </div>
+                <small class="text-muted d-block" style="margin-top:8px;">Copy the link to subscribe in Google Calendar, or download to import a static snapshot.</small>
             </div>
-        @endif
+        </div>
+
+        {{-- Google OAuth connection UI removed in favor of ICS subscription --}}
 
     @if($user->hasGoogleCalendarAccess())
     <!-- Sync Actions and Quick Actions -->
@@ -292,22 +264,22 @@
             <div class="step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <h3>Connect Your Google Account</h3>
-                    <p>Click "Connect Google Calendar" to authorize access to your Google Calendar.</p>
+                    <h3>Copy Your ICS Feed Link</h3>
+                    <p>The link is provided above; it contains all confirmed bookings.</p>
                 </div>
             </div>
             <div class="step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <h3>Automatic Sync</h3>
-                    <p>New bookings will automatically create events in your "Music Studio Bookings" calendar.</p>
+                    <h3>Subscribe in Google Calendar</h3>
+                    <p>In Google Calendar, go to "Other calendars," click "Add by URL," and paste the link.</p>
                 </div>
             </div>
             <div class="step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3>Stay Updated</h3>
-                    <p>Get notifications on your phone and computer for upcoming band rehearsals.</p>
+                    <h3>Automatic Sync</h3>
+                    <p>Your calendar will now automatically sync, showing all confirmed bookings.</p>
                 </div>
             </div>
         </div>
@@ -1457,6 +1429,18 @@ function exportCalendar() {
 
 function openSettings() {
     alert('Settings panel would open here');
+}
+
+function copyIcsUrl() {
+    const el = document.querySelector('.calendar-id');
+    if (!el) { alert('ICS url not found on page'); return; }
+    const url = (el.textContent || el.innerText || '').trim();
+    if (!url) { alert('ICS url is empty'); return; }
+    navigator.clipboard.writeText(url).then(() => {
+        alert('ICS link copied to clipboard');
+    }).catch(() => {
+        alert('Failed to copy ICS link');
+    });
 }
 
 // Auto-refresh calendar data every 5 minutes

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instrument Rental Request - {{ $rentalReference }}</title>
+    <title>Instrument Rental {{ $recipientType === 'user' ? 'Confirmation' : 'Request' }} - {{ $rentalReference }}</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -115,13 +115,17 @@
     <div class="email-container">
         <div class="header">
             <h1>🎵 {{ $studioName }}</h1>
-            <p class="subtitle">Instrument Rental Request</p>
+            <p class="subtitle">Instrument Rental {{ $recipientType === 'user' ? 'Confirmation' : 'Request' }}</p>
         </div>
         
         <div class="content">
-            <div class="alert">
+            <div class="alert" style="{{ $recipientType === 'user' ? 'background:#e8f0fe;border-color:#cce1ff;color:#1a73e8' : '' }}">
                 <span class="alert-icon">🎸</span>
-                <strong>New Instrument Rental Request:</strong> A customer has submitted a new instrument rental request.
+                @if($recipientType === 'user')
+                    <strong>Your Instrument Rental Request Was Received:</strong> We’ve logged your request and will contact you soon.
+                @else
+                    <strong>New Instrument Rental Request:</strong> A customer has submitted a new instrument rental request.
+                @endif
             </div>
             
             <div class="rental-details">
@@ -129,6 +133,10 @@
                 <div class="detail-row">
                     <span class="detail-label">Reference:</span>
                     <span class="detail-value"><strong>{{ $rentalReference }}</strong></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">GCash Payment Reference:</span>
+                    <span class="detail-value">{{ $paymentReference ?? 'N/A' }}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Customer:</span>
@@ -178,13 +186,19 @@
                 </div>
             </div>
             
+            @if($recipientType !== 'user')
             <div class="action-needed">
                 <span class="alert-icon">⚠️</span>
                 <strong>Action Required:</strong> Please review this instrument rental request and take appropriate action through the admin dashboard.
             </div>
+            @else
+            <p style="margin-top: 20px; color: #6c757d; font-size: 14px;">
+                We’ll confirm availability and follow up via email or SMS. If you need to change details, reply to this email or contact us directly.
+            </p>
+            @endif
             
             <p style="margin-top: 30px; color: #6c757d; font-size: 14px;">
-                This is an automated notification from {{ $studioName }}. Please do not reply to this email.
+                This is an automated notification from {{ $studioName }}.
             </p>
         </div>
         

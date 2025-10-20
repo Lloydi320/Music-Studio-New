@@ -775,7 +775,7 @@
          background: white;
          border-radius: 20px;
          width: 95%;
-         max-width: 1200px;
+         max-width: 640px;
          max-height: 85vh;
          overflow-y: auto;
          overflow-x: hidden;
@@ -858,6 +858,19 @@
        
        .modal-header {
          margin-bottom: 20px;
+       }
+
+       /* Button group layout */
+       .modal-buttons {
+         display: flex;
+         gap: 12px;
+         margin-top: 12px;
+       }
+       @media (max-width: 768px) {
+         .modal-buttons {
+           flex-direction: column;
+           gap: 10px; /* slight separation in mobile */
+         }
        }
 
        .modal-title {
@@ -1304,9 +1317,9 @@
        }
        
        .btn-cancel, .btn-confirm {
-         padding: 12px 24px;
+         padding: 9px 86px;
          border: none;
-         border-radius: 12px;
+         border-radius: 10px;
          font-size: 1em;
          font-weight: 600;
          cursor: pointer;
@@ -2114,7 +2127,7 @@
 
             <div class="form-group" id="startDateGroup">
               <label for="rental_start_date" id="startDateLabel">Rent Date:</label>
-              <input type="date" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ date('Y-m-d', strtotime('+1 day')) }}">
+              <input type="date" id="rental_start_date" name="rental_start_date" min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ old('rental_start_date') }}">
               <small class="form-note">Single day rent only.</small>
             </div>
 
@@ -2381,7 +2394,10 @@
                 
                 <div class="form-group">
                   <label class="form-label" for="modalContactNumber">CONTACT NUMBER *</label>
-                  <input type="tel" id="modalContactNumber" name="phone" class="form-input" required>
+                  <input type="tel" id="modalContactNumber" name="phone" class="form-input" required maxlength="11" inputmode="numeric" pattern="^09[0-9]{9}$" placeholder="09XXXXXXXXX" value="09">
+                  <div id="phoneErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
+                    Please enter a valid 11-digit number starting with 09.
+                  </div>
                 </div>
                 
                 <div class="form-group">
@@ -2398,6 +2414,9 @@
                   <input type="file" id="modalPicture" name="picture" class="file-input" accept="image/*">
                   <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ffeaa7; font-size: 0.85rem;">
                     ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
+                  </div>
+                  <div id="pictureErrorMessage" class="error-message" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
+                    ⚠️ Please upload a picture of your GCash payment receipt before confirming your booking.
                   </div>
                 </div>
                 
@@ -3540,11 +3559,49 @@
         });
       }
       
+      // Phone input enforcement for 09XXXXXXXXX
+      const phoneInput = document.getElementById('modalContactNumber');
+      const phoneErrorEl = document.getElementById('phoneErrorMessage');
+      function enforcePhone() {
+        if (!phoneInput) return;
+        let v = (phoneInput.value || '').replace(/\D/g, '');
+        if (!v.startsWith('09')) {
+          v = '09' + v.replace(/^0+/, '').replace(/^9?/, '');
+        }
+        if (v.length > 11) v = v.slice(0, 11);
+        phoneInput.value = v;
+        if (v.length === 11 && /^09\d{9}$/.test(v)) {
+          phoneInput.classList.remove('error-field');
+          if (phoneErrorEl) phoneErrorEl.style.display = 'none';
+        }
+      }
+      if (phoneInput) {
+        if (!phoneInput.value) phoneInput.value = '09';
+        ['focus', 'input', 'change', 'blur'].forEach(evt => {
+          phoneInput.addEventListener(evt, function() {
+            enforcePhone();
+            if (evt === 'blur') {
+              const valid = /^09\d{9}$/.test(phoneInput.value);
+              if (!valid && phoneErrorEl) {
+                phoneErrorEl.style.display = 'block';
+              }
+            }
+          });
+        });
+      }
+
       // Handle form submission
       if (instrumentRentalForm) {
         instrumentRentalForm.addEventListener('submit', function(e) {
+          enforcePhone();
+          if (!/^09\d{9}$/.test(phoneInput?.value || '')) {
+            e.preventDefault();
+            phoneInput?.classList.add('error-field');
+            if (phoneErrorEl) phoneErrorEl.style.display = 'block';
+            phoneInput?.focus();
+            return false;
+          }
           // Allow normal form submission
-          // The form will submit to the server normally
         });
       }
       
@@ -3879,11 +3936,40 @@
           }
         });
         
-        // Prevent form submission if reference is invalid
+        // Prevent form submission if reference is invalid or picture is not uploaded
         const form = document.getElementById('instrumentRentalForm');
         if (form) {
           form.addEventListener('submit', function(e) {
             const referenceCode = referenceCodeInput.value.trim();
+            const pictureInput = document.getElementById('modalPicture');
+            const pictureErrorMessage = document.getElementById('pictureErrorMessage');
+            
+            // Check if picture is uploaded
+            if (!pictureInput || !pictureInput.files || pictureInput.files.length === 0) {
+              e.preventDefault();
+              
+              // Show error message under the field
+              if (pictureErrorMessage) {
+                pictureErrorMessage.style.display = 'block';
+              }
+              
+              // Add error styling to the input field
+              if (pictureInput) {
+                pictureInput.classList.add('error-field');
+              }
+              
+              // Focus on the picture input field
+              pictureInput?.focus();
+              return false;
+            } else {
+              // Hide error message and remove error styling if picture is uploaded
+              if (pictureErrorMessage) {
+                pictureErrorMessage.style.display = 'none';
+              }
+              if (pictureInput) {
+                pictureInput.classList.remove('error-field');
+              }
+            }
             
             if (referenceCode.length === 13 && /^\d{13}$/.test(referenceCode) && !isReferenceValid) {
               e.preventDefault();
@@ -3892,6 +3978,20 @@
               return false;
             }
           });
+          
+          // Add event listener to clear error when user selects a file
+          const pictureInput = document.getElementById('modalPicture');
+          const pictureErrorMessage = document.getElementById('pictureErrorMessage');
+          
+          if (pictureInput && pictureErrorMessage) {
+            pictureInput.addEventListener('change', function() {
+              if (this.files && this.files.length > 0) {
+                // Hide error message and remove error styling when file is selected
+                pictureErrorMessage.style.display = 'none';
+                this.classList.remove('error-field');
+              }
+            });
+          }
         }
       }
     });
@@ -3970,7 +4070,7 @@
             font-size: 14px;
             animation: fadeInUp 0.5s ease-out 0.4s both;
           ">
-            Booking confirmed! Your rental on {{ session('booking_details.rental_start_date') }} at {{ session('booking_details.created_at') }} for {{ session('booking_details.rental_duration_days') }} day(s) has been accepted. Reference: {{ session('booking_details.reference') }}. You will receive an email confirmation shortly.
+            Booking confirmed! Your rental on {{ session('booking_details.rental_start_date') }} at {{ session('booking_details.created_at') }} for {{ session('booking_details.rental_duration_days') }} day(s) has been accepted. IR Reference: {{ session('booking_details.reference') }}. GCash Payment Reference: {{ session('booking_details.payment_reference') ?? 'N/A' }}. You will receive an email confirmation shortly.
           </div>
           
           <!-- Bottom Section -->

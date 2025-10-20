@@ -177,6 +177,10 @@
                     <span class="detail-value">{{ $rental->reference }}</span>
                 </div>
                 <div class="detail-row">
+                    <span class="detail-label">GCash Payment Reference:</span>
+                    <span class="detail-value">{{ $rental->payment_reference ?? 'N/A' }}</span>
+                </div>
+                <div class="detail-row">
                     <span class="detail-label">Customer:</span>
                     <span class="detail-value">{{ $rental->user->name ?? 'N/A' }}</span>
                 </div>

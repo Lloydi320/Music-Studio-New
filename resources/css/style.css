@@ -692,9 +692,9 @@ body::after {
     border-radius: 0;
     white-space: normal; /* allow wrapping vertically in mobile menu */
   }
-  /* Hide profile dropdown on mid-size screens to prevent overflow */
+  /* Keep profile dropdown visible on mid-size screens */
   .modern-user-profile {
-    display: none;
+    display: block;
   }
 }
 

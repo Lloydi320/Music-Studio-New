@@ -1,6 +1,9 @@
 // Home page calendar functionality
+// Silent debug logger
+const debugLog = (...args) => {};
+
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🎯 Calendar script loaded!');
+  debugLog('🎯 Calendar script loaded!');
   
   // Calendar variables
   let currentYear = new Date().getFullYear();
@@ -16,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const prevMonth = document.getElementById('prevMonth');
   const nextMonth = document.getElementById('nextMonth');
 
-  console.log('🔍 Calendar elements found:', {
+  debugLog('🔍 Calendar elements found:', {
     calendarGrid: !!calendarGrid,
     monthYear: !!monthYear,
     timeSlots: !!timeSlots,
@@ -25,11 +28,11 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   if (calendarGrid && monthYear) {
-    console.log('✅ Calendar elements found, generating calendar...');
+    debugLog('✅ Calendar elements found, generating calendar...');
     
     // Generate calendar
     async function generateCalendar(year, month) {
-      console.log('📅 Generating calendar for:', year, month);
+      debugLog('📅 Generating calendar for:', year, month);
       
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -53,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         const response = await fetch(`/api/booked-dates`);
         const data = await response.json();
-        console.log('📊 API Response:', data);
+        debugLog('📊 API Response:', data);
         
         // Handle the API response format
         if (data.booked_dates) {
@@ -69,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
           bookedDates = [];
         }
         
-        console.log('📊 Unavailable booked dates:', bookedDates);
+        debugLog('📊 Unavailable booked dates:', bookedDates);
       } catch (error) {
         console.error('Error fetching booked dates:', error);
         bookedDates = [];
@@ -90,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
           hasBookingDates = [];
         }
-        console.log('📍 Dates with any bookings:', hasBookingDates);
+        debugLog('📍 Dates with any bookings:', hasBookingDates);
       } catch (error) {
         console.error('Error fetching has-booking dates:', error);
         hasBookingDates = [];
@@ -125,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const month = String(currentDate.getMonth() + 1).padStart(2, '0');
           const day = String(currentDate.getDate()).padStart(2, '0');
           const dateKey = `${year}-${month}-${day}`;
-          console.log('Checking date:', dateKey, 'against booked dates:', bookedDates);
+          debugLog('Checking date:', dateKey, 'against booked dates:', bookedDates);
           
           // Add simple circle indicator under each day
           const circle = document.createElement('div');
@@ -138,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
             dayElement.title = 'Click to view booking details';
             // Remove the pointer-events: none to allow clicking
             dayElement.style.cursor = 'pointer';
-            console.log('✅ Date is booked:', dateKey);
+            debugLog('✅ Date is booked:', dateKey);
           }
 
           // If there are bookings (band or solo) but the date isn't fully unavailable,
@@ -175,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
               dayElement.style.pointerEvents = 'auto';
               dayElement.style.cursor = 'pointer';
               
-              console.log('📅 Date clicked:', dateKey);
+              debugLog('📅 Date clicked:', dateKey);
               showTimeSlots(dateKey);
             });
             
@@ -200,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ];
       monthYear.textContent = `${monthNames[month]} ${year}`;
       
-      console.log('✅ Calendar generated successfully!');
+      debugLog('✅ Calendar generated successfully!');
     }
 
     // Show time slots for selected date
@@ -217,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Fetch booking details from API
         const response = await fetch(`/api/bookings-by-date?date=${dateKey}`);
         const data = await response.json();
-        console.log('📋 Booking details for', dateKey, ':', data);
+        debugLog('📋 Booking details for', dateKey, ':', data);
         
         // Clear loading message
         timeSlots.innerHTML = '';
@@ -305,10 +308,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initial calendar generation
-    console.log('🚀 Starting initial calendar generation...');
+    debugLog('🚀 Starting initial calendar generation...');
     generateCalendar(currentYear, currentMonth);
   } else {
-    console.log('ℹ️ Calendar elements not found - skipping calendar initialization (this is normal for non-home pages)');
+    debugLog('ℹ️ Calendar elements not found - skipping calendar initialization (this is normal for non-home pages)');
   }
 });
 
@@ -627,6 +630,34 @@ document.addEventListener('DOMContentLoaded', function() {
       calendarFab: !!calendarFab,
       calendarContainer: !!calendarContainer,
       carouselContainer: !!carouselContainer
+    });
+  }
+});
+// Global User Dropdown Toggle
+window.toggleUserDropdown = function() {
+  const dropdown = document.getElementById('userDropdown');
+  const profileContainer = document.getElementById('userProfile') || document.querySelector('.modern-user-profile');
+  if (!dropdown) return;
+  dropdown.classList.toggle('show');
+  if (profileContainer) profileContainer.classList.toggle('active');
+};
+
+// Close dropdown when clicking outside the profile container
+document.addEventListener('click', function(event) {
+  const profileContainer = document.getElementById('userProfile') || document.querySelector('.modern-user-profile');
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown && profileContainer && !profileContainer.contains(event.target)) {
+    dropdown.classList.remove('show');
+    profileContainer.classList.remove('active');
+  }
+});
+
+// Prevent dropdown from closing when clicking inside it
+document.addEventListener('DOMContentLoaded', function() {
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown) {
+    dropdown.addEventListener('click', function(event) {
+      event.stopPropagation();
     });
   }
 });

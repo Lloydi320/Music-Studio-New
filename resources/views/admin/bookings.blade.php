@@ -713,6 +713,13 @@
         letter-spacing: 0.5px;
     }
 
+    .booking-reference {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
     .created-date {
         color: #1a1a1a;
         font-size: 0.9rem;
@@ -742,7 +749,7 @@
     }
 
     .created-date {
-        color: #b0b0b0;
+        color: #000;
         font-size: 0.85rem;
     }
 
@@ -1097,8 +1104,9 @@
                 @foreach($bookings as $booking)
                     <div class="booking-card">
                         <div class="booking-card-header">
-                            <div class="reference-id">
-                                <strong>#{{ str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</strong>
+                            <div class="booking-reference">
+                                <div class="reference-id"><strong>{{ $booking->reference ?? '#' . str_pad($booking->id, 4, '0', STR_PAD_LEFT) }}</strong></div>
+                                <div class="created-date">{{ $booking->created_at ? $booking->created_at->format('M d, Y') : '' }}</div>
                             </div>
                             <span class="status-badge status-{{ $booking->status }}">
                                 @if($booking->status === 'pending')
@@ -1145,10 +1153,6 @@
                                 <div class="detail-row">
                                     <span class="detail-label">Time:</span>
                                     <span class="detail-value">{{ $booking->time_slot }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">Created:</span>
-                                    <span class="detail-value">{{ $booking->created_at->format('M d, Y') }}</span>
                                 </div>
                             </div>
                         </div>

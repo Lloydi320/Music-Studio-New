@@ -90,9 +90,10 @@ class InstrumentRentalController extends Controller
                 'instrument_name' => 'required|string|max:255',
                 // Enforce 24-hour lead time: start date must be after today
                 'rental_start_date' => 'required|date|after:today',
-                'rental_end_date' => 'required|date|after:rental_start_date',
+                'rental_end_date' => 'required|date|after_or_equal:rental_start_date',
                 'full_package' => 'boolean',
                 'pickup_location' => 'required|string|max:255',
+                'return_location' => 'required|string|max:255',
                 'transportation' => 'nullable|string|max:50',
                 'delivery_time' => 'nullable|date_format:H:i',
                 'pickup_time' => 'nullable|date_format:H:i',
@@ -101,14 +102,15 @@ class InstrumentRentalController extends Controller
                 'name' => 'required|string|max:255',
                 // Email is taken from authenticated user; allow nullable in request
                 'email' => 'nullable|email|max:255',
-                'phone' => 'required|string|max:20',
-                'reference_number' => 'nullable|string|max:50'
+                'phone' => ['required','string','size:11','regex:/^09[0-9]{9}$/'],
+                'reference_number' => 'nullable|string|max:50',
+                'picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120' // Required picture upload, max 5MB
             ]);
 
-            // Calculate rental duration
+            // Calculate rental duration (minimum of 1 day)
             $startDate = new \DateTime($validatedData['rental_start_date']);
             $endDate = new \DateTime($validatedData['rental_end_date']);
-            $duration = $startDate->diff($endDate)->days;
+            $duration = max(1, $startDate->diff($endDate)->days);
 
             // Enforce 24-hour lead time (server-side safety)
             $nowManila = Carbon::now(config('app.timezone', 'Asia/Manila'));
@@ -149,16 +151,21 @@ class InstrumentRentalController extends Controller
             $dailyRate = 500.00; // Default rate
             $totalAmount = $duration * $dailyRate;
 
-            // Generate reference and four digit code if not provided
-            $reference = !empty($validatedData['reference_number']) ? $validatedData['reference_number'] : 'IR' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-            $fourDigitCode = str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            // Always generate IR rental reference; store user-entered payment reference separately
+            $fourDigitCode = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
 
             // Prepare data for model (map field names to match model fillable fields)
-            // Prefer authenticated user's email over any provided value
-            $authenticatedEmail = Auth::user()->email ?? null;
+            // Prefer authenticated user's email over any provided value (handle guest users safely)
+            $authenticatedEmail = Auth::check() ? Auth::user()->email : null;
+
+            // Handle picture upload
+            $receiptImagePath = null;
+            if ($request->hasFile('picture')) {
+                $receiptImagePath = $request->file('picture')->store('rental_receipts', 'public');
+            }
 
             $rentalData = [
-                'user_id' => Auth::id() ?? 1, // Use authenticated user or default
+                'user_id' => Auth::id(), // Auth middleware ensures user_id is present
                 'instrument_type' => $validatedData['instrument_type'],
                 'instrument_name' => $validatedData['instrument_name'],
                 'rental_start_date' => $validatedData['rental_start_date'],
@@ -167,16 +174,19 @@ class InstrumentRentalController extends Controller
                 'daily_rate' => $dailyRate,
                 'total_amount' => $totalAmount,
                 'status' => 'pending',
-                'reference' => $reference, // Model expects 'reference', not 'reference_number'
+                'reference' => InstrumentRental::generateUniqueReference(),
                 'four_digit_code' => $fourDigitCode,
-                'notes' => $validatedData['notes'], // Form sends 'notes' and model expects 'notes'
+                'payment_reference' => $validatedData['reference_number'] ?? null,
+                'notes' => $validatedData['notes'] ?? null, // Form sends 'notes', allow null if omitted
                 'pickup_location' => $validatedData['pickup_location'],
+                'return_location' => $validatedData['return_location'],
                 'transportation' => $validatedData['transportation'] ?? null,
                 'delivery_time' => (($validatedData['transportation'] ?? null) === 'delivery') ? ($validatedData['delivery_time'] ?? null) : ($validatedData['pickup_time'] ?? null),
                 'event_duration_hours' => $validatedData['event_duration_hours'] ?? null,
                 'name' => $validatedData['name'],
                 'email' => $authenticatedEmail ?? ($validatedData['email'] ?? null),
                 'phone' => $validatedData['phone'],
+                'receipt_image' => $receiptImagePath, // Store the uploaded receipt image path
             ];
 
             // Enforce closing-time rules for single-day rentals
@@ -193,16 +203,44 @@ class InstrumentRentalController extends Controller
             // Create the rental record
             $rental = InstrumentRental::create($rentalData);
 
-            // Send notification email to admin
+            // Send notification email to admin(s)
             try {
-                $adminEmail = env('ADMIN_EMAIL', 'admin@lemonhubstudio.com');
-                
-                Mail::to($adminEmail)->send(new InstrumentRentalNotification($rental));
-                
-                Log::info('Instrument rental notification sent successfully', [
-                    'reference' => $rental->reference,
-                    'admin_email' => $adminEmail
-                ]);
+                // Prefer sending to all admin users; fallback to ADMIN_EMAIL env
+                $adminUsers = User::where('is_admin', true)->get();
+
+                if ($adminUsers->isEmpty()) {
+                    $fallbackEmail = env('ADMIN_EMAIL', 'admin@lemonhubstudio.com');
+                    Mail::to($fallbackEmail)->send(new InstrumentRentalNotification($rental, 'admin'));
+
+                    Log::info('Instrument rental notification sent to fallback admin email', [
+                        'reference' => $rental->reference,
+                        'admin_email' => $fallbackEmail
+                    ]);
+                } else {
+                    foreach ($adminUsers as $admin) {
+                        Mail::to($admin->email)->send(new InstrumentRentalNotification($rental, 'admin'));
+
+                        Log::info('Instrument rental notification sent to admin', [
+                            'reference' => $rental->reference,
+                            'admin_email' => $admin->email
+                        ]);
+                    }
+                }
+
+                // Send confirmation email to the customer (user)
+                $customerEmail = optional($rental->user)->email ?? $rental->email;
+                if (!empty($customerEmail)) {
+                    Mail::to($customerEmail)->send(new InstrumentRentalNotification($rental, 'user'));
+
+                    Log::info('Instrument rental confirmation sent to customer', [
+                        'reference' => $rental->reference,
+                        'customer_email' => $customerEmail
+                    ]);
+                } else {
+                    Log::warning('Customer email missing; skipping instrument rental confirmation', [
+                        'reference' => $rental->reference
+                    ]);
+                }
             } catch (\Exception $e) {
                 Log::error('Failed to send instrument rental notification email', [
                     'error' => $e->getMessage(),
@@ -216,23 +254,25 @@ class InstrumentRentalController extends Controller
                     'success' => true,
                     'message' => 'Instrument rental request submitted successfully!',
                     'reference' => $rental->reference,
+                    'payment_reference' => $rental->payment_reference,
                     'rental_id' => $rental->id
                 ]);
             }
 
             // For regular form submission, redirect with success message
-             return redirect()->route('instrument-rental.index')->with([
-                 'booking_confirmed' => true,
-                 'reference' => $rental->reference,
-                 'rental_id' => $rental->id,
-                 'message' => 'Instrument rental request submitted successfully!',
-                 'booking_details' => [
-                     'rental_start_date' => $rental->rental_start_date,
-                     'rental_duration_days' => $rental->rental_duration_days,
-                     'reference' => $rental->reference,
-                     'created_at' => $rental->created_at->format('M d, Y g:i A')
-                 ]
-             ]);
+            return redirect()->route('instrument-rental.index')->with([
+                'booking_confirmed' => true,
+                'reference' => $rental->reference,
+                'rental_id' => $rental->id,
+                'message' => 'Instrument rental request submitted successfully!',
+                'booking_details' => [
+                    'rental_start_date' => $rental->rental_start_date,
+                    'rental_duration_days' => $rental->rental_duration_days,
+                    'reference' => $rental->reference,
+                    'payment_reference' => $rental->payment_reference,
+                    'created_at' => $rental->created_at->format('M d, Y g:i A')
+                ]
+            ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -247,10 +287,18 @@ class InstrumentRentalController extends Controller
                 'request_data' => $request->all()
             ]);
 
-            return response()->json([
+            $response = [
                 'success' => false,
                 'message' => 'An error occurred while processing your request. Please try again.'
-            ], 500);
+            ];
+            if (config('app.debug')) {
+                $response['error'] = $e->getMessage();
+                $response['exception'] = get_class($e);
+                $response['file'] = $e->getFile();
+                $response['line'] = $e->getLine();
+            }
+
+            return response()->json($response, 500);
         }
     }
 
@@ -261,7 +309,7 @@ class InstrumentRentalController extends Controller
                 'instrument_type' => 'required|string',
                 'instrument_name' => 'required|string',
                 'rental_start_date' => 'required|date',
-                'rental_end_date' => 'required|date|after:rental_start_date'
+                'rental_end_date' => 'required|date|after_or_equal:rental_start_date'
             ]);
 
             // Lead-time rule: start date must be after today

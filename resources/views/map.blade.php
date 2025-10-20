@@ -398,7 +398,7 @@
   </div>
 
   <!-- Modern Rescheduling Modal (copied from home.blade.php) -->
-  <div id="reschedulePopup" class="reschedule-popup" style="display: none;">
+  <div id="reschedulePopup" class="reschedule-popup">
     <div class="reschedule-modal">
       <div class="reschedule-modal-header">
         <h2>✨ Rescheduling</h2>

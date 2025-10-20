@@ -608,6 +608,40 @@ document.addEventListener("DOMContentLoaded", function () {
   
   function handleFormSubmission(form, e) {
     e.preventDefault();
+    
+    // Check if picture is uploaded for studio rental forms
+    if (form.id === 'studioRentalForm') {
+      const pictureInput = document.getElementById('uploadPicture');
+      const pictureErrorMessage = document.getElementById('pictureErrorMessage');
+      
+      // Check if picture is uploaded
+      if (!pictureInput || !pictureInput.files || pictureInput.files.length === 0) {
+        // Show error message under the field
+        if (pictureErrorMessage) {
+          pictureErrorMessage.style.display = 'block';
+        }
+        
+        // Add error styling to the input field
+        if (pictureInput) {
+          pictureInput.classList.add('error-field');
+        }
+        
+        // Focus on the picture input field
+        pictureInput?.focus();
+        
+        // Don't proceed with form submission
+        return false;
+      } else {
+        // Hide error message and remove error styling if picture is uploaded
+        if (pictureErrorMessage) {
+          pictureErrorMessage.style.display = 'none';
+        }
+        if (pictureInput) {
+          pictureInput.classList.remove('error-field');
+        }
+      }
+    }
+    
     if (loadingOverlay) {
       loadingOverlay.style.display = 'flex';
     }

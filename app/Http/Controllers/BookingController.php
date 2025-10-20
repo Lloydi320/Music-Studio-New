@@ -1029,7 +1029,8 @@ class BookingController extends Controller
 
         // Check both bookings and instrument rentals tables
         $existsInBookings = Booking::where('reference_code', $request->reference_code)->exists();
-        $existsInRentals = \App\Models\InstrumentRental::where('four_digit_code', $request->reference_code)->exists();
+        // For rentals, the user-entered 13-digit code is the GCash payment reference
+        $existsInRentals = \App\Models\InstrumentRental::where('payment_reference', $request->reference_code)->exists();
         
         $exists = $existsInBookings || $existsInRentals;
         

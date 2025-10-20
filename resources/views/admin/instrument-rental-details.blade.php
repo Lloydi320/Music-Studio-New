@@ -770,13 +770,13 @@
                 <!-- Reference Number -->
                 <div class="info-item">
                     <span class="info-label">REFERENCE NUMBER</span>
-                    <span class="info-value">#{{ str_pad($rental->reference_number ?? $rental->reference ?? $rental->id, 4, '0', STR_PAD_LEFT) }}</span>
+                    <span class="info-value">#{{ $rental->reference }}</span>
                 </div>
 
-                <!-- 4-Digit Code -->
+                <!-- GCash Payment Reference Number -->
                 <div class="info-item">
-                    <span class="info-label">4-DIGIT CODE</span>
-                    <span class="info-value">{{ $rental->four_digit_code ?? 'N/A' }}</span>
+                    <span class="info-label">GCASH PAYMENT REFERENCE NUMBER</span>
+                    <span class="info-value">{{ $rental->payment_reference ?? 'N/A' }}</span>
                 </div>
 
             <!-- Payment Receipt as List Item -->
@@ -838,7 +838,29 @@
                 <!-- Time Slot -->
                 <div class="info-item">
                     <span class="info-label">TIME SLOT</span>
-                    <span class="info-value">{{ \Carbon\Carbon::parse($rental->rental_start_date ?? $rental->start_date)->format('g:i A') }} - {{ \Carbon\Carbon::parse($rental->rental_end_date ?? $rental->end_date)->format('g:i A') }}</span>
+                    <span class="info-value">
+                        @php
+                            $startTime = null;
+                            $endTime = null;
+                            if (!empty($rental->delivery_time)) {
+                                try {
+                                    $startTime = \Carbon\Carbon::createFromFormat('H:i', $rental->delivery_time);
+                                    if (!empty($rental->event_duration_hours)) {
+                                        $endTime = (clone $startTime)->addHours($rental->event_duration_hours);
+                                    }
+                                } catch (\Exception $e) {
+                                    // Fallback: leave as null if parsing fails
+                                }
+                            }
+                        @endphp
+                        @if($startTime && $endTime)
+                            {{ $startTime->format('g:i A') }} - {{ $endTime->format('g:i A') }}
+                        @elseif($startTime)
+                            {{ $startTime->format('g:i A') }}
+                        @else
+                            -
+                        @endif
+                    </span>
                 </div>
 
                 <!-- Status -->

@@ -709,9 +709,9 @@ body::after {
     border-radius: 0;
     white-space: normal; /* allow wrapping vertically in mobile menu */
   }
-  /* Hide profile dropdown on mid-size screens to prevent overflow */
+  /* Keep profile dropdown visible on mid-size screens */
   .modern-user-profile {
-    display: none;
+    display: block;
   }
 }
 
@@ -1098,6 +1098,30 @@ body::after {
 }
 .book-btn:hover {
   background-color: #e6c200;
+}
+
+/* Mobile adjustments: ensure carousel does not cover hero headline */
+@media (max-width: 800px) {
+  .home-page {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+  .hero-overlay {
+    height: auto !important;
+    min-height: 100vh !important;
+    gap: 24px !important;
+    box-sizing: border-box;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+  #carouselContainer {
+    position: relative;
+    z-index: 1;
+    margin-top: 6px; /* nudge carousel slightly higher */
+    margin-bottom: 26px; /* extra breathing room above the text */
+  }
 }
 
 

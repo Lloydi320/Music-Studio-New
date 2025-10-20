@@ -189,7 +189,7 @@
 
                 <!-- Pagination -->
                 <div class="pagination-wrapper">
-                    {{ $activityLogs->appends(request()->query())->links() }}
+                    {{ $activityLogs->appends(request()->query())->links('pagination.custom') }}
                 </div>
             @else
                 <div class="empty-state">
@@ -419,7 +419,7 @@
 }
 
 .table-container {
-    overflow-x: auto;
+    overflow-x: hidden;
     border-radius: 1rem;
     box-shadow: var(--shadow-lg);
     background: white;
@@ -429,29 +429,42 @@
     width: 100%;
     border-collapse: collapse;
     background: #1a1a1a;
+    table-layout: fixed;
 }
 
 .modern-table th {
     background: #333333;
-    padding: 1rem;
+    padding: 0.75rem 0.5rem;
     text-align: left;
     font-weight: 700;
     color: #ffd700;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     position: sticky;
     top: 0;
     z-index: 10;
     border-bottom: 2px solid #444;
+    word-wrap: break-word;
 }
 
+.modern-table th:nth-child(1) { width: 12%; } /* Date & Time */
+.modern-table th:nth-child(2) { width: 12%; } /* User */
+.modern-table th:nth-child(3) { width: 12%; } /* Action Type */
+.modern-table th:nth-child(4) { width: 8%; }  /* Severity */
+.modern-table th:nth-child(5) { width: 35%; } /* Description */
+.modern-table th:nth-child(6) { width: 10%; } /* Resource */
+.modern-table th:nth-child(7) { width: 11%; } /* IP Address */
+
 .modern-table td {
-    padding: 1rem;
+    padding: 0.75rem 0.5rem;
     border-bottom: 1px solid #444;
     color: #ffffff;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     transition: all 0.2s ease;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .modern-table tbody tr {
@@ -466,9 +479,12 @@
 
 .timestamp {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #ffd700;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .user-info {
@@ -651,10 +667,14 @@
 }
 
 .description {
-    max-width: 350px;
     word-wrap: break-word;
-    line-height: 1.5;
+    line-height: 1.4;
     position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .description::before {
@@ -665,12 +685,15 @@
 
 .ip-address {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #cccccc;
     background: #333333;
     padding: 0.25rem 0.5rem;
     border-radius: 0.375rem;
     border: 1px solid #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .ip-address::before {
@@ -713,7 +736,95 @@
 .pagination-wrapper {
     margin-top: 2rem;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pagination-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #2d2d2d;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid #555;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background: #ffd700;
+    color: #1a1a1a;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #888;
+}
+
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pagination-number {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+    min-width: 2.5rem;
+    text-align: center;
+}
+
+.pagination-number:hover {
+    background: #ffd700;
+    color: #1a1a1a;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.pagination-number.active {
+    background: #ffd700;
+    color: #1a1a1a;
+}
+
+.pagination-dots {
+    padding: 0.75rem 0.5rem;
+    color: #888;
+}
+
+.pagination-info {
+    color: #cccccc;
+    font-size: 0.875rem;
+    text-align: center;
 }
 
 .pagination-wrapper .pagination {
