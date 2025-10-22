@@ -835,6 +835,12 @@
                     <span class="info-value">{{ $rental->rental_duration_days ?? $rental->duration }} day(s)</span>
                 </div>
 
+                <!-- Down Payment -->
+                <div class="info-item">
+                    <span class="info-label">DOWN PAYMENT</span>
+                    <span class="info-value">₱{{ number_format($rental->reservation_fee ?? 0, 2) }}</span>
+                </div>
+
                 <!-- Time Slot -->
                 <div class="info-item">
                     <span class="info-label">TIME SLOT</span>
@@ -878,6 +884,8 @@
                                 📦 Returned
                             @elseif($rental->status == 'cancelled')
                                 ❌ Cancelled
+                            @elseif($rental->status == 'rejected')
+                                ❌ Rejected
                             @else
                                 {{ ucfirst($rental->status) }}
                             @endif
@@ -967,6 +975,10 @@
                         <span class="info-value">{{ $rental->created_at->format('M d, Y') }}</span>
                     </div>
                     <div class="info-row">
+                        <span class="info-label">DOWN PAYMENT</span>
+                        <span class="info-value">₱{{ number_format($rental->reservation_fee ?? 0, 2) }}</span>
+                    </div>
+                    <div class="info-row">
                         <span class="info-label">TOTAL AMOUNT</span>
                         <span class="info-value">₱{{ number_format($rental->total_amount, 2) }}</span>
                     </div>
@@ -984,6 +996,8 @@
                             📦 RETURNED
                         @elseif($rental->status == 'cancelled')
                             ❌ CANCELLED
+                        @elseif($rental->status == 'rejected')
+                            ❌ REJECTED
                         @else
                             {{ strtoupper($rental->status) }}
                         @endif

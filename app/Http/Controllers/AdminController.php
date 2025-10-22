@@ -88,12 +88,18 @@ class AdminController extends Controller
             ? 'is_walk_in_booking'
             : (Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
         
-        // Calculate total revenue from all confirmed bookings (exclude walk-ins)
-        $totalBookingRevenue = Booking::where('status', 'confirmed')
+        // Calculate revenue using down payments collected for rehearsal studio bookings (exclude walk-ins)
+        $downpaymentMap = [1 => 100, 2 => 100, 3 => 150, 4 => 200, 5 => 250, 6 => 300, 7 => 350, 8 => 400];
+        $confirmedPaidStudioBookings = Booking::where('status', 'confirmed')
             ->when($walkInColumn, function ($q) use ($walkInColumn) {
                 $q->where($walkInColumn, false);
             })
-            ->sum('total_amount') ?? 0;
+            ->whereIn('service_type', ['studio_rental', 'solo_rehearsal'])
+            ->whereNotNull('reference_code')
+            ->get(['duration']);
+        $totalBookingRevenue = $confirmedPaidStudioBookings->sum(function ($b) use ($downpaymentMap) {
+            return $downpaymentMap[$b->duration] ?? 0;
+        }) ?? 0;
         $totalRentalRevenue = InstrumentRental::whereIn('status', ['confirmed', 'active'])->sum('total_amount') ?? 0;
         $estimatedRevenue = $totalBookingRevenue + $totalRentalRevenue;
         $operatingCosts = $totalBookings * 200; // Estimated operating costs per booking
@@ -132,13 +138,20 @@ class AdminController extends Controller
                 })
                 ->count();
 
-            $monthlyBookingRevenue = Booking::where('status', 'confirmed')
-                ->whereYear('created_at', $date->year)
-                ->whereMonth('created_at', $date->month)
-                ->when($walkInColumn, function ($q) use ($walkInColumn) {
-                    $q->where($walkInColumn, false);
-                })
-                ->sum('total_amount');
+            $monthlyBookingRevenue = (function () use ($date, $walkInColumn, $downpaymentMap) {
+                $monthlyStudioBookings = Booking::where('status', 'confirmed')
+                    ->whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month)
+                    ->when($walkInColumn, function ($q) use ($walkInColumn) {
+                        $q->where($walkInColumn, false);
+                    })
+                    ->whereIn('service_type', ['studio_rental', 'solo_rehearsal'])
+                    ->whereNotNull('reference_code')
+                    ->get(['duration']);
+                return $monthlyStudioBookings->sum(function ($b) use ($downpaymentMap) {
+                    return $downpaymentMap[$b->duration] ?? 0;
+                });
+            })();
 
             // Instrument rentals revenue (confirmed or active) for this month
             $monthlyRentalsCount = InstrumentRental::whereIn('status', ['confirmed', 'active'])
@@ -166,6 +179,8 @@ class AdminController extends Controller
             ->when($walkInColumn, function ($q) use ($walkInColumn) {
                 $q->where($walkInColumn, false);
             })
+            ->whereIn('service_type', ['studio_rental', 'solo_rehearsal'])
+            ->whereNotNull('reference_code')
             ->count();
         $averageBookingValue = $confirmedNonWalkInCount > 0 ? round($totalBookingRevenue / $confirmedNonWalkInCount, 2) : 0;
         
@@ -677,10 +692,21 @@ class AdminController extends Controller
             'Pending Services' => $pendingBookings->count() + $pendingRentals->count()
         ];
 
-        // Simple revenue calculation
+        // Revenue calculation: use down payments for studio bookings and actual totals for rentals
+        $walkInColumn = Schema::hasColumn('bookings', 'is_walk_in_booking')
+            ? 'is_walk_in_booking'
+            : (Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
+        $downpaymentMap = [1 => 100, 2 => 100, 3 => 150, 4 => 200, 5 => 250, 6 => 300, 7 => 350, 8 => 400];
+        $studioRevenue = Booking::where('status', 'confirmed')
+            ->when($walkInColumn, function ($q) use ($walkInColumn) { $q->where($walkInColumn, false); })
+            ->whereIn('service_type', ['studio_rental', 'solo_rehearsal'])
+            ->whereNotNull('reference_code')
+            ->get(['duration'])
+            ->sum(function ($b) use ($downpaymentMap) { return $downpaymentMap[$b->duration] ?? 0; });
+        $rentalsRevenue = InstrumentRental::whereIn('status', ['confirmed', 'active'])->sum('total_amount') ?? 0;
         $revenueByService = [
-            'Studio Bookings' => $confirmedBookings->count() * 800, // Average booking price
-            'Instrument Rentals' => $confirmedAndActiveRentals * 300, // Average rental price
+            'Studio Bookings' => $studioRevenue,
+            'Instrument Rentals' => $rentalsRevenue,
             'Pending Services' => 0
         ];
         
@@ -2018,14 +2044,6 @@ class AdminController extends Controller
             $bookingReference = $booking->reference;
             $customerName = $booking->user->name;
             
-            // Log booking rejection before deletion
-            ActivityLog::logBooking(
-                ActivityLog::ACTION_BOOKING_REJECTED,
-                $booking,
-                $oldValues,
-                ['status' => 'deleted']
-            );
-            
             // Delete from Google Calendar if event exists
             if ($booking->google_event_id && $this->calendarService) {
                 try {
@@ -2043,16 +2061,43 @@ class AdminController extends Controller
                 }
             }
             
-            // Delete the booking from database
-            $booking->delete();
+            // Send rejection email to user
+            try {
+                \Illuminate\Support\Facades\Mail::to($booking->user->email)->send(
+                    new \App\Mail\BookingRejectionNotification($booking)
+                );
+                Log::info('Booking rejection email sent', [
+                    'booking_id' => $booking->id,
+                    'user_email' => $booking->user->email,
+                    'reference' => $booking->reference
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send booking rejection email', [
+                    'booking_id' => $booking->id,
+                    'user_email' => $booking->user->email,
+                    'error' => $e->getMessage()
+                ]);
+            }
             
-            Log::info('Booking rejected and deleted by admin', [
-                'booking_id' => $oldValues['id'],
+            // Update booking status to rejected (keep record)
+            $booking->status = 'rejected';
+            $booking->save();
+            
+            // Log booking rejection with updated values
+            ActivityLog::logBooking(
+                ActivityLog::ACTION_BOOKING_REJECTED,
+                $booking,
+                $oldValues,
+                $booking->fresh()->toArray()
+            );
+            
+            Log::info('Booking rejected by admin', [
+                'booking_id' => $booking->id,
                 'reference' => $bookingReference,
                 'admin_id' => $user->id
             ]);
             
-            return redirect()->back()->with('success', "Booking {$bookingReference} for {$customerName} has been rejected and automatically deleted from the system.");
+            return redirect()->back()->with('success', "Booking {$bookingReference} for {$customerName} has been rejected and remains listed for records and reporting.");
         } catch (\Exception $e) {
             Log::error('Failed to reject booking', [
                 'booking_id' => $id,
@@ -2223,8 +2268,8 @@ class AdminController extends Controller
                 return redirect()->back()->with('error', 'Only pending rentals can be rejected.');
             }
             
-            // Update rental status to cancelled
-            $rental->update(['status' => 'cancelled']);
+            // Update rental status to rejected (do not delete the record)
+            $rental->update(['status' => 'rejected']);
             
             Log::info('Instrument rental rejected by admin', [
                 'rental_id' => $rental->id,

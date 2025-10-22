@@ -35,11 +35,6 @@
             @endif
         </div>
         <div class="dashboard-stat-card gold-stat-card">
-            <div class="stat-icon">🎯</div>
-            <div class="stat-number">₱{{ number_format($averageBookingValue ?? 0, 2) }}</div>
-            <div class="stat-label">Average Booking Value</div>
-        </div>
-        <div class="dashboard-stat-card gold-stat-card">
             <div class="stat-icon">📅</div>
             <div class="stat-number">{{ isset($bookingCounts) ? array_sum($bookingCounts) : 0 }}</div>
             <div class="stat-label">Total Bookings (12 months)</div>

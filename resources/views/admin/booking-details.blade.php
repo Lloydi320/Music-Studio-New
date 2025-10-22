@@ -644,6 +644,24 @@
             </div>
             
             <div class="detail-row">
+                <span class="detail-label">Reservation Fee</span>
+                <span class="detail-value">
+                    @php
+                        $reservationFee = null;
+                        if (in_array($booking->service_type, ['studio_rental', 'solo_rehearsal'])) {
+                            $config = \App\Models\RehearsalQrConfig::where('duration_minutes', $booking->duration * 60)
+                                ->where('enabled', true)
+                                ->first();
+                            if ($config) {
+                                $reservationFee = (float) $config->reservation_fee_php;
+                            }
+                        }
+                    @endphp
+                    {{ $reservationFee !== null ? ('₱' . number_format($reservationFee, 2)) : 'N/A' }}
+                </span>
+            </div>
+
+            <div class="detail-row">
                 <span class="detail-label">Status</span>
                 <span class="detail-value">
                     <span class="status-badge status-{{ $booking->status }}">

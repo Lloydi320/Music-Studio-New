@@ -167,6 +167,10 @@
                     <span class="detail-value">{{ $duration }}</span>
                 </div>
                 <div class="detail-row">
+                    <span class="detail-label">Down Payment:</span>
+                    <span class="detail-value"><strong>₱{{ $downPayment ?? '0.00' }}</strong></span>
+                </div>
+                <div class="detail-row">
                     <span class="detail-label">Total Amount:</span>
                     <span class="detail-value"><strong>₱{{ $totalAmount }}</strong></span>
                 </div>

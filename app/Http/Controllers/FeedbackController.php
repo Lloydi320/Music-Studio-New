@@ -12,6 +12,13 @@ class FeedbackController extends Controller
     // Store feedback from user (authenticated or guest)
     public function store(Request $request)
     {
+        // Enforce authentication for feedback submission
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Authentication required to submit feedback.'
+            ], 401);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string',
             'rating' => 'required|integer|min:1|max:5',
@@ -22,8 +29,8 @@ class FeedbackController extends Controller
         // Map comment to content for database storage
         $validated['content'] = $validated['comment'];
         
-        // Set user_id to null if user is not authenticated
-        $validated['user_id'] = Auth::check() ? Auth::id() : null;
+        // Set user_id from authenticated user
+        $validated['user_id'] = Auth::id();
 
         // Handle photo upload
         if ($request->hasFile('photo')) {

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InstrumentRentalDeclinedNotification;
 
 class InstrumentRental extends Model
 {
@@ -156,5 +158,28 @@ class InstrumentRental extends Model
             'bass' => 550.00,
             'cables' => 50.00,
         ];
+    }
+
+    protected static function booted()
+    {
+        static::updated(function (InstrumentRental $rental) {
+            if ($rental->wasChanged('status')) {
+                $status = strtolower((string) $rental->status);
+                if (in_array($status, ['cancelled', 'rejected'])) {
+                    try {
+                        $email = optional($rental->user)->email ?? ($rental->email ?? null);
+                        if ($email) {
+                            Mail::to($email)->send(new InstrumentRentalDeclinedNotification($rental));
+                        }
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Failed to send rental declined email', [
+                            'rental_id' => $rental->id,
+                            'reference' => $rental->reference,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+        });
     }
 }

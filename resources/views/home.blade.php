@@ -767,6 +767,12 @@
           e.preventDefault();
           console.log('🚀 Form submission started...');
           
+          const isAuthenticated = {{ Auth::check() ? 'true' : 'false' }};
+          if (!isAuthenticated) {
+            window.location.href = '/login';
+            return;
+          }
+          
           const name = document.getElementById('name').value.trim();
           const comment = document.getElementById('comment').value.trim();
           const photo = document.getElementById('photo').files[0];
@@ -796,7 +802,7 @@
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             console.log('🔐 CSRF token found:', token ? 'Yes' : 'No');
             
-            const response = await fetch('/api/feedback', {
+            const response = await fetch('/feedback', {
               method: 'POST',
               headers: {
                 'X-CSRF-TOKEN': token
@@ -841,9 +847,20 @@
               showSuccessMessage('✅ Feedback submitted successfully!');
               
             } else {
-              const errorData = await response.json();
-              console.log('❌ Error response:', errorData);
-              alert('Error submitting feedback: ' + (errorData.message || 'Unknown error'));
+              let message = 'Unknown error';
+              if (response.status === 401 || response.status === 403) {
+                alert('Please log in to submit feedback.');
+              } else {
+                try {
+                  const errorData = await response.json();
+                  console.log('❌ Error response:', errorData);
+                  message = errorData.message || message;
+                } catch (_) {
+                  console.log('❌ Non-JSON error response');
+                  message = 'Error submitting feedback.';
+                }
+                alert('Error submitting feedback: ' + message);
+              }
             }
           } catch (error) {
             console.error('💥 Exception during submission:', error);

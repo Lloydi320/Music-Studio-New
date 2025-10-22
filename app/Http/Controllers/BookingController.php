@@ -491,6 +491,7 @@ class BookingController extends Controller
             } else {
                 // Find instrument rental by reference code
                 $rental = \App\Models\InstrumentRental::where('four_digit_code', $request->reference_number)
+                                                     ->orWhere('payment_reference', $request->reference_number)
                                                      ->whereIn('status', ['pending', 'confirmed'])
                                                      ->first();
                 
@@ -701,6 +702,7 @@ class BookingController extends Controller
             } else {
                 // Find instrument rental by reference code
                 $rental = \App\Models\InstrumentRental::where('four_digit_code', $request->reference_number)
+                                                     ->orWhere('payment_reference', $request->reference_number)
                                                      ->whereIn('status', ['pending', 'confirmed'])
                                                      ->first();
                 
@@ -1070,7 +1072,8 @@ class BookingController extends Controller
         // If not found in bookings, check instrument rentals
         $rental = \App\Models\InstrumentRental::where(function($query) use ($reference) {
                 $query->where('reference', $reference)
-                      ->orWhere('four_digit_code', $reference);
+                      ->orWhere('four_digit_code', $reference)
+                      ->orWhere('payment_reference', $reference);
             })
             ->whereIn('status', ['pending', 'confirmed'])
             ->first();

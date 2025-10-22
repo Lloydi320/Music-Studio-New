@@ -864,7 +864,10 @@
           
           <div class="form-group">
             <label class="form-label" for="contactNumber">Contact Number *</label>
-            <input type="tel" id="contactNumber" name="contact_number" class="form-input" maxlength="11" required>
+            <input type="tel" id="contactNumber" name="contact_number" class="form-input" required maxlength="11" inputmode="numeric" pattern="^09[0-9]{9}$" placeholder="09XXXXXXXXX" value="09">
+            <div id="phoneErrorMessage" style="display: none; background-color: #fee2e2; color: #dc2626; padding: 8px 12px; margin: 5px 0 0 0; border-radius: 6px; border-left: 4px solid #dc2626; font-size: 0.85rem;">
+              Please enter a valid 11-digit number starting with 09.
+            </div>
           </div>
           
           <div class="form-group">
@@ -1453,6 +1456,40 @@
     initReferenceCodeValidation();
   }
 })();
+</script>
+<script>
+  // Enforce '09' prefix and 11-digit numeric input for contact number (Band Rehearsal)
+  document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('contactNumber');
+    const errorEl = document.getElementById('phoneErrorMessage');
+
+    function sanitize() {
+      if (!phoneInput) return;
+      // Keep only digits
+      let digits = phoneInput.value.replace(/\D/g, '');
+      // Remove leading '09' if already present to avoid duplication when rebuilding
+      if (digits.startsWith('09')) {
+        digits = digits.slice(2);
+      }
+      // Limit to the remaining 9 digits
+      digits = digits.slice(0, 9);
+      const newVal = '09' + digits;
+      phoneInput.value = newVal;
+      // Show/hide error based on validity
+      const valid = /^09[0-9]{9}$/.test(newVal);
+      if (errorEl) {
+        errorEl.style.display = valid ? 'none' : 'block';
+      }
+    }
+
+    if (phoneInput) {
+      if (!phoneInput.value) phoneInput.value = '09';
+      sanitize();
+      phoneInput.addEventListener('input', sanitize);
+      phoneInput.addEventListener('blur', sanitize);
+      phoneInput.addEventListener('paste', function() { setTimeout(sanitize, 0); });
+    }
+  });
 </script>
 
 // Original script content below

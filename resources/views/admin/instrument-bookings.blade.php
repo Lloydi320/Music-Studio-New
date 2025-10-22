@@ -775,6 +775,7 @@
                         <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                         <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Returned</option>
                         <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -836,6 +837,8 @@
                                     📦 Returned
                                 @elseif($rental->status == 'cancelled')
                                     ❌ Cancelled
+                                @elseif($rental->status == 'rejected')
+                                    ❌ Rejected
                                 @else
                                     {{ ucfirst($rental->status) }}
                                 @endif
@@ -877,7 +880,12 @@
                                 </div>
                                 
                                 <div class="info-item">
-                                    <div class="info-label">Amount</div>
+                                    <div class="info-label">Down Payment</div>
+                                    <div class="amount">₱{{ number_format($rental->reservation_fee ?? 0, 2) }}</div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-label">Total Amount</div>
                                     <div class="amount">₱{{ number_format($rental->total_amount, 2) }}</div>
                                 </div>
                             </div>

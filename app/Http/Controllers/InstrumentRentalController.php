@@ -164,6 +164,14 @@ class InstrumentRentalController extends Controller
                 $receiptImagePath = $request->file('picture')->store('rental_receipts', 'public');
             }
 
+            // Determine if full package was selected and compute down payment
+            $isFullPackage = (bool) ($validatedData['full_package'] ?? false);
+            if (!$isFullPackage) {
+                $typeLower = strtolower($validatedData['instrument_type']);
+                $isFullPackage = ($typeLower === 'full package' || $typeLower === 'full_package');
+            }
+            $downPayment = $isFullPackage ? 500.00 : 300.00;
+
             $rentalData = [
                 'user_id' => Auth::id(), // Auth middleware ensures user_id is present
                 'instrument_type' => $validatedData['instrument_type'],
@@ -187,6 +195,9 @@ class InstrumentRentalController extends Controller
                 'email' => $authenticatedEmail ?? ($validatedData['email'] ?? null),
                 'phone' => $validatedData['phone'],
                 'receipt_image' => $receiptImagePath, // Store the uploaded receipt image path
+                // Persist down payment fields
+                'reservation_fee' => $downPayment,
+                'security_deposit' => $downPayment,
             ];
 
             // Enforce closing-time rules for single-day rentals

@@ -203,6 +203,7 @@
                                         <option value="active" {{ $rental->status === 'active' ? 'selected' : '' }}>Active</option>
                                         <option value="returned" {{ $rental->status === 'returned' ? 'selected' : '' }}>Returned</option>
                                         <option value="cancelled" {{ $rental->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                        <option value="rejected" {{ $rental->status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                                     </select>
                                 </form>
                                 @endif

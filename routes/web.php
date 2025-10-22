@@ -107,8 +107,8 @@ Route::post('/email/verification-notification', [AuthController::class, 'resendV
 Route::get('/verify-registration/{token}/{email}', [AuthController::class, 'verifyPendingUser'])->name('verification.verify.pending');
 Route::post('/resend-pending-verification', [AuthController::class, 'resendPendingVerification'])->name('verification.resend.pending');
 
-// Feedback routes
-Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store'); // Allow guests
+// Feedback routes (submission requires authentication)
+Route::post('/feedback', [FeedbackController::class, 'store'])->middleware('auth')->name('feedback.store');
 
 // Authenticated feedback routes
 Route::middleware('auth')->group(function () {
