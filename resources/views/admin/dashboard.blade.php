@@ -859,5 +859,82 @@ function toggleSection(sectionName) {
         icon.textContent = '+';
     }
 }
+
+// Calendar refresh functionality for reschedule approvals
+function notifyCalendarRefresh(data) {
+    // Try to find home calendar window/tab and notify it
+    try {
+        // Check if we have access to other windows (same origin)
+        if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+                type: 'reschedule_approved',
+                ...data
+            }, window.location.origin);
+        }
+        
+        // Also try to notify parent window if this is in an iframe
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+                type: 'reschedule_approved',
+                ...data
+            }, window.location.origin);
+        }
+        
+        // Store in localStorage as fallback for other tabs to pick up
+        localStorage.setItem('reschedule_update', JSON.stringify({
+            type: 'reschedule_approved',
+            timestamp: Date.now(),
+            ...data
+        }));
+        
+        console.log('📅 Calendar refresh notification sent:', data);
+    } catch (error) {
+        console.warn('Could not notify calendar refresh:', error);
+    }
+}
+
+// Listen for reschedule approval responses
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for success messages that indicate reschedule approval
+    @if(session('success') && (str_contains(session('success'), 'reschedule request approved') || str_contains(session('success'), 'Reschedule request approved')))
+        // Extract booking/rental information from the success message
+        const successMessage = @json(session('success'));
+        
+        // Try to extract reference number from the message
+        const bookingMatch = successMessage.match(/Booking (\w+)/);
+        const rentalMatch = successMessage.match(/Rental (\w+)/);
+        
+        if (bookingMatch) {
+            notifyCalendarRefresh({
+                booking: {
+                    reference: bookingMatch[1],
+                    // Note: We don't have the old/new dates here, but the calendar will refresh anyway
+                }
+            });
+        } else if (rentalMatch) {
+            notifyCalendarRefresh({
+                rental: {
+                    reference: rentalMatch[1],
+                    // Note: We don't have the old/new dates here, but the calendar will refresh anyway
+                }
+            });
+        }
+    @endif
+    
+    // Listen for localStorage changes (for cross-tab communication)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'reschedule_update' && e.newValue) {
+            try {
+                const data = JSON.parse(e.newValue);
+                // Only process recent updates (within last 10 seconds)
+                if (Date.now() - data.timestamp < 10000) {
+                    console.log('📅 Received reschedule update from another tab:', data);
+                }
+            } catch (error) {
+                console.warn('Error parsing reschedule update:', error);
+            }
+        }
+    });
+});
 </script>
  @endsection

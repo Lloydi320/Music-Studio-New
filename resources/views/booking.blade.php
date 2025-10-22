@@ -897,15 +897,23 @@
           
           
           <div class="checkbox-group">
-            <input type="checkbox" id="agreeTerms" name="agree_terms" required>
-            <label class="checkbox-label" for="agreeTerms">
-              I agree to <a href="#">User Agreement</a> and <a href="#">Privacy Policy</a>
-            </label>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div>
+                <input type="checkbox" id="bookingAgreementTerms" required>
+                <label class="checkbox-label" for="bookingAgreementTerms">I agree to the <a href="#" class="policy-link" data-policy="terms">Rental Terms & Agreement</a></label>
+              </div>
+              <div>
+                <input type="checkbox" id="bookingAgreementPrivacy" required>
+                <label class="checkbox-label" for="bookingAgreementPrivacy">I agree to the <a href="#" class="policy-link" data-policy="privacy">Privacy Policy</a></label>
+              </div>
+              <input type="hidden" name="accept_terms" id="bookingAcceptTermsInput" value="0">
+              <input type="hidden" name="accept_privacy" id="bookingAcceptPrivacyInput" value="0">
+            </div>
           </div>
           
           <div class="modal-buttons">
             <button type="button" class="btn-cancel" id="cancelModal">Cancel</button>
-            <button type="submit" class="btn-confirm">Confirm Booking</button>
+            <button type="submit" class="btn-confirm" id="bookingConfirmBtn" disabled>Confirm Booking</button>
           </div>
         </form>
       </div>
@@ -931,6 +939,35 @@
         <div class="gcash-footer-actions">
           <button type="button" class="gcash-back-btn" id="gcashBackBtn">Back</button>
           <button type="button" class="gcash-next-btn" id="gcashNextBtn">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Privacy & Terms Modal -->
+<div id="policyModal" class="modal" style="display:none; justify-content:center; align-items:center;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="gcash-modal-content" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+      <div class="gcash-header">
+        <div class="gcash-title" id="policyTitle">Policy</div>
+        <button class="gcash-close" id="closePolicyModalBtn" aria-label="Close">&times;</button>
+      </div>
+      <div class="gcash-body">
+        <div id="policyTerms" style="display:none; text-align:left; max-height:360px; overflow:auto;">
+          <h3>Rental Terms & Agreement</h3>
+          <p>• Renter is responsible for the equipment’s condition during the booking.</p>
+          <p>• Damages or loss may incur repair or replacement fees.</p>
+          <p>• Late extensions may incur additional charges.</p>
+          <p>• By proceeding, you acknowledge and accept these terms.</p>
+          <p style="margin-top:10px"><a href="/terms" target="_blank">Read full Rental Terms & Agreement</a></p>
+        </div>
+        <div id="policyPrivacy" style="display:none; text-align:left; max-height:360px; overflow:auto;">
+          <h3>Privacy Policy</h3>
+          <p>• We collect booking details to process your reservation.</p>
+          <p>• Payment references and contact information are retained for records.</p>
+          <p>• Data is stored securely and only used for service delivery.</p>
+          <p style="margin-top:10px"><a href="/privacy" target="_blank">Read full Privacy Policy</a></p>
         </div>
       </div>
     </div>
@@ -1556,6 +1593,67 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
+
+<script>
+  // Booking acceptance wiring
+  document.addEventListener('DOMContentLoaded', function() {
+    const termsCb = document.getElementById('bookingAgreementTerms');
+    const privacyCb = document.getElementById('bookingAgreementPrivacy');
+    const confirmBtn = document.getElementById('bookingConfirmBtn');
+    const acceptTermsInput = document.getElementById('bookingAcceptTermsInput');
+    const acceptPrivacyInput = document.getElementById('bookingAcceptPrivacyInput');
+    const policyModal = document.getElementById('policyModal');
+    const closePolicyModalBtn = document.getElementById('closePolicyModalBtn');
+    const policyTerms = document.getElementById('policyTerms');
+    const policyPrivacy = document.getElementById('policyPrivacy');
+
+    function updateAcceptance() {
+      const termsOk = !!(termsCb && termsCb.checked);
+      const privacyOk = !!(privacyCb && privacyCb.checked);
+      if (acceptTermsInput) acceptTermsInput.value = termsOk ? '1' : '0';
+      if (acceptPrivacyInput) acceptPrivacyInput.value = privacyOk ? '1' : '0';
+      if (confirmBtn) confirmBtn.disabled = !(termsOk && privacyOk);
+    }
+
+    if (termsCb) termsCb.addEventListener('change', updateAcceptance);
+    if (privacyCb) privacyCb.addEventListener('change', updateAcceptance);
+    updateAcceptance();
+
+    function openPolicy(which) {
+      if (!policyModal || !policyTerms || !policyPrivacy) return;
+      policyTerms.style.display = which === 'terms' ? 'block' : 'none';
+      policyPrivacy.style.display = which === 'privacy' ? 'block' : 'none';
+      policyModal.style.display = 'flex';
+    }
+
+    document.querySelectorAll('.policy-link').forEach(a => {
+        a.addEventListener('click', function(e) {
+          e.preventDefault();
+          const which = this.getAttribute('data-policy');
+          openPolicy(which);
+        });
+      });
+
+      // Also open Privacy modal when the privacy checkbox itself is clicked
+      const bookingPrivacyCheckbox = document.getElementById('bookingAgreementPrivacy');
+      if (bookingPrivacyCheckbox) {
+        bookingPrivacyCheckbox.addEventListener('click', function() {
+          openPolicy('privacy');
+        });
+      }
+
+      if (closePolicyModalBtn) {
+        closePolicyModalBtn.addEventListener('click', function() {
+          if (policyModal) policyModal.style.display = 'none';
+        });
+      }
+    if (policyModal) {
+      policyModal.addEventListener('click', function(e) {
+        if (e.target === policyModal) policyModal.style.display = 'none';
+      });
+    }
+  });
 </script>
 
 <!-- QR Code Modal -->

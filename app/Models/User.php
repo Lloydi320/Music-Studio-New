@@ -78,7 +78,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:8|regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/|confirmed',
             'is_admin' => 'boolean',
             'google_calendar_token' => 'nullable|json',
             'google_calendar_id' => 'nullable|string',
@@ -90,7 +90,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $id,
-            'password' => 'sometimes|string|min:6|confirmed',
+            'password' => 'sometimes|string|min:8|regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/|confirmed',
             'is_admin' => 'sometimes|boolean',
             'google_calendar_token' => 'nullable|json',
             'google_calendar_id' => 'nullable|string',

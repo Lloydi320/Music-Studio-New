@@ -104,7 +104,9 @@ class InstrumentRentalController extends Controller
                 'email' => 'nullable|email|max:255',
                 'phone' => ['required','string','size:11','regex:/^09[0-9]{9}$/'],
                 'reference_number' => 'nullable|string|max:50',
-                'picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120' // Required picture upload, max 5MB
+                'picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // Required picture upload, max 5MB
+                'accept_terms' => 'accepted',
+                'accept_privacy' => 'accepted'
             ]);
 
             // Calculate rental duration (minimum of 1 day)
@@ -147,9 +149,63 @@ class InstrumentRentalController extends Controller
                 }
             }
 
-            // Set daily rate (you can adjust this based on instrument type)
-            $dailyRate = 500.00; // Default rate
-            $totalAmount = $duration * $dailyRate;
+            // Determine accurate daily rate based on instrument_name first, then instrument_type
+            // Normalize keys to align with frontend values (spaces to underscores)
+            $typeKeyRaw = strtolower(trim($validatedData['instrument_type']));
+            $nameKeyRaw = strtolower(trim($validatedData['instrument_name']));
+            $typeKey = str_replace(' ', '_', $typeKeyRaw);
+            $nameKey = str_replace(' ', '_', $nameKeyRaw);
+
+            // Instrument-specific rates
+            $instrumentRates = [
+                'yamaha_manu_katche_jungle_kit' => 1500,
+                'fender_champion_100' => 900,
+                'fender_rumble_100' => 900,
+                'peavey_bandit_80_100' => 900,
+                'avatar_dm50' => 750,
+                'roland_go_keys_go61k' => 750,
+                'electric_guitar' => 500,
+                'bass_guitar' => 550,
+                'guitar_cable' => 50,
+                // Allow full package to be matched by name if sent
+                'full_package' => 4500,
+            ];
+
+            // Fallback per type when specific instrument is not matched
+            $typeRates = [
+                'full_package' => 4500,
+                'drums' => 1500,
+                'amplifier' => 900, // generic amp fallback; frontend usually selects specific amp
+                'keyboard' => 750,
+                'guitar' => 500,
+                'bass' => 550,
+                'accessories' => 50,
+            ];
+
+            $dailyRate = $instrumentRates[$nameKey] ?? ($typeRates[$typeKey] ?? 500.00);
+
+            // Fees to match frontend summary
+            $transportationFee = (($validatedData['transportation'] ?? null) === 'delivery') ? 550.00 : 0.00;
+
+            // Determine if full package was selected and compute down payment
+            $isFullPackage = (bool) ($validatedData['full_package'] ?? false);
+            if (!$isFullPackage) {
+                $typeLower = strtolower($validatedData['instrument_type']);
+                $isFullPackage = ($typeLower === 'full package' || $typeLower === 'full_package');
+            }
+            $downPayment = $isFullPackage ? 500.00 : 300.00;
+
+            // Extra hour charges: ₱200 per hour beyond 7 included hours for single-day rentals
+            $extraHourCharges = 0.00;
+            if ($isSingleDay) {
+                $eventHours = isset($validatedData['event_duration_hours']) ? (int)$validatedData['event_duration_hours'] : 0;
+                $extraHours = max(0, $eventHours - 7);
+                $extraHourCharges = $extraHours * 200.00;
+            }
+
+            // Base subtotal
+            $subtotal = $duration * $dailyRate;
+            $totalAmount = $subtotal + $transportationFee + $downPayment + $extraHourCharges;
 
             // Always generate IR rental reference; store user-entered payment reference separately
             $fourDigitCode = str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
@@ -163,14 +219,6 @@ class InstrumentRentalController extends Controller
             if ($request->hasFile('picture')) {
                 $receiptImagePath = $request->file('picture')->store('rental_receipts', 'public');
             }
-
-            // Determine if full package was selected and compute down payment
-            $isFullPackage = (bool) ($validatedData['full_package'] ?? false);
-            if (!$isFullPackage) {
-                $typeLower = strtolower($validatedData['instrument_type']);
-                $isFullPackage = ($typeLower === 'full package' || $typeLower === 'full_package');
-            }
-            $downPayment = $isFullPackage ? 500.00 : 300.00;
 
             $rentalData = [
                 'user_id' => Auth::id(), // Auth middleware ensures user_id is present
@@ -395,85 +443,14 @@ class InstrumentRentalController extends Controller
                 }
             }
 
-            // Remove duplicates and sort
-            $bookedDates = array_unique($bookedDates);
-            sort($bookedDates);
-
-            return response()->json([
-                'booked_dates' => array_values($bookedDates)
-            ]);
+            return response()->json($bookedDates);
 
         } catch (\Exception $e) {
-            Log::error('Failed to fetch booked dates', [
+            Log::error('Failed to get booked dates', [
                 'error' => $e->getMessage()
             ]);
 
-            return response()->json([
-                'booked_dates' => [],
-                'message' => 'Unable to fetch booked dates.'
-            ], 500);
-        }
-    }
-
-    /**
-     * Get instrument rental bookings for a specific date.
-     * Used by the calendar to display booking information.
-     */
-    public function getBookingsByDate(Request $request)
-    {
-        try {
-            $request->validate([
-                'date' => 'required|date_format:Y-m-d'
-            ]);
-
-            $date = $request->input('date');
-            
-            // Get all instrument rentals that include this date
-            $rentals = InstrumentRental::whereIn('status', ['pending', 'confirmed'])
-                ->where('rental_start_date', '<=', $date)
-                ->where('rental_end_date', '>=', $date)
-                ->with('user:id,name,email')
-                ->get();
-
-            $bookings = [];
-            
-            foreach ($rentals as $rental) {
-                $bookings[] = [
-                    'id' => $rental->id,
-                    'instrument_type' => $rental->instrument_type,
-                    'instrument_name' => $rental->instrument_name,
-                    'customer_name' => $rental->user ? $rental->user->name : $rental->customer_name,
-                    'customer_email' => $rental->user ? $rental->user->email : $rental->customer_email,
-                    'rental_start_date' => $rental->rental_start_date,
-                    'rental_end_date' => $rental->rental_end_date,
-                    'total_cost' => $rental->total_cost,
-                    'status' => $rental->status,
-                    'pickup_location' => $rental->pickup_location,
-                    'return_location' => $rental->return_location,
-                    'transportation' => $rental->transportation,
-                    'special_requests' => $rental->special_requests,
-                    'created_at' => $rental->created_at->format('Y-m-d H:i:s')
-                ];
-            }
-
-            return response()->json([
-                'success' => true,
-                'bookings' => $bookings,
-                'date' => $date,
-                'total_bookings' => count($bookings)
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Failed to fetch bookings by date', [
-                'error' => $e->getMessage(),
-                'date' => $request->input('date')
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to fetch bookings for this date.',
-                'bookings' => []
-            ], 500);
+            return response()->json([], 500);
         }
     }
 }

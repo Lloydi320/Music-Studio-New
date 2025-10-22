@@ -37,7 +37,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string|min:6'
+            'password' => 'required|string'
         ]);
 
         $credentials = $request->only('email', 'password');
@@ -77,7 +77,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users|unique:pending_users',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:8|regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/|confirmed',
         ]);
 
         // Create pending user instead of actual user
@@ -118,7 +118,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/')->with('success', 'You have been logged out successfully.');
+        return redirect()->route('home')->with('success', 'You have been logged out successfully.');
     }
 
     /**
@@ -140,21 +140,15 @@ class AuthController extends Controller
             return redirect('/')->with('error', 'Invalid verification link.');
         }
 
-        if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
-            return redirect('/')->with('error', 'Invalid verification link.');
-        }
-
         if ($user->hasVerifiedEmail()) {
-            return redirect('/')->with('info', 'Your email is already verified.');
+            return redirect('/')->with('info', 'Email already verified.');
         }
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
 
-        Auth::login($user);
-
-        return redirect('/')->with('success', 'Your email has been verified! Welcome to Lemon Hub Studio!');
+        return redirect('/')->with('success', 'Email verified successfully!');
     }
 
     /**
@@ -200,6 +194,7 @@ class AuthController extends Controller
         return redirect('/')->with('success', 'Email verified successfully! Your account has been created and you are now logged in. Welcome to Lemon Hub Studio!');
     }
 
+
     /**
      * Resend verification email for pending users
      */
@@ -241,6 +236,7 @@ class AuthController extends Controller
 
         return back()->with('success', 'Verification email sent! Please check your inbox.');
     }
+
 
     /**
      * Show the forgot password request form
@@ -287,7 +283,11 @@ class AuthController extends Controller
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|string|min:8|regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/|confirmed',
+        ], [
+            'password.regex' => 'Password must include uppercase, lowercase, number, and special character.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.confirmed' => 'Password confirmation does not match.',
         ]);
 
         $status = \Illuminate\Support\Facades\Password::reset(

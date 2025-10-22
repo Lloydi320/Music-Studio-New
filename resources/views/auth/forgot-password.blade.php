@@ -76,6 +76,7 @@
         @endif
 
         <div class="description">We will email you a link to reset your password.</div>
+        <div class="description">Note: Your new password must include uppercase, lowercase, number, and special character.</div>
         <form method="POST" action="{{ route('password.email') }}">
             @csrf
             <div class="form-group">

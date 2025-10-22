@@ -403,7 +403,7 @@ class BookingController extends Controller
             $request->validate([
                 'reference_number' => 'required|string|regex:/^[0-9]{13}$/',
                 'start_date' => 'required|date|after_or_equal:today',
-                'end_date' => 'required|date|after:start_date'
+                'end_date' => 'required|date|after_or_equal:start_date'
             ]);
         }
 
@@ -421,18 +421,14 @@ class BookingController extends Controller
                     return response()->json(['error' => 'Studio booking not found'], 404);
                 }
 
-                // Use original booking duration instead of request duration
-                $originalDuration = $booking->duration;
-
                 // Enforce studio closing time: end must be <= 8:00 PM
                 $startPart = trim(explode('-', $request->new_time_slot)[0]);
                 try {
                     $newStartTime = \Carbon\Carbon::createFromFormat('h:i A', $startPart, config('app.timezone', 'Asia/Manila'));
                 } catch (\Exception $e) {
-                    // Fallback parsing for 24h format like "20:00"
                     $newStartTime = \Carbon\Carbon::createFromFormat('H:i', $startPart, config('app.timezone', 'Asia/Manila'));
                 }
-                $newEndTime = $newStartTime->copy()->addHours($originalDuration);
+                $newEndTime = $newStartTime->copy()->addHours((int)$request->duration);
                 if ($newEndTime->hour > 20 || ($newEndTime->hour === 20 && $newEndTime->minute > 0)) {
                     return response()->json(['error' => 'Selected time exceeds studio closing time (8:00 PM)'], 422);
                 }
@@ -459,7 +455,7 @@ class BookingController extends Controller
                     'requested_data' => [
                         'new_date' => $request->new_date,
                         'new_time_slot' => $request->new_time_slot,
-                        'new_duration' => $originalDuration, // Use original duration
+                        'new_duration' => $request->duration,
                         'booking_type' => 'studio_rental'
                     ],
                     'original_date' => $booking->date,
@@ -467,7 +463,7 @@ class BookingController extends Controller
                     'original_duration' => $booking->duration,
                     'requested_date' => $request->new_date,
                     'requested_time_slot' => $request->new_time_slot,
-                    'requested_duration' => $originalDuration, // Use original duration
+                    'requested_duration' => $request->duration,
                     'reason' => $request->reason,
                     'has_conflict' => $conflictingBooking !== null,
                     'conflict_details' => $conflictingBooking ? [
@@ -487,6 +483,8 @@ class BookingController extends Controller
 
                 // Send notification to admin
                 $this->notifyAdminOfReschedule($booking, $rescheduleRequest->requested_data);
+                // Send confirmation to customer
+                $this->notifyUserOfReschedule($booking, $rescheduleRequest->requested_data);
                 
             } else {
                 // Find instrument rental by reference code
@@ -497,56 +495,6 @@ class BookingController extends Controller
                 
                 if (!$rental) {
                     return response()->json(['error' => 'Instrument rental not found'], 404);
-                }
-
-                // Check for date conflicts with existing rentals
-                $conflictingRentals = \App\Models\InstrumentRental::whereIn('status', ['pending', 'confirmed'])
-                    ->where('id', '!=', $rental->id) // Exclude current rental
-                    ->where(function($query) use ($request) {
-                        // Check if the requested dates overlap with existing rentals
-                        $query->where(function($subQuery) use ($request) {
-                            // Case 1: Existing rental starts during requested period
-                            $subQuery->whereBetween('rental_start_date', [$request->start_date, $request->end_date]);
-                        })->orWhere(function($subQuery) use ($request) {
-                            // Case 2: Existing rental ends during requested period
-                            $subQuery->whereBetween('rental_end_date', [$request->start_date, $request->end_date]);
-                        })->orWhere(function($subQuery) use ($request) {
-                            // Case 3: Existing rental completely encompasses requested period
-                            $subQuery->where('rental_start_date', '<=', $request->start_date)
-                                    ->where('rental_end_date', '>=', $request->end_date);
-                        })->orWhere(function($subQuery) use ($request) {
-                            // Case 4: Requested period completely encompasses existing rental
-                            $subQuery->where('rental_start_date', '>=', $request->start_date)
-                                    ->where('rental_end_date', '<=', $request->end_date);
-                        });
-                    })
-                    ->get();
-
-                if ($conflictingRentals->count() > 0) {
-                    $conflictDetails = $conflictingRentals->map(function($conflictRental) {
-                        return [
-                            'reference' => $conflictRental->reference,
-                            'instrument' => $conflictRental->instrument_type,
-                            'start_date' => $conflictRental->rental_start_date,
-                            'end_date' => $conflictRental->rental_end_date,
-                            'customer' => $conflictRental->user->name ?? 'Unknown'
-                        ];
-                    });
-
-                    $firstConflict = $conflictDetails->first();
-                    $conflictMessage = "The requested dates conflict with an existing rental. ";
-                    $conflictMessage .= "There is already a {$firstConflict['instrument']} rental ";
-                    $conflictMessage .= "from " . \Carbon\Carbon::parse($firstConflict['start_date'])->format('M j, Y');
-                    $conflictMessage .= " to " . \Carbon\Carbon::parse($firstConflict['end_date'])->format('M j, Y');
-                    $conflictMessage .= " (Reference: {$firstConflict['reference']}).";
-                    
-                    if ($conflictingRentals->count() > 1) {
-                        $conflictMessage .= " Plus " . ($conflictingRentals->count() - 1) . " other conflicting rental(s).";
-                    }
-                    
-                    $conflictMessage .= " Please choose different dates.";
-
-                    return response()->json(['error' => $conflictMessage], 409);
                 }
 
                 // Create reschedule request for instrument rental
@@ -572,19 +520,21 @@ class BookingController extends Controller
                 ]);
 
                 // Log reschedule request for instrument rental
-                ActivityLog::logActivity(
-                    'Reschedule Request Submitted: Instrument Rental - ' . $rescheduleRequest->reference,
-                    'rental_reschedule_requested',
-                    $rental->user_id,
-                    'App\\Models\\InstrumentRental',
-                    $rental->id,
-                    $rental->toArray(),
-                    $rescheduleRequest->requested_data,
-                    ActivityLog::SEVERITY_MEDIUM
-                );
+                ActivityLog::create([
+                    'description' => 'Reschedule Request Submitted: Instrument Rental - ' . $rescheduleRequest->reference,
+                    'resource_type' => 'App\\Models\\InstrumentRental',
+                    'resource_id' => $rental->id,
+                    'old_values' => $rental->toArray(),
+                    'new_values' => $rescheduleRequest->requested_data,
+                    'user_id' => $rental->user_id,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
 
                 // Send notification to admin for instrument rental
                 $this->notifyAdminOfInstrumentReschedule($rental, $rescheduleRequest->requested_data);
+                // Send confirmation to customer
+                $this->notifyUserOfInstrumentReschedule($rental, $rescheduleRequest->requested_data);
             }
 
             return response()->json([
@@ -595,7 +545,7 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to submit reschedule request', [
                 'booking_type' => $bookingType,
-                'reference_number' => $request->reference_number,
+                'reference' => $request->input('reference_number'),
                 'error' => $e->getMessage()
             ]);
             return response()->json(['error' => 'Failed to submit reschedule request: ' . $e->getMessage()], 500);
@@ -763,52 +713,88 @@ class BookingController extends Controller
         }
     }
 
+    private function notifyUserOfReschedule($booking, $rescheduleData)
+    {
+        try {
+            $recipient = $booking->email ?? ($booking->user->email ?? null);
+            if (!$recipient) {
+                \Illuminate\Support\Facades\Log::warning('No customer email found for reschedule confirmation', [
+                    'booking_reference' => $booking->reference
+                ]);
+                return;
+            }
+            \Illuminate\Support\Facades\Mail::to($recipient)->send(
+                new \App\Mail\UserRescheduleConfirmation($booking, $rescheduleData)
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send user reschedule confirmation', [
+                'booking_reference' => $booking->reference,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    private function notifyUserOfInstrumentReschedule($rental, $rescheduleData)
+    {
+        try {
+            $recipient = $rental->user->email ?? null;
+            if (!$recipient) {
+                \Illuminate\Support\Facades\Log::warning('No customer email found for instrument reschedule confirmation', [
+                    'rental_reference' => $rental->reference
+                ]);
+                return;
+            }
+            \Illuminate\Support\Facades\Mail::to($recipient)->send(
+                new \App\Mail\UserInstrumentRescheduleConfirmation($rental, $rescheduleData)
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send user instrument reschedule confirmation', [
+                'rental_reference' => $rental->reference,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
     private function notifyAdminOfReschedule($booking, $rescheduleData)
     {
         try {
-            \Illuminate\Support\Facades\Log::info('Starting reschedule notification process', [
-                'booking_reference' => $booking->reference
-            ]);
-            
-            // Get all admin users
-            $adminUsers = \App\Models\User::where('is_admin', true)->get();
-            
-            \Illuminate\Support\Facades\Log::info('Found admin users', [
-                'admin_count' => $adminUsers->count(),
-                'admin_emails' => $adminUsers->pluck('email')->toArray()
-            ]);
-            
-            if ($adminUsers->count() === 0) {
-                \Illuminate\Support\Facades\Log::warning('No admin users found for reschedule notification');
-                return;
+            $adminEmails = \App\Models\User::where('is_admin', true)
+                ->pluck('email')
+                ->filter()
+                ->toArray();
+            if (empty($adminEmails)) {
+                $fallback = config('mail.from.address') ?? 'magamponr@gmail.com';
+                $adminEmails = [$fallback];
             }
-            
-            foreach ($adminUsers as $admin) {
-                \Illuminate\Support\Facades\Log::info('Sending notification to admin', [
-                    'admin_email' => $admin->email,
-                    'admin_name' => $admin->name
-                ]);
-                
-                // Send email notification
-                \Illuminate\Support\Facades\Mail::to($admin->email)->send(
-                    new \App\Mail\RescheduleNotification($booking, $rescheduleData)
-                );
-                
-                \Illuminate\Support\Facades\Log::info('Notification sent successfully to admin', [
-                    'admin_email' => $admin->email
-                ]);
+
+            $subject = 'Reschedule Request Submitted - ' . ($booking->reference ?? 'Unknown');
+
+            $tz = config('app.timezone', 'UTC');
+            $originalDateFmt = $booking->date ? \Carbon\Carbon::parse($booking->date)->timezone($tz)->format('M j, Y') : 'N/A';
+            $requestedDate = $rescheduleData['new_date'] ?? $rescheduleData['requested_date'] ?? null;
+            $requestedSlot = $rescheduleData['new_time_slot'] ?? $rescheduleData['requested_time_slot'] ?? null;
+            $requestedDuration = $rescheduleData['new_duration'] ?? $rescheduleData['requested_duration'] ?? null;
+            $requestedDateFmt = $requestedDate ? \Carbon\Carbon::parse($requestedDate)->timezone($tz)->format('M j, Y') : 'N/A';
+
+            $body = "A customer submitted a studio reschedule request.\n\n" .
+                "Reference: " . ($booking->reference ?? 'N/A') . "\n" .
+                "Band/Customer: " . ($booking->band_name ?? 'Unknown') . "\n" .
+                "Original Date: " . $originalDateFmt . " (" . $tz . ")\n" .
+                "Original Time Slot: " . ($booking->time_slot ?? 'N/A') . "\n" .
+                "Original Duration: " . ((string) $booking->duration) . " hour(s)\n\n" .
+                "Requested Date: " . $requestedDateFmt . " (" . $tz . ")\n" .
+                "Requested Time Slot: " . ($requestedSlot ?? 'N/A') . "\n" .
+                "Requested Duration: " . ($requestedDuration !== null ? $requestedDuration . ' hour(s)' : 'N/A') . "\n";
+
+            foreach ($adminEmails as $email) {
+                \Illuminate\Support\Facades\Mail::raw($body, function ($message) use ($email, $subject) {
+                    $message->to($email)->subject($subject);
+                });
             }
-            
-            \Illuminate\Support\Facades\Log::info('Reschedule notification sent to all admins', [
-                'booking_reference' => $booking->reference,
-                'admin_count' => $adminUsers->count()
-            ]);
-            
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to send reschedule notification', [
-                'booking_reference' => $booking->reference,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            \Illuminate\Support\Facades\Log::error('Failed to notify admin of reschedule', [
+                'booking_reference' => $booking->reference ?? 'N/A',
+                'error' => $e->getMessage()
             ]);
         }
     }
@@ -816,49 +802,46 @@ class BookingController extends Controller
     private function notifyAdminOfInstrumentReschedule($rental, $rescheduleData)
     {
         try {
-            \Illuminate\Support\Facades\Log::info('Starting instrument reschedule notification process', [
-                'rental_reference' => $rental->reference
-            ]);
-            
-            // Get all admin users
-            $adminUsers = \App\Models\User::where('is_admin', true)->get();
-            
-            \Illuminate\Support\Facades\Log::info('Found admin users for instrument reschedule', [
-                'admin_count' => $adminUsers->count(),
-                'admin_emails' => $adminUsers->pluck('email')->toArray()
-            ]);
-            
-            if ($adminUsers->count() === 0) {
-                \Illuminate\Support\Facades\Log::warning('No admin users found for instrument reschedule notification');
-                return;
+            $adminEmails = \App\Models\User::where('is_admin', true)
+                ->pluck('email')
+                ->filter()
+                ->toArray();
+            if (empty($adminEmails)) {
+                $fallback = config('mail.from.address') ?? 'magamponr@gmail.com';
+                $adminEmails = [$fallback];
             }
-            
-            foreach ($adminUsers as $admin) {
-                \Illuminate\Support\Facades\Log::info('Sending instrument reschedule notification to admin', [
-                    'admin_email' => $admin->email,
-                    'admin_name' => $admin->name
-                ]);
-                
-                // Send email notification for instrument rental reschedule
-                \Illuminate\Support\Facades\Mail::to($admin->email)->send(
-                    new \App\Mail\InstrumentRescheduleNotification($rental, $rescheduleData)
-                );
-                
-                \Illuminate\Support\Facades\Log::info('Instrument reschedule notification sent successfully to admin', [
-                    'admin_email' => $admin->email
-                ]);
+
+            $subject = 'Instrument Reschedule Submitted - ' . ($rental->reference ?? 'Unknown');
+
+            $tz = config('app.timezone', 'UTC');
+            $originalStartFmt = $rental->rental_start_date ? \Carbon\Carbon::parse($rental->rental_start_date)->timezone($tz)->format('M j, Y') : 'N/A';
+            $originalEndFmt = $rental->rental_end_date ? \Carbon\Carbon::parse($rental->rental_end_date)->timezone($tz)->format('M j, Y') : 'N/A';
+            $requestedStart = $rescheduleData['new_start_date'] ?? $rescheduleData['requested_start_date'] ?? null;
+            $requestedEnd = $rescheduleData['new_end_date'] ?? $rescheduleData['requested_end_date'] ?? null;
+            $requestedStartFmt = $requestedStart ? \Carbon\Carbon::parse($requestedStart)->timezone($tz)->format('M j, Y') : 'N/A';
+            $requestedEndFmt = $requestedEnd ? \Carbon\Carbon::parse($requestedEnd)->timezone($tz)->format('M j, Y') : 'N/A';
+            $requestedDurationDays = ($requestedStart && $requestedEnd)
+                ? (\Carbon\Carbon::parse($requestedStart)->diffInDays(\Carbon\Carbon::parse($requestedEnd)) + 1)
+                : ($rental->rental_duration_days ?? null);
+
+            $body = "A customer submitted an instrument rental reschedule request.\n\n" .
+                "Reference: " . ($rental->reference ?? 'N/A') . "\n" .
+                "Instrument: " . ($rental->instrument_name ?? 'Unknown Instrument') . "\n" .
+                "Original Start: " . $originalStartFmt . " (" . $tz . ")\n" .
+                "Original End: " . $originalEndFmt . " (" . $tz . ")\n\n" .
+                "Requested Start: " . $requestedStartFmt . " (" . $tz . ")\n" .
+                "Requested End: " . $requestedEndFmt . " (" . $tz . ")\n" .
+                "Requested Duration: " . ($requestedDurationDays !== null ? $requestedDurationDays . ' day(s)' : 'N/A') . "\n";
+
+            foreach ($adminEmails as $email) {
+                \Illuminate\Support\Facades\Mail::raw($body, function ($message) use ($email, $subject) {
+                    $message->to($email)->subject($subject);
+                });
             }
-            
-            \Illuminate\Support\Facades\Log::info('Instrument reschedule notification sent to all admins', [
-                'rental_reference' => $rental->reference,
-                'admin_count' => $adminUsers->count()
-            ]);
-            
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to send instrument reschedule notification', [
-                'rental_reference' => $rental->reference,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            \Illuminate\Support\Facades\Log::error('Failed to notify admin of instrument reschedule', [
+                'rental_reference' => $rental->reference ?? 'N/A',
+                'error' => $e->getMessage()
             ]);
         }
     }

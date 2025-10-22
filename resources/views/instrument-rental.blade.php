@@ -2423,13 +2423,23 @@
 
                 
                 <div class="checkbox-group">
-                  <input type="checkbox" id="modalAgreement" name="agreement" required>
-                  <label class="checkbox-label" for="modalAgreement">I agree to <a href="#" target="_blank">User Agreement</a> and <a href="#" target="_blank">Privacy Policy</a></label>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div>
+                      <input type="checkbox" id="modalAgreementTerms" required>
+                      <label class="checkbox-label" for="modalAgreementTerms">I agree to the <a href="#" class="policy-link" data-policy="terms">Rental Terms & Agreement</a></label>
+                    </div>
+                    <div>
+                      <input type="checkbox" id="modalAgreementPrivacy" required>
+                      <label class="checkbox-label" for="modalAgreementPrivacy">I agree to the <a href="#" class="policy-link" data-policy="privacy">Privacy Policy</a></label>
+                    </div>
+                    <input type="hidden" name="accept_terms" id="acceptTermsInput" value="0">
+                    <input type="hidden" name="accept_privacy" id="acceptPrivacyInput" value="0">
+                  </div>
                 </div>
                 
                 <div class="modal-buttons">
                   <button type="button" class="btn-cancel" id="cancelRentalModal">Cancel</button>
-                  <button type="submit" class="btn-confirm">Confirm Booking</button>
+                  <button type="submit" class="btn-confirm" id="confirmBookingBtn" disabled>Confirm Booking</button>
                 </div>
               </form>
             </div>
@@ -2466,12 +2476,12 @@
     <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
       <div class="gcash-modal-content" role="dialog" aria-modal="true" aria-labelledby="gcashTitle">
         <div class="gcash-header">
-          <div class="gcash-title" id="gcashTitle">GCash</div>
-          <button class="gcash-close" id="closeGcashModalBtn" aria-label="Close">&times;</button>
+            <div class="gcash-title" id="gcashTitle">GCash</div>
+            <button class="gcash-close" id="closeGcashModalBtn" aria-label="Close">&times;</button>
         </div>
         <div class="gcash-body">
-          <p class="gcash-subtitle">Securely complete the payment with your GCash app</p>
-          <p class="gcash-instruction">Log in to GCash and scan this QR with the QR Scanner.</p>
+            <p class="gcash-subtitle">Securely complete the payment with your GCash app</p>
+            <p class="gcash-instruction">Log in to GCash and scan this QR with the QR Scanner.</p>
           <div class="gcash-qr-placeholder" aria-label="GCash QR placeholder">
             <img id="gcashQrImage" alt="GCash QR" style="display:none; width:100%; height:100%; object-fit:contain; border-radius:10px;" />
           </div>
@@ -2549,7 +2559,102 @@
       #gcashModal .gcash-qr-placeholder { width: 260px; height: 260px; }
       #gcashModal .gcash-next-btn { width: 100%; }
     }
+
+  /* Policy Modal UI */
+  #policyModal .policy-modal-content {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    width: 95%;
+    max-width: 560px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid #e5e5e5;
+  }
+  #policyModal .policy-modal-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+    border-radius: 16px 16px 0 0;
+  }
+  #policyModal .policy-modal-title {
+    margin: 0;
+    color: #333;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  #policyModal .policy-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.25s ease;
+  }
+  #policyModal .policy-modal-close:hover {
+    background: #f0f0f0;
+    color: #333;
+    transform: scale(1.05);
+  }
+  #policyModal .policy-modal-body {
+    padding: 20px;
+    color: #555;
+    line-height: 1.6;
+  }
+  #policyModal .policy-modal-body h3 {
+    color: #333;
+    margin: 6px 0 12px;
+    font-size: 1.1rem;
+  }
+  #policyModal .policy-modal-body p {
+    margin: 6px 0;
+  }
+  @media (max-width: 768px) {
+    #policyModal .policy-modal-content { max-width: calc(100% - 20px); }
+    #policyModal .policy-modal-header, #policyModal .policy-modal-body { padding-left: 16px; padding-right: 16px; }
+  }
   </style>
+
+  <!-- Privacy & Terms Modal -->
+  <div id="policyModal" class="modal" style="display:none; justify-content:center; align-items:center;">
+    <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+      <div class="policy-modal-content" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+        <div class="policy-modal-header">
+          <div class="policy-modal-title" id="policyTitle">Policy</div>
+          <button class="policy-modal-close" id="closePolicyModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="policy-modal-body">
+          <div id="policyTerms" style="display:none; text-align:left; max-height:420px; overflow:auto;">
+            <h3>Rental Terms & Agreement</h3>
+            <p>• Renter is responsible for the instrument’s condition during the rental period.</p>
+            <p>• Damages or loss may incur repair or replacement fees.</p>
+            <p>• Late returns may incur additional daily charges.</p>
+            <p>• Transportation services, if selected, follow the agreed schedule.</p>
+            <p>• By proceeding, you acknowledge and accept these terms.</p>
+
+          </div>
+          <div id="policyPrivacy" style="display:none; text-align:left; max-height:420px; overflow:auto;">
+            <h3>Privacy Policy</h3>
+            <p>• We collect rental details to process your booking.</p>
+            <p>• Payment references and contact information are retained for records.</p>
+            <p>• Data is stored securely and only used for service delivery.</p>
+            <p>• You may request access, correction, or deletion subject to legal requirements.</p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Instrument rental form functionality
@@ -3993,6 +4098,67 @@
             });
           }
         }
+      }
+    });
+  </script>
+
+  <script>
+    // Agreement acceptance wiring
+    document.addEventListener('DOMContentLoaded', function() {
+      const termsCb = document.getElementById('modalAgreementTerms');
+      const privacyCb = document.getElementById('modalAgreementPrivacy');
+      const confirmBtn = document.getElementById('confirmBookingBtn');
+      const acceptTermsInput = document.getElementById('acceptTermsInput');
+      const acceptPrivacyInput = document.getElementById('acceptPrivacyInput');
+      const policyModal = document.getElementById('policyModal');
+      const closePolicyModalBtn = document.getElementById('closePolicyModalBtn');
+      const policyTerms = document.getElementById('policyTerms');
+      const policyPrivacy = document.getElementById('policyPrivacy');
+
+      function updateAcceptance() {
+        const termsOk = !!(termsCb && termsCb.checked);
+        const privacyOk = !!(privacyCb && privacyCb.checked);
+        if (acceptTermsInput) acceptTermsInput.value = termsOk ? '1' : '0';
+        if (acceptPrivacyInput) acceptPrivacyInput.value = privacyOk ? '1' : '0';
+        if (confirmBtn) confirmBtn.disabled = !(termsOk && privacyOk);
+      }
+
+      if (termsCb) termsCb.addEventListener('change', updateAcceptance);
+      if (privacyCb) privacyCb.addEventListener('change', updateAcceptance);
+      updateAcceptance();
+
+      function openPolicy(which) {
+        if (!policyModal || !policyTerms || !policyPrivacy) return;
+        policyTerms.style.display = which === 'terms' ? 'block' : 'none';
+        policyPrivacy.style.display = which === 'privacy' ? 'block' : 'none';
+        policyModal.style.display = 'flex';
+      }
+
+      document.querySelectorAll('.policy-link').forEach(a => {
+        a.addEventListener('click', function(e) {
+          e.preventDefault();
+          const which = this.getAttribute('data-policy');
+          openPolicy(which);
+        });
+      });
+
+      // Also open Privacy modal when the privacy checkbox itself is clicked
+      const rentalPrivacyCheckbox = document.getElementById('modalAgreementPrivacy');
+      if (rentalPrivacyCheckbox) {
+        rentalPrivacyCheckbox.addEventListener('click', function() {
+          openPolicy('privacy');
+        });
+      }
+
+      if (closePolicyModalBtn) {
+        closePolicyModalBtn.addEventListener('click', function() {
+          if (policyModal) policyModal.style.display = 'none';
+        });
+      }
+      if (policyModal) {
+        policyModal.addEventListener('click', function(e) {
+          if (e.target === policyModal) policyModal.style.display = 'none';
+        });
       }
     });
   </script>

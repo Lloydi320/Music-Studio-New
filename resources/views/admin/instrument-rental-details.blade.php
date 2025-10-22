@@ -820,13 +820,13 @@
                 <!-- Contact Email -->
                 <div class="info-item">
                     <span class="info-label">CONTACT EMAIL</span>
-                    <span class="info-value">{{ $rental->user->email ?? 'No email provided' }}</span>
+                    <span class="info-value">{{ $rental->email ?? ($rental->user->email ?? 'No email provided') }}</span>
                 </div>
 
                 <!-- Contact Number -->
                 <div class="info-item">
                     <span class="info-label">CONTACT NUMBER</span>
-                    <span class="info-value">{{ $rental->user->phone ?? 'Not provided' }}</span>
+                    <span class="info-value">{{ $rental->phone ?? ($rental->user->phone ?? 'Not provided') }}</span>
                 </div>
 
                 <!-- Duration -->
@@ -839,6 +839,12 @@
                 <div class="info-item">
                     <span class="info-label">DOWN PAYMENT</span>
                     <span class="info-value">₱{{ number_format($rental->reservation_fee ?? 0, 2) }}</span>
+                </div>
+
+                <!-- Full Payment -->
+                <div class="info-item">
+                    <span class="info-label">FULL PAYMENT</span>
+                    <span class="info-value">₱{{ number_format($rental->total_amount ?? 0, 2) }}</span>
                 </div>
 
                 <!-- Time Slot -->

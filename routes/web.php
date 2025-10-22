@@ -17,6 +17,13 @@ Route::get('/services', function () {
     return view('services');
 })->name('services');
 
+// New policy pages
+Route::get('/terms', function () {
+    return view('terms');
+})->name('terms');
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
 Route::get('/music-lessons', function () {
     if (!Auth::check()) {
         return redirect()->route('login')->with('error', 'Please log in to access Music Lessons.');

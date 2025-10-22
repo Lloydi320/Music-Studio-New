@@ -934,6 +934,45 @@
     </div>
   </div>
 
+  <!-- Privacy & Terms Modal -->
+  <div id="policyModal" class="modal" style="display:none; animation: fadeIn 0.3s ease-out; justify-content:center; align-items:center;">
+    <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="policyModalTitle" style="max-width:840px;">
+        <div class="modal-header">
+          <div class="modal-title" id="policyModalTitle">Privacy Policy & Rental Terms</div>
+          <button class="modal-close" id="closePolicyModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+          <section id="policyTerms" style="display:none;">
+            <h3>Rental Terms & Agreement</h3>
+            <p>By proceeding, you agree to the studio’s rental rules, equipment care policies, damage liability, reservation and cancellation terms, and facility guidelines.</p>
+            <ul>
+              <li>Respect scheduled time slots; late arrivals may reduce time.</li>
+              <li>Handle equipment responsibly; damage may incur fees.</li>
+              <li>No smoking or alcohol inside the studio.</li>
+              <li>Cancellations within 24 hours may forfeit reservation fees.</li>
+            </ul>
+            <p style="margin-top:10px"><a href="/terms" target="_blank">Read full Rental Terms & Agreement</a></p>
+          </section>
+          <section id="policyPrivacy" style="display:none;">
+            <h3>Privacy Policy</h3>
+            <p>We collect minimal necessary data to process bookings and payments. Data is stored securely and only used for service administration, notifications, and regulatory compliance.</p>
+            <ul>
+              <li>Contact information for booking confirmation and updates.</li>
+              <li>Payment reference numbers for verification.</li>
+              <li>Optional uploaded receipts for validation.</li>
+              <li>You may request data deletion as permitted by law.</li>
+            </ul>
+            <p style="margin-top:10px"><a href="/privacy" target="_blank">Read full Privacy Policy</a></p>
+          </section>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="closePolicyModalBtnFooter">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const detailsModal = document.getElementById('bookingDetailsModal');
@@ -1018,6 +1057,7 @@
       if (gcashNextBtn && gcashModal) {
         gcashNextBtn.addEventListener('click', function() {
           // Close GCash and open the center-only booking form
+
           gcashModal.style.display = 'none';
           if (bookingModal) {
             bookingModal.style.display = 'block';
@@ -1039,6 +1079,68 @@
           if (detailsModal) detailsModal.style.display = 'block';
         }
       });
+    });
+  </script>
+
+  <script>
+    // Solo rehearsal acceptance wiring
+    document.addEventListener('DOMContentLoaded', function() {
+      const termsCb = document.getElementById('rehearsalAgreementTerms');
+      const privacyCb = document.getElementById('rehearsalAgreementPrivacy');
+      const confirmBtn = document.getElementById('rehearsalConfirmBtn');
+      const acceptTermsInput = document.getElementById('rehearsalAcceptTermsInput');
+      const acceptPrivacyInput = document.getElementById('rehearsalAcceptPrivacyInput');
+      const policyModal = document.getElementById('policyModal');
+      const closePolicyModalBtn = document.getElementById('closePolicyModalBtn');
+      const closePolicyModalBtnFooter = document.getElementById('closePolicyModalBtnFooter');
+      const policyTerms = document.getElementById('policyTerms');
+      const policyPrivacy = document.getElementById('policyPrivacy');
+
+      function updateAcceptance() {
+        const termsOk = !!(termsCb && termsCb.checked);
+        const privacyOk = !!(privacyCb && privacyCb.checked);
+        if (acceptTermsInput) acceptTermsInput.value = termsOk ? '1' : '0';
+        if (acceptPrivacyInput) acceptPrivacyInput.value = privacyOk ? '1' : '0';
+        if (confirmBtn) confirmBtn.disabled = !(termsOk && privacyOk);
+      }
+
+      if (termsCb) termsCb.addEventListener('change', updateAcceptance);
+      if (privacyCb) privacyCb.addEventListener('change', updateAcceptance);
+      updateAcceptance();
+
+      function openPolicy(which) {
+        if (!policyModal || !policyTerms || !policyPrivacy) return;
+        policyTerms.style.display = which === 'terms' ? 'block' : 'none';
+        policyPrivacy.style.display = which === 'privacy' ? 'block' : 'none';
+        policyModal.style.display = 'flex';
+      }
+
+      document.querySelectorAll('.policy-link').forEach(a => {
+        a.addEventListener('click', function(e) {
+          e.preventDefault();
+          const which = this.getAttribute('data-policy');
+          openPolicy(which);
+        });
+      });
+
+      // Open Privacy modal when privacy checkbox is clicked
+      const rehearsalPrivacyCheckbox = document.getElementById('rehearsalAgreementPrivacy');
+      if (rehearsalPrivacyCheckbox) {
+        rehearsalPrivacyCheckbox.addEventListener('click', function() {
+          openPolicy('privacy');
+        });
+      }
+
+      function closePolicy() {
+        if (policyModal) policyModal.style.display = 'none';
+      }
+      if (closePolicyModalBtn) closePolicyModalBtn.addEventListener('click', closePolicy);
+      if (closePolicyModalBtnFooter) closePolicyModalBtnFooter.addEventListener('click', closePolicy);
+      if (policyModal) {
+        policyModal.addEventListener('click', function(e) {
+          if (e.target === policyModal) closePolicy();
+        });
+      }
     });
   </script>
 
@@ -1128,15 +1230,25 @@
 
             
             <div class="checkbox-group">
-              <input type="checkbox" id="agreeTerms" name="agree_terms" required>
-              <label class="checkbox-label" for="agreeTerms">
-                I agree to <a href="#">User Agreement</a> and <a href="#">Privacy Policy</a>
-              </label>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <input type="checkbox" id="rehearsalAgreementTerms" required>
+                <label class="checkbox-label" for="rehearsalAgreementTerms">
+                  I agree to <a href="#" class="policy-link" data-policy="terms">Rental Terms & Agreement</a>
+                </label>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="rehearsalAgreementPrivacy" required>
+                <label class="checkbox-label" for="rehearsalAgreementPrivacy">
+                  I agree to <a href="#" class="policy-link" data-policy="privacy">Privacy Policy</a>
+                </label>
+              </div>
+              <input type="hidden" id="rehearsalAcceptTermsInput" name="accept_terms" value="0">
+              <input type="hidden" id="rehearsalAcceptPrivacyInput" name="accept_privacy" value="0">
             </div>
             
             <div class="modal-buttons">
               <button type="button" class="btn-cancel" id="cancelModal">Cancel</button>
-              <button type="submit" class="btn-confirm">Confirm Booking</button>
+              <button type="submit" class="btn-confirm" id="rehearsalConfirmBtn" disabled>Confirm Booking</button>
             </div>
           </form>
         </div>

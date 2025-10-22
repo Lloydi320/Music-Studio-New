@@ -151,11 +151,13 @@
         <p>Bringing your music to life, one session at a time.</p>
         @if(Auth::check())
           <button id="openServicesPopup" class="book-btn">Book Now!</button>
+          <button id="openWhiteModal" class="book-btn" style="background: #ffffff; color: #333; margin-left: 10px; border: 2px solid #FFD700;">Open Modal</button>
           @if(Auth::user()->isAdmin())
             <a href="/admin/dashboard" class="book-btn" style="background: #e74c3c; margin-left: 10px;">Admin Panel</a>
           @endif
         @else
           <a href="/login" class="book-btn">Login to Book Now!</a>
+          <button id="openWhiteModal" class="book-btn" style="background: #ffffff; color: #333; margin-left: 10px; border: 2px solid #FFD700;">Open Modal</button>
         @endif
       </div>
       
@@ -394,7 +396,7 @@
             <div class="form-group">
               <label for="newDate">📅 New Date</label>
               <div class="date-input-wrapper">
-                <input type="date" id="newDate" name="newDate" aria-describedby="date-help" class="date-picker-input">
+                <input type="date" id="newDate" name="newDate" aria-describedby="date-help" class="date-picker-input" min="{{ date('Y-m-d') }}">
                 <div class="date-picker-icon">📅</div>
               </div>
               <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
@@ -457,7 +459,7 @@
             <div class="form-group">
               <label for="startDate">📅 Start Date</label>
               <div class="date-input-wrapper">
-                <input type="date" id="startDate" name="startDate" aria-describedby="start-date-help" class="date-picker-input">
+                <input type="date" id="startDate" name="startDate" aria-describedby="start-date-help" class="date-picker-input" min="{{ date('Y-m-d') }}">
                 <div class="date-picker-icon">📅</div>
               </div>
               <small id="start-date-help" class="form-help">Select the new start date for your rental</small>
@@ -466,7 +468,7 @@
             <div class="form-group">
               <label for="endDate">📅 End Date</label>
               <div class="date-input-wrapper">
-                <input type="date" id="endDate" name="endDate" aria-describedby="end-date-help" class="date-picker-input">
+                <input type="date" id="endDate" name="endDate" aria-describedby="end-date-help" class="date-picker-input" min="{{ date('Y-m-d') }}">
                 <div class="date-picker-icon">📅</div>
               </div>
               <small id="end-date-help" class="form-help">Select the new end date for your rental</small>
@@ -1549,6 +1551,33 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         } else if (bookingType === 'Instrument Rental' || bookingType === 'instrument_rental') {
                             showBookingFields('instrument_rental');
+                            const endDateEl = document.getElementById('endDate');
+                            if (endDateEl) {
+                                let fixedEnd = null;
+                                if (result.booking) {
+                                    fixedEnd = result.booking.end_date || result.booking.return_date || result.booking.rental_end_date || null;
+                                    if (!fixedEnd && result.booking.start_date) {
+                                        fixedEnd = result.booking.start_date;
+                                    }
+                                }
+                                if (fixedEnd) {
+                                    endDateEl.value = fixedEnd;
+                                }
+                                endDateEl.setAttribute('readonly', 'true');
+                                endDateEl.setAttribute('disabled', 'true');
+                                endDateEl.setAttribute('placeholder', '1 day');
+                                endDateEl.classList.add('fixed-date');
+                                const helpEl = document.getElementById('end-date-help');
+                                if (helpEl) {
+                                    helpEl.textContent = 'Fixed date: 1 day';
+                                }
+                                const startDateInputSync = document.getElementById('startDate');
+                                if (startDateInputSync) {
+                                    startDateInputSync.addEventListener('change', function() {
+                                        endDateEl.value = this.value;
+                                    });
+                                }
+                            }
                         } else {
                             // Default to studio rental if type is unclear
                             showBookingFields('studio_rental');
@@ -1617,17 +1646,31 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (instrumentFields && instrumentFields.style.display !== 'none') {
                 // Instrument rental validation and data
                 const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
+                const endDateEl = document.getElementById('endDate');
+                let endDate;
                 
-                if (!referenceNumber || !startDate || !endDate) {
+                // If end date is fixed/disabled, mirror start date
+                if (endDateEl && endDateEl.disabled) {
+                    endDate = startDate;
+                } else {
+                    endDate = endDateEl ? endDateEl.value : '';
+                }
+                
+                if (!referenceNumber || !startDate) {
                     alert('Please fill in all fields.');
                     return;
                 }
                 
-                // Validate that end date is after start date
-                if (new Date(endDate) <= new Date(startDate)) {
-                    alert('End date must be after start date.');
-                    return;
+                // Validate that end date is after start date unless fixed/disabled
+                if (!endDateEl || !endDateEl.disabled) {
+                    if (!endDate) {
+                        alert('Please fill in all fields.');
+                        return;
+                    }
+                    if (new Date(endDate) <= new Date(startDate)) {
+                        alert('End date must be after start date.');
+                        return;
+                    }
                 }
                 
                 formData.start_date = startDate;
@@ -1652,11 +1695,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 
-                // Submit to API (using a generic endpoint since we're sending band name and reference in the body)
+                // Submit to API (bookings reschedule route)
                 const response = await fetch('/api/bookings/reschedule', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify(formData)
@@ -1675,8 +1719,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Regenerate time slots for default duration
                     generateRescheduleTimeSlots(1);
                 } else {
-                    // Show error message
-                    showRescheduleErrorModal(result.error || 'Failed to submit reschedule request. Please try again.');
+                    // Show detailed error message from API (handles Laravel 422 validation format)
+                    let message = result.error || result.message || 'Failed to submit reschedule request. Please try again.';
+                    if (result && result.errors) {
+                        const firstError = Object.values(result.errors).flat()[0];
+                        if (firstError) message = firstError;
+                    }
+                    showRescheduleErrorModal(message);
                 }
                 
             } catch (error) {
@@ -2047,6 +2096,205 @@ document.addEventListener('DOMContentLoaded', function() {
   padding: 25px;
 }
 
+/* White Modal Styles */
+.white-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10001;
+  animation: fadeIn 0.3s ease;
+}
+
+.white-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+.white-modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideInUp 0.4s ease;
+  border: 1px solid #e5e5e5;
+}
+
+.white-modal-header {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafafa;
+  border-radius: 16px 16px 0 0;
+}
+
+.white-modal-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.white-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.white-modal-close:hover {
+  background: #f0f0f0;
+  color: #333;
+  transform: scale(1.1);
+}
+
+.white-modal-body {
+  padding: 24px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.white-modal-body h3 {
+  color: #333;
+  margin-top: 20px;
+  margin-bottom: 12px;
+  font-size: 1.2rem;
+}
+
+.white-modal-body ul {
+  margin: 12px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.white-modal-body li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.white-modal-body li:last-child {
+  border-bottom: none;
+}
+
+.modal-example-content {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 16px;
+  border-left: 4px solid #FFD700;
+}
+
+.white-modal-footer {
+  padding: 16px 24px 24px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 0 0 16px 16px;
+}
+
+.white-modal-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.white-modal-btn-primary {
+  background: #FFD700;
+  color: #333;
+}
+
+.white-modal-btn-primary:hover {
+  background: #e6c200;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.white-modal-btn-secondary {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #e5e5e5;
+}
+
+.white-modal-btn-secondary:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive design for white modal */
+@media (max-width: 768px) {
+  .white-modal-content {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+  }
+  
+  .white-modal-header,
+  .white-modal-body,
+  .white-modal-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .white-modal-footer {
+    flex-direction: column;
+  }
+  
+  .white-modal-btn {
+    width: 100%;
+  }
+}
+
 .form-group {
   margin-bottom: 20px;
 }
@@ -2234,8 +2482,95 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// White Modal Functions
+function openWhiteModal() {
+    const modal = document.getElementById('whiteModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+function closeWhiteModal() {
+    const modal = document.getElementById('whiteModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
+    }
+}
+
+// White Modal Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Open modal button
+    const openModalBtn = document.getElementById('openWhiteModalBtn');
+    if (openModalBtn) {
+        openModalBtn.addEventListener('click', openWhiteModal);
+    }
+    
+    // Close modal button
+    const closeModalBtn = document.getElementById('closeWhiteModal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeWhiteModal);
+    }
+    
+    // Cancel button
+    const cancelModalBtn = document.getElementById('cancelWhiteModal');
+    if (cancelModalBtn) {
+        cancelModalBtn.addEventListener('click', closeWhiteModal);
+    }
+    
+    // Close modal when clicking outside
+    const modal = document.getElementById('whiteModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal || e.target.classList.contains('white-modal-overlay')) {
+                closeWhiteModal();
+            }
+        });
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('whiteModal');
+            if (modal && modal.style.display === 'block') {
+                closeWhiteModal();
+            }
+        }
+    });
+});
+
 // Mobile menu functionality is handled by script.js
 </script>
+
+<!-- White Modal -->
+<div id="whiteModal" class="white-modal">
+  <div class="white-modal-overlay">
+    <div class="white-modal-content">
+      <div class="white-modal-header">
+        <h2>Welcome to Our Modal</h2>
+        <button class="white-modal-close" id="closeWhiteModal">&times;</button>
+      </div>
+      <div class="white-modal-body">
+        <p>This is a clean, white modal that you can customize with any content you need.</p>
+        <p>You can add forms, images, text, or any other HTML content here.</p>
+        <div class="modal-example-content">
+          <h3>Example Content</h3>
+          <ul>
+            <li>✨ Clean and modern design</li>
+            <li>📱 Responsive layout</li>
+            <li>🎨 Customizable styling</li>
+            <li>⚡ Smooth animations</li>
+          </ul>
+        </div>
+      </div>
+      <div class="white-modal-footer">
+        <button class="white-modal-btn white-modal-btn-secondary" id="cancelWhiteModal">Cancel</button>
+        <button class="white-modal-btn white-modal-btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

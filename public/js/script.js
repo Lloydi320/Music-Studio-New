@@ -307,6 +307,113 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
+    // Function to refresh calendar data
+    window.refreshCalendar = function() {
+      debugLog('🔄 Refreshing calendar...');
+      generateCalendar(currentYear, currentMonth);
+      
+      // If a date is selected, refresh its time slots too
+      if (selectedDate) {
+        showTimeSlots(selectedDate);
+      }
+    };
+
+    // Listen for reschedule updates from admin panel
+    window.addEventListener('message', function(event) {
+      // Only accept messages from same origin for security
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data && event.data.type === 'reschedule_approved') {
+        debugLog('📅 Reschedule approved, refreshing calendar...', event.data);
+        
+        // Show notification to user
+        if (event.data.booking) {
+          const message = `Booking ${event.data.booking.reference} has been rescheduled from ${event.data.booking.old_date} to ${event.data.booking.new_date}`;
+          showCalendarNotification(message, 'success');
+        } else if (event.data.rental) {
+          const message = `Rental ${event.data.rental.reference} has been rescheduled from ${event.data.rental.old_start_date} to ${event.data.rental.new_start_date}`;
+          showCalendarNotification(message, 'success');
+        }
+        
+        // Refresh calendar after a short delay to allow backend updates to complete
+        setTimeout(() => {
+          refreshCalendar();
+        }, 1000);
+      }
+    });
+
+    // Listen for localStorage changes (cross-tab communication)
+    window.addEventListener('storage', function(e) {
+      if (e.key === 'reschedule_update' && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          // Only process recent updates (within last 10 seconds)
+          if (Date.now() - data.timestamp < 10000) {
+            debugLog('📅 Received reschedule update from localStorage:', data);
+            
+            // Show notification to user
+            if (data.booking) {
+              const message = `Booking ${data.booking.reference} has been rescheduled from ${data.booking.old_date} to ${data.booking.new_date}`;
+              showCalendarNotification(message, 'success');
+            } else if (data.rental) {
+              const message = `Rental ${data.rental.reference} has been rescheduled from ${data.rental.old_start_date} to ${data.rental.new_start_date}`;
+              showCalendarNotification(message, 'success');
+            }
+            
+            // Refresh calendar after a short delay to allow backend updates to complete
+            setTimeout(() => {
+              refreshCalendar();
+            }, 1000);
+          }
+        } catch (error) {
+          console.warn('Error parsing reschedule update from localStorage:', error);
+        }
+      }
+    });
+
+    // Function to show calendar notifications
+    function showCalendarNotification(message, type = 'info') {
+      // Create notification element if it doesn't exist
+      let notification = document.getElementById('calendar-notification');
+      if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'calendar-notification';
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px 20px;
+          border-radius: 5px;
+          color: white;
+          font-weight: bold;
+          z-index: 10000;
+          max-width: 400px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          transform: translateX(100%);
+          transition: transform 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+      }
+      
+      // Set notification style based on type
+      const colors = {
+        success: '#28a745',
+        error: '#dc3545',
+        info: '#17a2b8',
+        warning: '#ffc107'
+      };
+      notification.style.backgroundColor = colors[type] || colors.info;
+      notification.textContent = message;
+      
+      // Show notification
+      notification.style.transform = 'translateX(0)';
+      
+      // Hide notification after 5 seconds
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+      }, 5000);
+    }
+
     // Initial calendar generation
     debugLog('🚀 Starting initial calendar generation...');
     generateCalendar(currentYear, currentMonth);

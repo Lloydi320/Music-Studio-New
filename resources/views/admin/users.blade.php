@@ -185,7 +185,7 @@
         <div id="user-profiles-content">
         <div class="user-profiles-grid">
             @php
-                $allUsers = \App\Models\User::orderBy('name')->take(6)->get();
+                $allUsers = \App\Models\User::orderBy('name')->get();
             @endphp
             
             @foreach($allUsers as $user)

@@ -2785,15 +2785,51 @@ class AdminController extends Controller
                 $calendarSyncMessage = ' Note: Google Calendar sync failed.';
             }
 
+            // Notify user of approval via email
+            try {
+                $recipient = $originalBooking->email ?? ($originalBooking->user->email ?? null);
+                if ($recipient) {
+                    $previousData = [
+                        'date' => \Carbon\Carbon::parse($rescheduleRequest->original_date ?? ($oldValues['date'] ?? $originalBooking->getOriginal('date')))->toDateString(),
+                        'time_slot' => $rescheduleRequest->original_time_slot ?? ($oldValues['time_slot'] ?? $originalBooking->getOriginal('time_slot')),
+                        'duration' => $rescheduleRequest->original_duration ?? ($oldValues['duration'] ?? $originalBooking->getOriginal('duration')),
+                    ];
+                    \Illuminate\Support\Facades\Mail::to($recipient)->send(
+                        new \App\Mail\UserRescheduleApproved($originalBooking, $previousData)
+                    );
+                } else {
+                    Log::warning('No recipient email for booking reschedule approval', [
+                        'booking_id' => $originalBooking->id,
+                        'reference' => $originalBooking->reference,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send booking reschedule approval email', [
+                    'booking_id' => $originalBooking->id,
+                    'reference' => $originalBooking->reference,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => true, 
-                    'message' => "Reschedule request approved successfully! Booking {$originalBooking->reference} has been updated with the new schedule.{$calendarSyncMessage}"
+                    'message' => "Reschedule request approved successfully! Booking {$originalBooking->reference} has been updated with the new schedule.{$calendarSyncMessage}",
+                    'calendar_refresh' => true,
+                    'updated_booking' => [
+                        'reference' => $originalBooking->reference,
+                        'old_date' => $rescheduleRequest->original_date,
+                        'new_date' => $rescheduleRequest->requested_date,
+                        'old_time_slot' => $rescheduleRequest->original_time_slot,
+                        'new_time_slot' => $rescheduleRequest->requested_time_slot,
+                        'duration' => $rescheduleRequest->requested_duration
+                    ]
                 ]);
             }
             
             return redirect()->route('admin.dashboard')
-                ->with('success', "Reschedule request approved successfully! Booking {$originalBooking->reference} has been updated with the new schedule.{$calendarSyncMessage}");
+                ->with('success', "Reschedule request approved successfully! Booking {$originalBooking->reference} has been updated with the new schedule.{$calendarSyncMessage}")
+                ->with('calendar_refresh', true);
 
         } catch (\Exception $e) {
             Log::error('Error approving reschedule request: ' . $e->getMessage());
@@ -2851,15 +2887,51 @@ class AdminController extends Controller
                 \App\Models\ActivityLog::ACTION_ADMIN_ACCESS
             );
 
+            // Notify user of instrument reschedule approval via email
+            try {
+                $recipient = $originalRental->user->email ?? null;
+                if ($recipient) {
+                    $previousData = [
+                        'rental_start_date' => \Carbon\Carbon::parse($oldValues['rental_start_date'] ?? $originalRental->getOriginal('rental_start_date'))->toDateString(),
+                        'rental_end_date' => \Carbon\Carbon::parse($oldValues['rental_end_date'] ?? $originalRental->getOriginal('rental_end_date'))->toDateString(),
+                        'rental_duration_days' => $oldValues['rental_duration_days'] ?? $originalRental->getOriginal('rental_duration_days'),
+                    ];
+                    \Illuminate\Support\Facades\Mail::to($recipient)->send(
+                        new \App\Mail\UserInstrumentRescheduleApproved($originalRental, $previousData)
+                    );
+                } else {
+                    Log::warning('No recipient email for instrument reschedule approval', [
+                        'rental_id' => $originalRental->id,
+                        'reference' => $originalRental->reference,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send instrument reschedule approval email', [
+                    'rental_id' => $originalRental->id,
+                    'reference' => $originalRental->reference,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             if (request()->expectsJson()) {
                 return response()->json([
                     'success' => true, 
-                    'message' => "Instrument rental reschedule request approved successfully! Rental {$originalRental->reference} has been updated with the new schedule."
+                    'message' => "Instrument rental reschedule request approved successfully! Rental {$originalRental->reference} has been updated with the new schedule.",
+                    'calendar_refresh' => true,
+                    'updated_rental' => [
+                        'reference' => $originalRental->reference,
+                        'old_start_date' => $rescheduleRequest->original_start_date,
+                        'new_start_date' => $rescheduleRequest->requested_start_date,
+                        'old_end_date' => $rescheduleRequest->original_end_date,
+                        'new_end_date' => $rescheduleRequest->requested_end_date,
+                        'duration_days' => $durationDays
+                    ]
                 ]);
             }
             
             return redirect()->route('admin.dashboard')
-                ->with('success', "Instrument rental reschedule request approved successfully! Rental {$originalRental->reference} has been updated with the new schedule.");
+                ->with('success', "Instrument rental reschedule request approved successfully! Rental {$originalRental->reference} has been updated with the new schedule.")
+                ->with('calendar_refresh', true);
 
         } catch (\Exception $e) {
             Log::error('Error approving instrument rental reschedule request: ' . $e->getMessage());

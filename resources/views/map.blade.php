@@ -423,7 +423,7 @@
               <div class="form-group">
                 <label for="newDate">📅 New Date</label>
                 <div class="date-input-wrapper">
-                  <input type="date" id="newDate" name="newDate" aria-describedby="date-help" class="date-picker-input">
+                  <input type="date" id="newDate" name="newDate" aria-describedby="date-help" class="date-picker-input" min="{{ date('Y-m-d') }}">
                   <div class="date-picker-icon">📅</div>
                 </div>
                 <small id="date-help" class="form-help">Click to open calendar and select your preferred date</small>
@@ -486,7 +486,7 @@
               <div class="form-group">
                 <label for="startDate">📅 Start Date</label>
                 <div class="date-input-wrapper">
-                  <input type="date" id="startDate" name="startDate" aria-describedby="start-date-help" class="date-picker-input">
+                  <input type="date" id="startDate" name="startDate" aria-describedby="start-date-help" class="date-picker-input" min="{{ date('Y-m-d') }}">
                   <div class="date-picker-icon">📅</div>
                 </div>
                 <small id="start-date-help" class="form-help">Select the new start date for your rental</small>
@@ -495,7 +495,7 @@
               <div class="form-group">
                 <label for="endDate">📅 End Date</label>
                 <div class="date-input-wrapper">
-                  <input type="date" id="endDate" name="endDate" aria-describedby="end-date-help" class="date-picker-input">
+                  <input type="date" id="endDate" name="endDate" aria-describedby="end-date-help" class="date-picker-input" min="{{ date('Y-m-d') }}">
                   <div class="date-picker-icon">📅</div>
                 </div>
                 <small id="end-date-help" class="form-help">Select the new end date for your rental</small>
@@ -1268,6 +1268,33 @@
                             }
                         } else if (bookingType === 'Instrument Rental' || bookingType === 'instrument_rental') {
                             showBookingFields('instrument_rental');
+                            const endDateEl = document.getElementById('endDate');
+                            if (endDateEl) {
+                                let fixedEnd = null;
+                                if (result.booking) {
+                                    fixedEnd = result.booking.end_date || result.booking.return_date || result.booking.rental_end_date || null;
+                                    if (!fixedEnd && result.booking.start_date) {
+                                        fixedEnd = result.booking.start_date;
+                                    }
+                                }
+                                if (fixedEnd) {
+                                    endDateEl.value = fixedEnd;
+                                }
+                                endDateEl.setAttribute('readonly', 'true');
+                                endDateEl.setAttribute('disabled', 'true');
+                                endDateEl.setAttribute('placeholder', '1 day');
+                                endDateEl.classList.add('fixed-date');
+                                const helpEl = document.getElementById('end-date-help');
+                                if (helpEl) {
+                                    helpEl.textContent = 'Fixed date: 1 day';
+                                }
+                                const startDateInputSync = document.getElementById('startDate');
+                                if (startDateInputSync) {
+                                    startDateInputSync.addEventListener('change', function() {
+                                        endDateEl.value = this.value;
+                                    });
+                                }
+                            }
                         } else {
                             // Default to studio rental if type is unclear
                             showBookingFields('studio_rental');
@@ -1336,17 +1363,31 @@
             } else if (instrumentFields && instrumentFields.style.display !== 'none') {
                 // Instrument rental validation and data
                 const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
+                const endDateEl = document.getElementById('endDate');
+                let endDate;
                 
-                if (!referenceNumber || !startDate || !endDate) {
+                // If end date is fixed/disabled, mirror start date
+                if (endDateEl && endDateEl.disabled) {
+                    endDate = startDate;
+                } else {
+                    endDate = endDateEl ? endDateEl.value : '';
+                }
+                
+                if (!referenceNumber || !startDate) {
                     alert('Please fill in all fields.');
                     return;
                 }
                 
-                // Validate that end date is after start date
-                if (new Date(endDate) <= new Date(startDate)) {
-                    alert('End date must be after start date.');
-                    return;
+                // Validate that end date is after start date unless fixed/disabled
+                if (!endDateEl || !endDateEl.disabled) {
+                    if (!endDate) {
+                        alert('Please fill in all fields.');
+                        return;
+                    }
+                    if (new Date(endDate) <= new Date(startDate)) {
+                        alert('End date must be after start date.');
+                        return;
+                    }
                 }
                 
                 formData.start_date = startDate;
@@ -1376,6 +1417,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify(formData)
@@ -1394,8 +1436,13 @@
                     // Regenerate time slots for default duration
                     generateRescheduleTimeSlots(1);
                 } else {
-                    // Show error message
-                    showRescheduleErrorModal(result.error || 'Failed to submit reschedule request. Please try again.');
+                    // Show detailed error message from API (handles Laravel 422 validation format)
+                    let message = result.error || result.message || 'Failed to submit reschedule request. Please try again.';
+                    if (result && result.errors) {
+                        const firstError = Object.values(result.errors).flat()[0];
+                        if (firstError) message = firstError;
+                    }
+                    showRescheduleErrorModal(message);
                 }
                 
             } catch (error) {
