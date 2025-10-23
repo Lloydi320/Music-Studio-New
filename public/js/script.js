@@ -526,14 +526,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const calendarContainer = document.getElementById('calendarContainer');
   const carouselContainer = document.getElementById('carouselContainer');
   
-  let isCalendarVisible = false; // Carousel is visible by default
+  let isCalendarVisible = true; // Calendar is visible by default
   
   if (calendarFab && calendarContainer && carouselContainer) {
     console.log('✅ Calendar FAB and containers found, setting up toggle functionality...');
     
-    // Set initial state - carousel visible, calendar hidden
-    calendarContainer.classList.add('hidden');
-    carouselContainer.classList.remove('hidden');
+    // Set initial state - calendar visible, carousel hidden
+    calendarContainer.classList.remove('hidden');
+    carouselContainer.classList.add('hidden');
     
     // Update FAB title based on current state
     calendarFab.title = isCalendarVisible ? 'Show Image Carousel' : 'Show Calendar';
@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    console.log('🎠 Carousel is visible by default, FAB toggles to calendar');
+    console.log('📅 Calendar is visible by default, FAB toggles to carousel');
   } else {
     console.log('❌ Calendar FAB or containers not found:', {
       calendarFab: !!calendarFab,
@@ -701,17 +701,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const calendarContainer = document.getElementById('calendarContainer');
   const carouselContainer = document.getElementById('carouselContainer');
   
-  let isCalendarVisible = false; // Carousel is visible by default
+  let isCalendarVisible = true; // Calendar is visible by default
   
   if (calendarFab && calendarContainer && carouselContainer) {
     console.log('✅ FAB and containers found, initializing toggle functionality...');
     
-    // Set initial state - carousel visible, calendar hidden
-    calendarContainer.classList.add('hidden');
-    carouselContainer.classList.remove('hidden');
+    // Set initial state - calendar visible, carousel hidden
+    calendarContainer.classList.remove('hidden');
+    carouselContainer.classList.add('hidden');
     
     // Update FAB title
-    calendarFab.title = 'Show Calendar';
+    calendarFab.title = 'Show Image Carousel';
     
     calendarFab.addEventListener('click', function() {
       console.log('Calendar FAB toggle clicked');
@@ -731,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('🎠 Carousel visible by default, FAB toggles to calendar');
+    console.log('📅 Calendar visible by default, FAB toggles to carousel');
   } else {
     console.log('❌ FAB or container elements not found:', {
       calendarFab: !!calendarFab,

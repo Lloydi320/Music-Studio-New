@@ -658,19 +658,49 @@ class AdminController extends Controller
             abort(403, 'Access denied. Admin access required.');
         }
 
-        // Get recent bookings and rentals
+        // Get date range from request or default to current month
+        $startDate = $request->get('start_date', now()->startOfMonth()->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->endOfMonth()->format('Y-m-d'));
+        
+        // Validate dates
+        try {
+            $startDate = \Carbon\Carbon::parse($startDate)->startOfDay();
+            $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
+        } catch (\Exception $e) {
+            $startDate = now()->startOfMonth();
+            $endDate = now()->endOfMonth();
+        }
+
+        // Check for walk-in booking column
+        $walkInColumn = Schema::hasColumn('bookings', 'is_walk_in_booking')
+            ? 'is_walk_in_booking'
+            : (Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
+
+        // Get bookings within date range (excluding walk-in bookings from analytics)
         $confirmedBookings = Booking::with('user')
             ->where('status', 'confirmed')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->when($walkInColumn, function ($query) use ($walkInColumn) {
+                $query->where($walkInColumn, false);
+            })
             ->latest()
             ->get();
             
         $pendingBookings = Booking::with('user')
             ->where('status', 'pending')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->when($walkInColumn, function ($query) use ($walkInColumn) {
+                $query->where($walkInColumn, false);
+            })
             ->latest()
             ->get();
             
         $cancelledBookings = Booking::with('user')
             ->where('status', 'cancelled')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->when($walkInColumn, function ($query) use ($walkInColumn) {
+                $query->where($walkInColumn, false);
+            })
             ->latest()
             ->get();
 
@@ -684,53 +714,82 @@ class AdminController extends Controller
             ->latest()
             ->get();
 
-        // Simple service categorization
+        // Get detailed service analytics using the improved Booking model method with date filtering
+        $serviceAnalytics = Booking::getServiceTypeAnalytics($startDate, $endDate);
+        
+        // Service categorization with accurate counts - only existing service types
         $confirmedAndActiveRentals = InstrumentRental::whereIn('status', ['confirmed', 'active'])->count();
         $serviceCategories = [
-            'Studio Bookings' => $confirmedBookings->count(),
+            'Band Rehearsal' => $serviceAnalytics['studio_rental']['confirmed'] ?? 0,
+            'Solo Rehearsal' => $serviceAnalytics['solo_rehearsal']['confirmed'] ?? 0,
             'Instrument Rentals' => $confirmedAndActiveRentals,
             'Pending Services' => $pendingBookings->count() + $pendingRentals->count()
         ];
 
-        // Revenue calculation: use down payments for studio bookings and actual totals for rentals
-        $walkInColumn = Schema::hasColumn('bookings', 'is_walk_in_booking')
-            ? 'is_walk_in_booking'
-            : (Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
-        $downpaymentMap = [1 => 100, 2 => 100, 3 => 150, 4 => 200, 5 => 250, 6 => 300, 7 => 350, 8 => 400];
-        $studioRevenue = Booking::where('status', 'confirmed')
-            ->when($walkInColumn, function ($q) use ($walkInColumn) { $q->where($walkInColumn, false); })
-            ->whereIn('service_type', ['studio_rental', 'solo_rehearsal'])
-            ->whereNotNull('reference_code')
-            ->get(['duration'])
-            ->sum(function ($b) use ($downpaymentMap) { return $downpaymentMap[$b->duration] ?? 0; });
+        // Accurate revenue calculation using the improved methods - only existing service types
         $rentalsRevenue = InstrumentRental::whereIn('status', ['confirmed', 'active'])->sum('total_amount') ?? 0;
         $revenueByService = [
-            'Studio Bookings' => $studioRevenue,
+            'Band Rehearsal' => $serviceAnalytics['studio_rental']['revenue'] ?? 0,
+            'Solo Rehearsal' => $serviceAnalytics['solo_rehearsal']['revenue'] ?? 0,
             'Instrument Rentals' => $rentalsRevenue,
             'Pending Services' => 0
         ];
         
         $totalRevenue = array_sum($revenueByService);
 
-        // Top customers (including both bookings and instrument rentals)
+        // Top customers with accurate revenue calculation
         $topCustomers = DB::table('users')
-            ->leftJoin('bookings', function($join) {
+            ->leftJoin('bookings', function($join) use ($walkInColumn) {
                 $join->on('users.id', '=', 'bookings.user_id')
                      ->where('bookings.status', 'confirmed');
+                if ($walkInColumn) {
+                    $join->where('bookings.' . $walkInColumn, false);
+                }
             })
             ->leftJoin('instrument_rentals', function($join) {
                 $join->on('users.id', '=', 'instrument_rentals.user_id')
                      ->whereIn('instrument_rentals.status', ['confirmed', 'active']);
             })
-            ->select('users.name', 'users.email',
+            ->select('users.id', 'users.name', 'users.email',
                 DB::raw('COUNT(DISTINCT bookings.id) as booking_count'),
                 DB::raw('COUNT(DISTINCT instrument_rentals.id) as rental_count'),
-                DB::raw('(COUNT(DISTINCT bookings.id) * 800 + COUNT(DISTINCT instrument_rentals.id) * 300) as total_spent'))
+                DB::raw('COALESCE(SUM(DISTINCT bookings.total_amount), 0) as booking_revenue'),
+                DB::raw('COALESCE(SUM(DISTINCT instrument_rentals.total_amount), 0) as rental_revenue'))
             ->groupBy('users.id', 'users.name', 'users.email')
             ->havingRaw('(booking_count > 0 OR rental_count > 0)')
-            ->orderBy('total_spent', 'desc')
-            ->limit(10)
-            ->get();
+            ->get()
+            ->map(function($customer) {
+                // Calculate accurate total spent for each customer
+                $bookingRevenue = 0;
+                
+                // Get accurate booking revenue for this customer (excluding walk-in bookings)
+                $userBookings = Booking::where('user_id', $customer->id)
+                    ->where('status', 'confirmed')
+                    ->when($walkInColumn, function ($query) use ($walkInColumn) {
+                        $query->where($walkInColumn, false);
+                    })
+                    ->get(['service_type', 'duration', 'total_amount']);
+                
+                foreach($userBookings as $booking) {
+                    if ($booking->total_amount && $booking->total_amount > 0) {
+                        $bookingRevenue += $booking->total_amount;
+                    } else {
+                        // Calculate based on service type and duration
+                        if (in_array($booking->service_type, ['studio_rental', 'solo_rehearsal'])) {
+                            $studioRates = [1 => 100, 2 => 200, 3 => 300, 4 => 400, 5 => 500, 6 => 600, 7 => 700, 8 => 800];
+                            $bookingRevenue += $studioRates[$booking->duration] ?? 0;
+                        } elseif ($booking->service_type === 'music_lesson') {
+                            $bookingRevenue += 500; // Default lesson rate
+                        }
+                    }
+                }
+                
+                $customer->total_spent = $bookingRevenue + $customer->rental_revenue;
+                return $customer;
+            })
+            ->sortByDesc('total_spent')
+            ->take(10)
+            ->values();
 
         // Handle export requests
         if ($request->has('export')) {
@@ -755,7 +814,10 @@ class AdminController extends Controller
             'pendingBookings',
             'cancelledBookings',
             'activeRentals',
-            'pendingRentals'
+            'pendingRentals',
+            'startDate',
+            'endDate',
+            'serviceAnalytics'
         ));
     }
 
@@ -1856,12 +1918,29 @@ class AdminController extends Controller
     public function updateRentalStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:pending,confirmed,active,returned,cancelled'
+            'status' => 'required|in:pending,approved,confirmed,active,returned,cancelled,rejected'
         ]);
 
         try {
             $rental = InstrumentRental::findOrFail($id);
+            $oldStatus = $rental->status;
             $rental->update(['status' => $request->status]);
+
+            // Send confirmation email when moving from pending to approved/confirmed
+            if (in_array(strtolower($request->status), ['approved', 'confirmed']) && strtolower((string)$oldStatus) === 'pending') {
+                try {
+                    $recipient = optional($rental->user)->email ?? ($rental->email ?? null);
+                    if ($recipient) {
+                        \Illuminate\Support\Facades\Mail::to($recipient)->send(new \App\Mail\UserInstrumentRentalConfirmed($rental));
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send instrument rental confirmation email', [
+                        'rental_id' => $rental->id,
+                        'reference' => $rental->reference,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
 
             return redirect()->back()->with('success', "Rental status updated to {$request->status}.");
         } catch (\Exception $e) {
@@ -2232,6 +2311,20 @@ class AdminController extends Controller
             
             // Update rental status to confirmed
             $rental->update(['status' => 'confirmed']);
+
+            // Email the user about confirmation
+            try {
+                $recipient = optional($rental->user)->email ?? ($rental->email ?? null);
+                if ($recipient) {
+                    \Illuminate\Support\Facades\Mail::to($recipient)->send(new \App\Mail\UserInstrumentRentalConfirmed($rental));
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send instrument rental confirmation email (approveRental)', [
+                    'rental_id' => $rental->id,
+                    'reference' => $rental->reference,
+                    'error' => $e->getMessage()
+                ]);
+            }
             
             Log::info('Instrument rental approved by admin', [
                 'rental_id' => $rental->id,

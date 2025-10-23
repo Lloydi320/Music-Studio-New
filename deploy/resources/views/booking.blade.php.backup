@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book a Studio</title>
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/booking.css') }}">
+  <style>
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      width: 95%;
+      max-width: 1200px;
+      max-height: 85vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      scroll-behavior: smooth;
+    }
+
+    .modal-left {
+      flex: 1;
+      padding: 25px;
+      background: #f8f9fa;
+      border-radius: 20px 0 0 20px;
+      overflow-y: auto;
+      max-height: 85vh;
+    }
+
+    .modal-center {
+      flex: 1.2;
+      padding: 25px;
+      background: white;
+      border-left: 1px solid #e9ecef;
+      border-right: 1px solid #e9ecef;
+      overflow-y: auto;
+      max-height: 85vh;
+    }
+
+    .modal-right {
+      flex: 1;
+      padding: 25px;
+      background: white;
+      border-radius: 0 20px 20px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-y: auto;
+      max-height: 85vh;
+      padding-top: 15px;
+    }
+
+    .modal-header {
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .modal-subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .booking-details {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: #555;
+    }
+
+    .detail-value {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .studio-image-modal {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+    }
+
+    .file-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px dashed #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #f8f9fa;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+    }
+
+    .file-input:hover {
+      border-color: #007bff;
+      background: #f0f8ff;
+    }
+
+    .policy-section {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      border-left: 3px solid #007bff;
+    }
+
+    .policy-title {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .policy-text {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      margin-top: 2px;
+      transform: scale(1.1);
+    }
+
+    .checkbox-label {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.4;
+    }
+
+    .checkbox-label a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .checkbox-label a:hover {
+      text-decoration: underline;
+    }
+
+    .gcash-container {
+      background: linear-gradient(135deg, #0066cc, #004499);
+      border-radius: 15px;
+      padding: 25px;
+      color: white;
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .gcash-logo {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .gcash-qr {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 15px auto;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .gcash-qr img {
+      width: 250px;
+      height: 250px;
+      display: block;
+    }
+
+    .gcash-details {
+      font-size: 12px;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    .gcash-merchant {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 12px 0;
+    }
+
+    .gcash-amount {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      padding: 10px 16px;
+      background: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+      background: #5a6268;
+    }
+
+    .btn-confirm {
+      flex: 2;
+      padding: 10px 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-confirm:hover {
+      background: #0056b3;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .modal-content {
+        flex-direction: column;
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .modal-left,
+      .modal-center,
+      .modal-right {
+        border-radius: 0;
+        padding: 20px;
+        border: none;
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .modal-left {
+        border-radius: 20px 20px 0 0;
+      }
+
+      .modal-center {
+        border-top: 1px solid #e9ecef;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .modal-right {
+        border-radius: 0 0 20px 20px;
+        align-items: flex-start;
+        padding-top: 10px;
+      }
+
+      .gcash-container {
+        padding: 20px;
+      }
+
+      .modal-buttons {
+        flex-direction: column;
+      }
+
+      .gcash-qr img {
+        width: 200px;
+        height: 200px;
+      }
+
+      .modal-title {
+        font-size: 20px;
+      }
+    }
+
+    /* Extra small devices (phones, 480px and down) */
+    @media (max-width: 480px) {
+      .modal-container {
+        padding: 3px;
+      }
+
+      .modal-content {
+        width: 99%;
+        max-height: 95vh;
+        border-radius: 15px;
+        overflow-y: auto;
+      }
+
+      .modal-left,
+      .modal-center,
+      .modal-right {
+        padding: 12px;
+        max-height: none;
+        overflow-y: visible;
+      }
+
+      .modal-left {
+        border-radius: 15px 15px 0 0;
+      }
+
+      .modal-right {
+        border-radius: 0 0 15px 15px;
+        align-items: flex-start;
+        padding-top: 8px;
+      }
+
+      .modal-title {
+        font-size: 18px;
+      }
+
+      .modal-subtitle {
+        font-size: 12px;
+      }
+
+      .form-label {
+        font-size: 13px;
+        margin-bottom: 4px;
+      }
+
+      .form-input {
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+
+      .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        margin-bottom: 8px;
+        padding: 6px 0;
+      }
+
+      .detail-label,
+      .detail-value {
+        font-size: 13px;
+      }
+
+      .gcash-qr {
+        padding: 6px;
+        margin: 8px auto;
+      }
+
+      .gcash-qr img {
+        width: 140px;
+        height: 140px;
+      }
+
+      .gcash-merchant {
+        font-size: 16px;
+        margin: 8px 0;
+      }
+
+      .gcash-amount {
+        font-size: 22px;
+        margin-top: 10px;
+      }
+
+      .gcash-details {
+        font-size: 11px;
+        margin-top: 8px;
+      }
+
+      .btn-cancel,
+      .btn-confirm {
+        padding: 12px 16px;
+        font-size: 13px;
+      }
+
+      .studio-image-modal {
+        height: 130px;
+      }
+
+      .booking-details {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      .warning-message {
+        padding: 6px 8px;
+        font-size: 11px;
+        margin-bottom: 8px;
+      }
+
+      .error-message {
+        padding: 6px 8px;
+        font-size: 11px;
+        margin-top: 4px;
+      }
+    }
+
+    /* High zoom levels and very small screens */
+    @media (max-width: 360px), (min-resolution: 2dppx) {
+      .modal-container {
+        padding: 2px;
+      }
+
+      .modal-content {
+        width: 99%;
+        max-height: 99vh;
+        border-radius: 10px;
+      }
+
+      .modal-left,
+      .modal-center,
+      .modal-right {
+        padding: 10px;
+      }
+
+      .gcash-qr img {
+        width: 120px;
+        height: 120px;
+      }
+
+      .form-input {
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+
+      .btn-cancel,
+      .btn-confirm {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+    }
+
+    /* Auto-hide footer styles */
+    .booking-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1;
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(100%);
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    /* Create a larger hover trigger area */
+    .booking-footer::before {
+      content: '';
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    /* Show footer when hovering over the trigger area */
+    .booking-footer::before:hover + .booking-footer,
+    .booking-footer:hover {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Alternative approach using parent hover */
+    body:hover .booking-footer {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(100%);
+      pointer-events: none;
+    }
+
+    /* Show footer when mouse is near bottom */
+    .footer-trigger {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .footer-trigger:hover ~ .booking-footer {
+      opacity: 1 !important;
+      visibility: visible !important;
+      transform: translateY(0) !important;
+      pointer-events: auto !important;
+    }
+  </style>
+</head>
+<body class="booking-page">
+
+  <header class="navbar">
+    <div class="logo">
+      <a href="/" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+        <img src="{{ asset('images/studio-logo.png') }}" alt="Logo" />
+        <span>LEMON HUB STUDIO</span>
+      </a>
+    </div>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/services">About Us & Our Services</a></li>
+        <li><a href="#" id="contactLink">Contact</a></li>
+        <li><a href="/feedback">Feedbacks</a></li>
+        <li><a href="/map">Map</a></li>
+        @if(Auth::check())
+        <li><a href="#" id="rescheduleBookingLink">Rescheduling</a></li>
+        @endif
+      </ul>
+    </nav>
+    @if(Auth::check())
+        <div class="modern-user-profile" id="userProfile">
+            <div class="profile-trigger" onclick="toggleUserDropdown()">
+                <div class="profile-avatar">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar }}" alt="User Avatar">
+                    @else
+                        <div class="avatar-placeholder">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                    @endif
+                    @if(Auth::user()->is_admin)
+                        <div class="admin-indicator"></div>
+                    @endif
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name">{{ Auth::user()->name }}</div>
+                    @if(Auth::user()->is_admin)
+                        <div class="profile-role">Admin</div>
+                    @else
+                        <div class="profile-role">Member</div>
+                    @endif
+                </div>
+                <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 10l5 5 5-5z"/>
+                </svg>
+            </div>
+            
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">
+                    <div class="dropdown-avatar">
+                        @if(Auth::user()->avatar)
+                            <img src="{{ Auth::user()->avatar }}" alt="User Avatar">
+                        @else
+                            <div class="avatar-placeholder large">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </div>
+                        @endif
+                    </div>
+                    <div class="dropdown-user-info">
+                        <h4>{{ Auth::user()->name }}</h4>
+                        <p>{{ Auth::user()->email }}</p>
+                        @if(Auth::user()->is_admin)
+                            <span class="user-badge">Admin</span>
+                        @endif
+                    </div>
+                </div>
+                
+                <div class="dropdown-menu">
+                    @if(Auth::user()->is_admin)
+                        <a href="{{ route('admin.dashboard') }}" class="dropdown-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                            </svg>
+                            Admin Dashboard
+                        </a>
+                    @endif
+                    
+                    <a href="{{ route('home') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                        </svg>
+                        Calendar
+                    </a>
+                    
+                    <a href="{{ route('booking') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Book Session
+                    </a>
+                    
+                    <a href="{{ route('services') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        About Us & Services
+                    </a>
+                    
+                    <a href="#" id="contactLink" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        Contact
+                    </a>
+                    
+                    <a href="{{ route('feedback') }}" class="dropdown-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/>
+                        </svg>
+                        Feedback
+                    </a>
+                    
+                    <div class="dropdown-divider"></div>
+                    
+                    <form method="POST" action="{{ route('logout') }}" class="logout-form">
+                        @csrf
+                        <button type="submit" class="dropdown-item logout-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                            </svg>
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @else
+        <a href="{{ route('google.login') }}" class="login-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Login with Google
+        </a>
+    @endif
+  </header>
+
+  <div class="booking-main">
+    <div class="booking-content">
+      <div class="info-section fixed-info-section">
+        <p class="studio-name">Lemon Hub Studio</p>
+        <h2><span id="serviceType">STUDIO RENTAL</span> <span class="light-text">SELECT DATE</span></h2>
+        <p class="duration">🕒 <span id="selectedDurationLabel">1 hr</span></p>
+        <p class="location">📍 288H Sto.Domingo Street, 2nd Filmont Homes, Calamba, Laguna</p>
+        <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image">
+      </div>
+      <div class="booking-right">
+        <div class="calendar-section">
+          <div class="calendar-header">
+            <div class="date-selectors">
+              <select id="monthDropdown" class="month-select"></select>
+              <select id="yearDropdown" class="year-select"></select>
+            </div>
+          </div>
+          <div class="calendar-time-layout">
+            <div class="calendar-side">
+              <div id="calendar" class="calendar-grid"></div>
+              <p class="selected-date" id="selectedDateLabel"></p>
+            </div>
+            <div class="time-side">
+              <!-- Duration dropdown -->
+              <label for="durationSelect" class="form-label">⏰ Choose Duration</label>
+              <select id="durationSelect">
+                <option value="1" selected>1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="3">3 hours</option>
+                <option value="4">4 hours</option>
+                <option value="5">5 hours</option>
+                <option value="6">6 hours</option>
+                <option value="7">7 hours</option>
+                <option value="8">8 hours</option>
+              </select>
+              <div class="slots scrollable-time-slots"></div>
+              <button class="next-btn" id="nextBtn">Next</button>
+              <form id="bookingForm" action="{{ route('booking.store') }}" method="POST" style="display:none;">
+                @csrf
+                <input type="hidden" name="date" id="bookingDate">
+                <input type="hidden" name="time_slot" id="bookingTimeSlot">
+                <input type="hidden" name="duration" id="bookingDuration">
+                <input type="hidden" name="service_type" id="bookingServiceType">
+                <button type="submit" class="book-btn">Confirm Booking</button>
+              </form>
+            </div>
+          </div>
+          <!-- Session Messages -->
+          @if(session('success'))
+            <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb; position: relative; z-index: 1000;">
+              {{ session('success') }}
+            </div>
+          @endif
+          
+          <div class="booking-summary" id="bookingSummary">
+            <div id="bookingSummaryContent">
+              <!-- Default placeholder content -->
+              Select a date and time to see booking details
+            </div>
+            <div id="bookingConfirmationMessage" style="display:none;">
+              <strong>Your booking has been confirmed!</strong>
+            </div>
+          </div>
+          
+          @if(session('error'))
+            <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #f5c6cb;">
+              {{ session('error') }}
+            </div>
+          @endif
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Studio Rental Modal -->
+<div id="studioRentalModal" class="modal">
+  <div class="modal-container">
+    <div class="modal-content">
+      <!-- Left Side - Booking Details and Form -->
+      <div class="modal-left">
+        <div class="modal-header">
+          <h2 class="modal-title">STUDIO RENTAL</h2>
+          <p class="modal-subtitle">SELECT DATE</p>
+          <p class="duration">🕒 <span id="modalDurationLabel">3 hrs</span></p>
+          <p class="location">📍 288H Sto.Domingo Street 2nd Filmont Homes Subdivision, Calamba, 4027 Laguna</p>
+        </div>
+        
+        <img src="{{ asset('images/studio.jpg') }}" alt="Studio" class="studio-image-modal">
+        
+        <div class="booking-details">
+          <div class="detail-item">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value" id="modalSelectedDate">Thursday, August 21, 2025</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Time:</span>
+            <span class="detail-value" id="modalSelectedTime">09:00 AM - 10:00 AM</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Duration:</span>
+            <span class="detail-value" id="modalSelectedDuration">1 hour</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Total Price:</span>
+            <span class="detail-value" id="modalTotalPrice">₱100.00</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Center - Form Section -->
+      <div class="modal-center">
+        <div class="modal-header">
+          <h3>Enter Details</h3>
+        </div>
+        
+        <form id="studioRentalForm" action="{{ route('booking.store') }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <input type="hidden" name="date" id="modalBookingDate">
+          <input type="hidden" name="time_slot" id="modalBookingTimeSlot">
+          <input type="hidden" name="duration" id="modalBookingDuration">
+          <input type="hidden" name="price" id="modalBookingPrice">
+          
+          <div class="form-group">
+            <label class="form-label" for="bandName">Band Name *</label>
+            <input type="text" id="bandName" name="band_name" class="form-input" required>
+            @error('band_name')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="email">Email *</label>
+            <input type="email" id="email" name="email" class="form-input" required>
+            @error('email')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="contactNumber">Contact Number *</label>
+            <input type="tel" id="contactNumber" name="contact_number" class="form-input" maxlength="11" required>
+            @error('contact_number')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="referenceCode">Reference Code (4 digits) *</label>
+            <input type="text" id="referenceCode" name="reference_code" class="form-input" maxlength="4" pattern="[0-9]{4}" placeholder="0000" required>
+            @error('reference_code')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="uploadPicture">Upload Picture</label>
+            <input type="file" id="uploadPicture" name="upload_picture" class="file-input" accept="image/*">
+            <div class="alert alert-warning" style="background-color: #fff3cd; color: #856404; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #ffeaa7; font-size: 0.85rem;">
+              ⚠️ Please upload a clear image of your GCash payment receipt. Accepted formats: JPG, PNG, GIF. Maximum file size: 5MB.
+            </div>
+            @error('upload_picture')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
+          </div>
+          
+          <div class="policy-section">
+            <div class="policy-title">Down Payment Policy</div>
+            <p class="policy-text">To secure your booking, a non-refundable down payment of 30% of the total service fee is required upon reservation.</p>
+            <p class="policy-text">This ensures your preferred date and time slot is reserved exclusively for you.</p>
+            <p class="policy-text">• Rebooking is allowed up to 24 hours before the session, subject to availability.</p>
+          </div>
+          
+          <div class="checkbox-group">
+            <input type="checkbox" id="agreeTerms" name="agree_terms" required>
+            <label class="checkbox-label" for="agreeTerms">
+              I agree to <a href="#">User Agreement</a> and <a href="#">Privacy Policy</a>
+            </label>
+            @error('agree_terms')
+              <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #f5c6cb; font-size: 0.9rem;">
+                {{ $message }}
+              </div>
+            @enderror
+          </div>
+          
+          <div class="modal-buttons">
+            <button type="button" class="btn-cancel" id="cancelModal">Cancel</button>
+            <button type="submit" class="btn-confirm">Confirm Booking</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Right Side - GCash Payment Section -->
+      <div class="modal-right">
+        <div class="gcash-container">
+          <div class="gcash-logo">
+            <span>💳</span> GCash
+          </div>
+          
+          <div class="gcash-qr">
+            <img src="{{ asset('images/LemonQr.png') }}" alt="GCash QR Code">
+          </div>
+          
+          <div class="gcash-details">
+            <div>Scan to pay with GCash</div>
+            <div class="gcash-merchant">LEMON HUB</div>
+            <div>Mobile No: 0995...217</div>
+            <div>Account ID: ...60JPSU</div>
+          </div>
+          
+          <div class="gcash-amount">₱ 100.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success and error messages will be handled in the booking summary container -->
+
+<!-- Removed the form from the bottom. It will only show in the modal after clicking Next. -->
+
+<!-- Footer trigger area -->
+<div class="footer-trigger"></div>
+
+<!-- Footer -->
+<footer class="booking-footer">
+  <div class="footer-content">
+    <p>&copy; 2025 Lemon Hub Studio - All Rights Reserved</p>
+    <p>Professional Music Studio Services</p>
+  </div>
+</footer>
+
+<!-- Success Confirmation Modal -->
+<div id="successModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="modal-content" style="
+      max-width: 560px;
+      border-radius: 20px;
+      padding: 30px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    ">
+      
+      <!-- Left Section: Icon and Title -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+      ">
+        <!-- Success Icon -->
+        <div style="
+          width: 60px;
+          height: 60px;
+          margin-bottom: 16px;
+          background: #10b981;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: bounceIn 0.6s ease-out 0.2s both;
+        ">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20,6 9,17 4,12"></polyline>
+          </svg>
+        </div>
+        
+        <!-- Title -->
+        <h2 style="
+          color: #10b981;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: -0.3px;
+          animation: fadeInUp 0.5s ease-out 0.3s both;
+          white-space: nowrap;
+        ">Booking<br>Confirmed!</h2>
+      </div>
+      
+      <!-- Right Section: Details -->
+      <div style="
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <!-- Success Message -->
+        <div id="successMessage" style="
+          background: #f0fdf4;
+          color: #166534;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #bbf7d0;
+          font-weight: 400;
+          line-height: 1.5;
+          font-size: 14px;
+          animation: fadeInUp 0.5s ease-out 0.4s both;
+        ">
+          <!-- Success message will be populated here -->
+        </div>
+        
+        <!-- Bottom Section -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+        ">
+          <!-- Email confirmation text -->
+          <p style="
+            color: #6b7280;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.5s both;
+            flex: 1;
+          ">You will receive an email confirmation shortly.</p>
+          
+          <!-- Countdown -->
+          <div style="
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.6s both;
+            text-align: right;
+            flex-shrink: 0;
+          ">
+            Redirecting in <span id="countdown" style="color: #374151; font-weight: 500;">5</span> seconds...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="modal" style="display: none; animation: fadeIn 0.3s ease-out;">
+  <div class="modal-container" style="animation: slideInUp 0.4s ease-out;">
+    <div class="modal-content" style="
+      max-width: 560px;
+      border-radius: 20px;
+      padding: 30px;
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    ">
+      
+      <!-- Left Section: Icon and Title -->
+      <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-shrink: 0;
+      ">
+        <!-- Error Icon -->
+        <div style="
+          width: 60px;
+          height: 60px;
+          margin-bottom: 16px;
+          background: #ef4444;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          animation: bounceIn 0.6s ease-out 0.2s both;
+        ">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        
+        <!-- Title -->
+        <h2 style="
+          color: #ef4444;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 600;
+          letter-spacing: -0.3px;
+          animation: fadeInUp 0.5s ease-out 0.3s both;
+          white-space: nowrap;
+        ">Booking<br>Error!</h2>
+      </div>
+      
+      <!-- Right Section: Details -->
+      <div style="
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <!-- Error Message -->
+        <div id="errorMessage" style="
+          background: #fef2f2;
+          color: #991b1b;
+          padding: 20px;
+          border-radius: 12px;
+          border: 1px solid #fecaca;
+          font-weight: 400;
+          line-height: 1.5;
+          font-size: 14px;
+          animation: fadeInUp 0.5s ease-out 0.4s both;
+        ">
+          <!-- Error message will be populated here -->
+        </div>
+        
+        <!-- Bottom Section -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+        ">
+          <!-- Try again text -->
+          <p style="
+            color: #6b7280;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 400;
+            animation: fadeInUp 0.5s ease-out 0.5s both;
+            flex: 1;
+          ">Please try again or contact support if the problem persists.</p>
+          
+          <!-- Countdown and Close button -->
+          <div style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          ">
+            <div style="
+              color: #6b7280;
+              font-size: 13px;
+              font-weight: 400;
+              animation: fadeInUp 0.5s ease-out 0.6s both;
+            ">
+              Refreshing in <span id="errorCountdown" style="color: #374151; font-weight: 500;">3</span> seconds...
+            </div>
+            <button onclick="closeErrorModal()" style="
+              background: #ef4444;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 8px;
+              font-size: 14px;
+              font-weight: 500;
+              cursor: pointer;
+              animation: fadeInUp 0.5s ease-out 0.6s both;
+              transition: background-color 0.2s ease;
+            " onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modern CSS Animations -->
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #successModal .modal-content {
+    max-width: 90% !important;
+    margin: 20px !important;
+    padding: 30px 20px !important;
+  }
+  
+  #successModal h2 {
+    font-size: 24px !important;
+  }
+  
+  #successModal .modal-container {
+    padding: 20px !important;
+  }
+}
+</style>
+
+<script src="{{ asset('js/booking.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('js/page-transitions.js') }}"></script>
+<script>
+// Reference Code Validation
+document.addEventListener('DOMContentLoaded', function() {
+    const referenceCodeInput = document.getElementById('referenceCode');
+    const studioRentalForm = document.getElementById('studioRentalForm');
+    let validationTimeout;
+    let isValidating = false;
+    
+    if (referenceCodeInput) {
+        // Create validation message element
+        const validationMessage = document.createElement('div');
+        validationMessage.id = 'referenceValidationMessage';
+        validationMessage.style.cssText = 'margin-top: 5px; font-size: 0.9rem; display: none;';
+        referenceCodeInput.parentNode.appendChild(validationMessage);
+        
+        // Real-time validation on input
+        referenceCodeInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(validationTimeout);
+            
+            // Reset validation state
+            validationMessage.style.display = 'none';
+            this.style.borderColor = '';
+            
+            // Only validate if we have 4 digits
+            if (value.length === 4 && /^[0-9]{4}$/.test(value)) {
+                validationTimeout = setTimeout(() => {
+                    validateReferenceCode(value);
+                }, 500); // Debounce for 500ms
+            }
+        });
+        
+        function validateReferenceCode(code) {
+            if (isValidating) return;
+            
+            isValidating = true;
+            validationMessage.textContent = 'Checking reference code...';
+            validationMessage.style.color = '#856404';
+            validationMessage.style.backgroundColor = '#fff3cd';
+            validationMessage.style.border = '1px solid #ffeaa7';
+            validationMessage.style.padding = '8px';
+            validationMessage.style.borderRadius = '5px';
+            validationMessage.style.display = 'block';
+            
+            // Check if reference code exists
+            fetch('/api/check-reference-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ reference_code: code })
+            })
+            .then(response => response.json())
+            .then(data => {
+                isValidating = false;
+                
+                if (data.exists) {
+                    // Reference code already exists
+                    validationMessage.textContent = '❌ This reference code is already taken. Please use a different one.';
+                    validationMessage.style.color = '#721c24';
+                    validationMessage.style.backgroundColor = '#f8d7da';
+                    validationMessage.style.border = '1px solid #f5c6cb';
+                    referenceCodeInput.style.borderColor = '#dc3545';
+                    referenceCodeInput.dataset.valid = 'false';
+                } else {
+                    // Reference code is available
+                    validationMessage.textContent = '✅ Reference code is available.';
+                    validationMessage.style.color = '#155724';
+                    validationMessage.style.backgroundColor = '#d4edda';
+                    validationMessage.style.border = '1px solid #c3e6cb';
+                    referenceCodeInput.style.borderColor = '#28a745';
+                    referenceCodeInput.dataset.valid = 'true';
+                }
+                
+                validationMessage.style.display = 'block';
+            })
+            .catch(error => {
+                isValidating = false;
+                console.error('Reference code validation error:', error);
+                validationMessage.textContent = '⚠️ Unable to validate reference code. Please try again.';
+                validationMessage.style.color = '#856404';
+                validationMessage.style.backgroundColor = '#fff3cd';
+                validationMessage.style.border = '1px solid #ffeaa7';
+                validationMessage.style.display = 'block';
+                referenceCodeInput.dataset.valid = 'unknown';
+            });
+        }
+    }
+    
+    // Prevent form submission if reference code is invalid
+    if (studioRentalForm) {
+        studioRentalForm.addEventListener('submit', function(e) {
+            const referenceCodeInput = document.getElementById('referenceCode');
+            
+            if (referenceCodeInput && referenceCodeInput.dataset.valid === 'false') {
+                e.preventDefault();
+                alert('Please use a different reference code. The current one is already taken.');
+                referenceCodeInput.focus();
+                return false;
+            }
+            
+            // Disable submit button to prevent double submission
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing...';
+                
+                // Re-enable after 3 seconds as fallback
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Confirm Booking';
+                }, 3000);
+            }
+        });
+    }
+});
+
+// Original script content below
+function toggleUserDropdown() {
+    const dropdown = document.getElementById('userDropdown');
+    const profile = document.getElementById('userProfile');
+    
+    dropdown.classList.toggle('show');
+    profile.classList.toggle('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const profile = document.getElementById('userProfile');
+    const dropdown = document.getElementById('userDropdown');
+    
+    if (profile && !profile.contains(event.target)) {
+        dropdown.classList.remove('show');
+        profile.classList.remove('active');
+    }
+});
+
+// Prevent dropdown from closing when clicking inside it
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    }
+    
+    // Handle contact link click
+    document.getElementById('contactLink')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Scroll to contact section or show contact modal
+        const contactSection = document.querySelector('.contact-section');
+        if (contactSection) {
+            contactSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        // Contact functionality handled by other contact methods
+    });
+});
+</script>
+
+</body>
+</html>

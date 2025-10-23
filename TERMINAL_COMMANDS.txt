@@ -1,0 +1,35 @@
+🚀 MUSIC STUDIO DEPLOYMENT - TERMINAL COMMANDS
+==============================================
+
+STEP 1: Upload Files to Server
+------------------------------
+scp -r deploy/* root@72.60.232.155:/var/www/music-studio/
+
+STEP 2: Connect to Server
+-------------------------
+ssh root@72.60.232.155
+
+STEP 3: Setup Server (Run these commands on the server)
+-------------------------------------------------------
+cd /var/www/music-studio
+chmod +x *.sh
+./server-setup.sh
+
+STEP 4: Setup Application (Run on server after Step 3)
+-------------------------------------------------------
+./app-setup.sh
+
+STEP 5: Verify Deployment (Optional)
+------------------------------------
+./verify-deployment.sh
+
+STEP 6: Check Your Website
+--------------------------
+Visit: http://72.60.232.155
+
+🎉 Your Music Studio will be LIVE!
+
+TROUBLESHOOTING:
+- If SCP fails: Use FileZilla/WinSCP to upload 'deploy' folder contents
+- If SSH fails: Check server IP and credentials
+- If setup fails: Check error messages and run commands individually

@@ -48,6 +48,14 @@ class Booking extends Model
                 $booking->reference = self::generateUniqueReference();
             }
         });
+
+        static::created(function ($booking) {
+            try {
+                app(\App\Services\IcsGenerator::class)->regenerate();
+            } catch (\Throwable $e) {
+                \Log::warning('ICS regenerate failed after booking create: ' . $e->getMessage());
+            }
+        });
     }
 
     /**
@@ -147,32 +155,68 @@ class Booking extends Model
         return $query->where('service_type', $serviceType);
     }
 
-    // Get analytics data for service types
-    public static function getServiceTypeAnalytics()
+    // Get analytics data for service types with optional date filtering
+    public static function getServiceTypeAnalytics($startDate = null, $endDate = null)
     {
         $flagColumn = \Schema::hasColumn('bookings', 'is_walk_in_booking')
             ? 'is_walk_in_booking'
             : (\Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
 
         $analytics = [];
-        $downpaymentMap = [1 => 100, 2 => 100, 3 => 150, 4 => 200, 5 => 250, 6 => 300, 7 => 350, 8 => 400];
-        foreach (self::SERVICE_TYPES as $key => $label) {
+        
+        // Updated pricing structure based on actual system pricing
+        $studioHourlyRates = [
+            1 => 100, 2 => 200, 3 => 300, 4 => 400, 
+            5 => 500, 6 => 600, 7 => 700, 8 => 800
+        ];
+        
+        // Define the service types to analyze - only existing types
+        $serviceTypes = ['studio_rental', 'solo_rehearsal'];
+        
+        foreach ($serviceTypes as $key) {
+            $label = self::SERVICE_TYPES[$key];
             $totalQuery = self::where('service_type', $key);
             $confirmedQuery = self::where('service_type', $key)->where('status', 'confirmed');
             $pendingQuery = self::where('service_type', $key)->where('status', 'pending');
+            $cancelledQuery = self::where('service_type', $key)->where('status', 'cancelled');
+            
+            // Apply date filtering if provided
+            if ($startDate && $endDate) {
+                $totalQuery->whereBetween('date', [$startDate, $endDate]);
+                $confirmedQuery->whereBetween('date', [$startDate, $endDate]);
+                $pendingQuery->whereBetween('date', [$startDate, $endDate]);
+                $cancelledQuery->whereBetween('date', [$startDate, $endDate]);
+            }
+            
+            // Exclude walk-in bookings from regular analytics if flag exists
             if ($flagColumn) {
                 $totalQuery->where($flagColumn, false);
                 $confirmedQuery->where($flagColumn, false);
                 $pendingQuery->where($flagColumn, false);
+                $cancelledQuery->where($flagColumn, false);
             }
 
-            // Revenue: use down payments for studio bookings; otherwise sum total_amount
+            // Calculate revenue based on service type
+            $revenue = 0;
             if (in_array($key, ['studio_rental', 'solo_rehearsal'])) {
-                $revenueBookings = $confirmedQuery->whereNotNull('reference_code')->get(['duration']);
-                $revenue = $revenueBookings->sum(function ($b) use ($downpaymentMap) {
-                    return $downpaymentMap[$b->duration] ?? 0;
+                // For studio bookings, use actual hourly rates based on duration
+                $confirmedBookings = $confirmedQuery->get(['duration', 'total_amount']);
+                $revenue = $confirmedBookings->sum(function ($booking) use ($studioHourlyRates) {
+                    // Use total_amount if available, otherwise calculate from duration
+                    if ($booking->total_amount && $booking->total_amount > 0) {
+                        return $booking->total_amount;
+                    }
+                    return $studioHourlyRates[$booking->duration] ?? 0;
                 });
+            } elseif ($key === 'music_lesson') {
+                // For music lessons, use total_amount or default lesson rate
+                $revenue = $confirmedQuery->sum('total_amount') ?? 0;
+                if ($revenue == 0) {
+                    // Default lesson rate if total_amount is not set
+                    $revenue = $confirmedQuery->count() * 500; // 500 per lesson
+                }
             } else {
+                // For other services, use total_amount
                 $revenue = $confirmedQuery->sum('total_amount') ?? 0;
             }
 
@@ -181,9 +225,47 @@ class Booking extends Model
                 'total' => $totalQuery->count(),
                 'confirmed' => $confirmedQuery->count(),
                 'pending' => $pendingQuery->count(),
+                'cancelled' => $cancelledQuery->count(),
                 'revenue' => $revenue
             ];
         }
         return $analytics;
+    }
+
+    // Get total revenue for a specific service type
+    public static function getServiceTypeRevenue($serviceType, $status = 'confirmed')
+    {
+        $flagColumn = \Schema::hasColumn('bookings', 'is_walk_in_booking')
+            ? 'is_walk_in_booking'
+            : (\Schema::hasColumn('bookings', 'is_admin_walkin') ? 'is_admin_walkin' : null);
+
+        $query = self::where('service_type', $serviceType)->where('status', $status);
+        
+        if ($flagColumn) {
+            $query->where($flagColumn, false);
+        }
+
+        $studioHourlyRates = [
+            1 => 100, 2 => 200, 3 => 300, 4 => 400, 
+            5 => 500, 6 => 600, 7 => 700, 8 => 800
+        ];
+
+        if (in_array($serviceType, ['studio_rental', 'solo_rehearsal'])) {
+            $bookings = $query->get(['duration', 'total_amount']);
+            return $bookings->sum(function ($booking) use ($studioHourlyRates) {
+                if ($booking->total_amount && $booking->total_amount > 0) {
+                    return $booking->total_amount;
+                }
+                return $studioHourlyRates[$booking->duration] ?? 0;
+            });
+        } elseif ($serviceType === 'music_lesson') {
+            $revenue = $query->sum('total_amount') ?? 0;
+            if ($revenue == 0) {
+                $revenue = $query->count() * 500; // Default lesson rate
+            }
+            return $revenue;
+        } else {
+            return $query->sum('total_amount') ?? 0;
+        }
     }
 }

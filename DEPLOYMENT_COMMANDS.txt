@@ -1,0 +1,26 @@
+﻿# Music Studio Deployment Commands
+# Copy these commands and run them on your server
+
+# 1. Connect to server
+ssh root@72.60.232.155
+
+# 2. Create project directory
+mkdir -p /var/www/music-studio
+cd /var/www/music-studio
+
+# 3. After uploading files, make scripts executable
+chmod +x *.sh
+
+# 4. Run server setup
+./server-setup.sh
+
+# 5. Run application setup
+./app-setup.sh
+
+# 6. Check status
+systemctl status nginx
+systemctl status mysql
+systemctl status php8.2-fpm
+
+# 7. Test the application
+curl -I http://72.60.232.155

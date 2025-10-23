@@ -23,18 +23,39 @@
                     📤 Export Report
                 </button>
                 <div class="dropdown-menu" id="exportDropdownMenu">
-                    <a class="dropdown-item" href="{{ route('admin.analytics.export') }}?export=csv">
+                    <a class="dropdown-item" href="{{ route('admin.analytics.export') }}?export=csv&start_date={{ $startDate->format('Y-m-d') }}&end_date={{ $endDate->format('Y-m-d') }}">
                         <i class="fas fa-file-csv"></i> Export as CSV
                     </a>
-                    <a class="dropdown-item" href="{{ route('admin.analytics.export') }}?export=excel">
+                    <a class="dropdown-item" href="{{ route('admin.analytics.export') }}?export=excel&start_date={{ $startDate->format('Y-m-d') }}&end_date={{ $endDate->format('Y-m-d') }}">
                         <i class="fas fa-file-excel"></i> Export as Excel
                     </a>
-                    <a class="dropdown-item" href="{{ route('admin.analytics.export') }}?export=pdf">
+                    <a class="dropdown-item" href="{{ route('admin.analytics.export') }}?export=pdf&start_date={{ $startDate->format('Y-m-d') }}&end_date={{ $endDate->format('Y-m-d') }}">
                         <i class="fas fa-file-pdf"></i> Export as PDF
                     </a>
                 </div>
             </div>
             <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Report</button>
+        </div>
+    </div>
+
+    <!-- Date Filter Section -->
+    <div class="filter-section">
+        <form method="GET" action="{{ route('admin.analytics') }}" class="date-filter-form">
+            <div class="filter-group">
+                <label for="start_date">From Date:</label>
+                <input type="date" id="start_date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label for="end_date">To Date:</label>
+                <input type="date" id="end_date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="form-control">
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="btn btn-primary">📅 Filter Reports</button>
+                <a href="{{ route('admin.analytics') }}" class="btn btn-secondary">🔄 Reset</a>
+            </div>
+        </form>
+        <div class="date-range-info">
+            <span>Showing data from {{ $startDate->format('M d, Y') }} to {{ $endDate->format('M d, Y') }}</span>
         </div>
     </div>
 
@@ -933,6 +954,85 @@
 
 .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
     background: #ffed4e;
+}
+
+.filter-section {
+    background: linear-gradient(135deg, rgba(45, 45, 45, 0.95) 0%, rgba(35, 35, 35, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    padding: 32px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,215,0,0.1);
+    margin-bottom: 32px;
+    border: 1px solid rgba(255,215,0,0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ffd700, transparent);
+}
+
+.date-filter-form {
+    display: flex;
+    align-items: end;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #ffd700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-group input[type="date"] {
+    padding: 12px 16px;
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 12px;
+    font-size: 14px;
+    min-width: 180px;
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+    color: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.filter-group input[type="date"]:focus {
+    border-color: #ffd700;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,215,0,0.2);
+    transform: translateY(-2px);
+}
+
+.filter-group input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(30deg);
+    cursor: pointer;
+}
+
+.date-range-info {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,237,78,0.1) 100%);
+    border-radius: 12px;
+    font-size: 14px;
+    color: #e0e0e0;
+    border: 1px solid rgba(255,215,0,0.2);
+    font-weight: 500;
+    text-align: center;
 }
 </style>
 
